@@ -1,0 +1,26 @@
+{
+  "name": "mistralys/comfyui-image-organizer",
+  "description": "PHP tool used to organize and manage my collection of ComfyUI-generated images.",
+  "type": "tool",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Sebastian Mordziol",
+      "email": "s.mordziol@mistralys.eu"
+    }
+  ],
+  "autoload": {
+    "classmap": [
+      "src/"
+    ]
+  },
+  "require": {
+    "mistralys/application-utils-core": ">=2.3",
+    "mistralys/application-utils-collections": ">=1.2",
+    "mistralys/x4-core": "dev-main",
+    "ext-mbstring": "*"
+  },
+  "scripts": {
+    "build": "Mistralys\\ComfyUIOrganizer\\Builder::build"
+  }
+}
