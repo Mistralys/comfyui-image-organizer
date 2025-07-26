@@ -562,18 +562,17 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/Mistralys/x4-core.git",
-                "reference": "4c1334b9a0f51363881398cb4fd1f36738c9769a"
+                "reference": "691361d2c3311dc4a728196412fd25bee555950c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Mistralys/x4-core/zipball/4c1334b9a0f51363881398cb4fd1f36738c9769a",
-                "reference": "4c1334b9a0f51363881398cb4fd1f36738c9769a",
+                "url": "https://api.github.com/repos/Mistralys/x4-core/zipball/691361d2c3311dc4a728196412fd25bee555950c",
+                "reference": "691361d2c3311dc4a728196412fd25bee555950c",
                 "shasum": ""
             },
             "require": {
                 "components/jquery": ">=3.5.1",
                 "ext-dom": "*",
-                "ext-http": "*",
                 "ext-json": "*",
                 "ext-mbstring": "*",
                 "ext-simplexml": "*",
@@ -614,7 +613,7 @@
                 "issues": "https://github.com/Mistralys/x4-core/issues",
                 "source": "https://github.com/Mistralys/x4-core/tree/main"
             },
-            "time": "2025-07-26T10:18:37+00:00"
+            "time": "2025-07-26T11:47:30+00:00"
         },
         {
             "name": "mistralys/x4-data-extractor",
