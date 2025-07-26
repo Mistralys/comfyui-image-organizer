@@ -1,7 +1,7 @@
 .image-wrapper{
     display: inline-block;
     margin: 8px;
-    background: rgba(var(--bs-dark-rgb));
+    background: #20374c;
     border: solid 2px transparent;
 }
 
@@ -9,6 +9,29 @@
     border: solid 1px #000;
 }
 
+.image-wrapper .image-toolbar{
+    margin-bottom: 10px;
+}
+
+.image-wrapper.upscaled{
+    background: #204c41
+}
 .image-wrapper.favorite{
-    border: solid 2px #f00;
+    border-color: #df6919;
+}
+
+A.badge{
+    text-decoration: none;
+}
+
+.filter-toolbar{
+    margin-bottom: 30px;
+}
+
+.filter-toolbar .btn-group{
+    margin-right: 12px;
+}
+
+.filter-toolbar .btn-group .btn.label {
+    margin-right: 2px;
 }
