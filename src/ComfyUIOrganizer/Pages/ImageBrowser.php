@@ -12,7 +12,9 @@ use Mistralys\ComfyUIOrganizer\Ajax\Methods\DeleteImageMethod;
 use Mistralys\ComfyUIOrganizer\Ajax\Methods\FavoriteImageMethod;
 use Mistralys\ComfyUIOrganizer\Ajax\Methods\SetUpscaledImageMethod;
 use Mistralys\ComfyUIOrganizer\ImageCollection;
+use Mistralys\ComfyUIOrganizer\ImageInfo;
 use Mistralys\ComfyUIOrganizer\OrganizerApp;
+use Mistralys\X4\UI\Icon;
 use Mistralys\X4\UI\Page\BasePage;
 use function AppLocalize\pt;
 use function AppLocalize\pts;
@@ -21,7 +23,8 @@ use function AppLocalize\t;
 class ImageBrowser extends BasePage
 {
     public const string URL_NAME = 'image-browser';
-    const string REQUEST_PARAM_UPSCALED = 'upscaled';
+    public const string REQUEST_PARAM_UPSCALED = 'upscaled';
+    public const string REQUEST_PARAM_FAVORITES = 'favorites';
     private ImageCollection $collection;
 
     public function getTitle(): string
@@ -49,26 +52,18 @@ class ImageBrowser extends BasePage
         $this->collection = OrganizerApp::create()->createImageCollection();
     }
 
+    private string $objName;
+    private bool $upscaledOnly = false;
+    private bool $favoritesOnly = false;
+
     protected function _render(): void
     {
-        $this->ui->addInternalJS('ImageBrowser.js');
-        $this->ui->addInternalJS('ImageHandler.js');
-        $this->ui->addInternalStylesheet('app.css');
+        $this->objName = 'IB'.JSHelper::nextElementID();
 
-        $objName = 'IB'.JSHelper::nextElementID();
+        $this->injectScripts();
 
-        $this->ui->addJSHead(sprintf(
-            "const %s = new ImageBrowser('%s', %s);",
-            $objName,
-            $this->getURL(),
-            JSONConverter::var2json(array(
-                'deleteImage' => DeleteImageMethod::METHOD_NAME,
-                'favoriteImage' => FavoriteImageMethod::METHOD_NAME,
-                'setUpscaledImage' => SetUpscaledImageMethod::METHOD_NAME,
-            ))
-        ));
-
-        $upscaledOnly = $this->request->getBool(self::REQUEST_PARAM_UPSCALED);
+        $this->upscaledOnly = $this->request->getBool(self::REQUEST_PARAM_UPSCALED);
+        $this->favoritesOnly = $this->request->getBool(self::REQUEST_PARAM_FAVORITES);
 
         OutputBuffering::start();
 
@@ -97,82 +92,149 @@ class ImageBrowser extends BasePage
 
         ?>
         <h3><?php pt('Filtering') ?></h3>
-        <div style="margin-bottom: 30px;">
-            <?php pt('Upscaling:') ?>
-            <?php if($upscaledOnly) { ?>
-                <a href="<?php echo $this->getURL(array(self::REQUEST_PARAM_UPSCALED => '')) ?>"><?php pt('Regular and upscaled') ?></a>
-            <?php } else { ?>
-                <a href="<?php echo $this->getURL(array(self::REQUEST_PARAM_UPSCALED => 'yes')) ?>"><?php pt('Upscaled only') ?></a>
-            <?php } ?>
+        <div class="filter-toolbar">
+            <?php
+                $this->renderFilterToggle(
+                    t('Upscaling'),
+                    $this->upscaledOnly,
+                    $this->getURL(array(self::REQUEST_PARAM_UPSCALED => 'yes')),
+                    $this->getURL(array(self::REQUEST_PARAM_UPSCALED => ''))
+                );
+
+                $this->renderFilterToggle(
+                    t('Favorites'),
+                    $this->favoritesOnly,
+                    $this->getURL(array(self::REQUEST_PARAM_FAVORITES => 'yes')),
+                    $this->getURL(array(self::REQUEST_PARAM_FAVORITES => ''))
+                );
+            ?>
         </div>
         <?php
 
         foreach($this->collection->getAll() as $image)
         {
-            if($upscaledOnly && !$image->isUpscaled()) {
-                continue;
-            }
+            $this->renderImage($image);
+        }
 
-            // Skip images that have an upscaled version, we only want to display the upscaled images.
-            if($image->prop()->getUpscaledImage() !== null) {
-                continue;
-            }
+        OutputBuffering::flush();
+    }
 
-            $this->ui->addJSHead(sprintf(
-                "%s.RegisterImage('%s');",
-                $objName,
-                $image->getID()
-            ));
+    private function injectScripts() : void
+    {
+        $this->ui->addInternalJS('ImageBrowser.js');
+        $this->ui->addInternalJS('ImageHandler.js');
+        $this->ui->addInternalStylesheet('app.css');
 
-            $props = $image->getProperties();
+        $this->ui->addJSHead(sprintf(
+            "const %s = new ImageBrowser('%s', %s);",
+            $this->objName,
+            $this->getURL(),
+            JSONConverter::var2json(array(
+                'deleteImage' => DeleteImageMethod::METHOD_NAME,
+                'favoriteImage' => FavoriteImageMethod::METHOD_NAME,
+                'setUpscaledImage' => SetUpscaledImageMethod::METHOD_NAME,
+            ))
+        ));
+    }
 
-            ?>
-            <div id="wrapper-<?php echo $image->getID() ?>"
-                 class="image-wrapper <?php if($image->isFavorite()) { echo 'favorite'; } ?>"
-            >
-                <a href="<?php echo $image->getURL()  ?>" style="display: block">
-                    <img src="<?php echo $image->getThumbnailURL() ?>" alt="<?php echo $image->getLabel() ?>" loading="lazy" class="image-thumbnail"/>
-                </a>
-                <div style="padding:8px;">
-                <?php
-                if($image->isUpscaled()) {
+    private function renderImage(ImageInfo $image) : void
+    {
+        if($this->upscaledOnly && !$image->isUpscaled()) {
+            return;
+        }
+
+        if($this->favoritesOnly && !$image->isFavorite()) {
+            return;
+        }
+
+        // Skip images that have an upscaled version, we only want to display the upscaled images.
+        if($image->prop()->getUpscaledImage() !== null) {
+            return;
+        }
+
+        $this->ui->addJSHead(sprintf(
+            "%s.RegisterImage('%s');",
+            $this->objName,
+            $image->getID()
+        ));
+
+        $props = $image->getProperties();
+
+        $classes = array();
+        if($image->isFavorite()) { $classes[] = 'favorite'; }
+        if($image->isUpscaled()) { $classes[] = 'upscaled'; }
+
+        ?>
+        <div id="wrapper-<?php echo $image->getID() ?>"
+             class="image-wrapper <?php echo implode(' ', $classes) ?>"
+        >
+            <a href="<?php echo $image->getURL()  ?>" style="display: block">
+                <img src="<?php echo $image->getThumbnailURL() ?>" alt="<?php echo $image->getLabel() ?>" loading="lazy" class="image-thumbnail"/>
+            </a>
+            <div style="padding:8px;">
+                <div class="image-toolbar">
+                    <?php
+                    if($image->isUpscaled()) {
+                        ?>
+                        <span class="badge text-bg-success" style="float:right"><?php echo mb_strtoupper(t('Upscaled')) ?></span>
+                        <?php
+                    }
                     ?>
-                    <span style="float:right">
-                        <strong style="color:#22ac00"><?php echo mb_strtoupper(t('Upscaled')) ?></strong>
-                    </span>
-                    <?php
-                }
-                ?>
-                <a href="#" onclick="<?php echo $objName ?>.DeleteImage('<?php echo $image->getID() ?>');return false;"><?php pt('Delete') ?></a>
-                    |
-                <a href="#" class="toggle-favorite" onclick="<?php echo $objName ?>.ToggleFavorite('<?php echo $image->getID() ?>');return false;">
-                    <?php
+                    <a href="#"
+                       onclick="<?php echo $this->objName ?>.DeleteImage('<?php echo $image->getID() ?>');return false;"
+                       class="badge text-bg-danger"
+                    >
+                        <?php echo Icon::delete() ?>
+                        <?php pt('Delete') ?>
+                    </a>
+                    &#160;
+                    <a href="#"
+                       class="toggle-favorite badge text-bg-primary"
+                       onclick="<?php echo $this->objName ?>.ToggleFavorite('<?php echo $image->getID() ?>');return false;"
+                    >
+                        <?php
                         if($image->isFavorite()) {
                             pt('Unfavorite');
                         } else {
                             pt('Favorite');
                         }
-                    ?>
-                </a>
-                <?php if(!$image->isUpscaled()) { ?>
-                    |
-                    <a href="#" onclick="<?php echo $objName ?>.SetUpscaledID('<?php echo $image->getID() ?>');return false;">
-                        <?php pt('Upscaled ID...'); ?>
+                        ?>
                     </a>
-                <?php } ?>
-                <br>
+                    <?php if(!$image->isUpscaled()) { ?>
+                        &#160;
+                        <a href="#"
+                           onclick="<?php echo $this->objName ?>.SetUpscaledID('<?php echo $image->getID() ?>');return false;"
+                           class="badge text-bg-secondary"
+                        >
+                            <?php pt('Upscaled ID...'); ?>
+                        </a>
+                    <?php } ?>
+                </div>
                 ID: <?php echo $image->getID() ?><br>
                 Size: <?php echo $image->getImageSize()['width'] ?> x <?php echo $image->getImageSize()['height'] ?><br>
                 Checkpoint: <?php echo $image->getCheckpoint() ?><br>
                 Test: <?php echo $props->getTestName() ?> #<?php echo $props->getTestNumber() ?><br>
                 Seed: <?php echo $props->getSeed() ?><br>
                 Folder: <?php echo $props->getFolderName() ?><br>
-                </div>
             </div>
-            <?php
-        }
+        </div>
+        <?php
+    }
 
-        OutputBuffering::flush();
+    private function renderFilterToggle(string $label, bool $enabled, string $urlEnable, string $urlDisable): void
+    {
+        ?>
+        <div class="btn-group" role="group">
+            <button type="button" class="btn btn-secondary label"><?php echo $label ?></button>
+            <?php if($enabled) { ?>
+                <a href="#" onclick="return false" class="btn btn-primary">ON</a>
+                <a href="<?php echo $urlDisable ?>" class="btn btn-secondary">OFF</a>
+            <?php } else { ?>
+                <a href="<?php echo $urlEnable ?>" class="btn btn-secondary">ON</a>
+                <a href="#" onclick="return false" class="btn btn-primary">OFF</a>
+            <?php } ?>
+        </div>
+        <?php
     }
 
     public function getNavItems(): array
