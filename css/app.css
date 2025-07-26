@@ -1,0 +1,14 @@
+.image-wrapper{
+    display: inline-block;
+    margin: 8px;
+    background: rgba(var(--bs-dark-rgb));
+    border: solid 2px transparent;
+}
+
+.image-wrapper .image-thumbnail{
+    border: solid 1px #000;
+}
+
+.image-wrapper.favorite{
+    border: solid 2px #f00;
+}
