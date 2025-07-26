@@ -30,6 +30,7 @@ class ImageIndexer
         if ($this->storageFile->exists()) {
             Console::line1('Found existing image index file, loading data...');
             $this->images = $this->storageFile->getData();
+            $this->storageFile->copyTo($this->storageFile->getFolder().'/backup/images-'.Microtime::createNow()->format('Y-m-d-H-i-s').'.json');
         }
 
         $files = $this->app->getImageFolder()->createFileFinder()
@@ -80,6 +81,7 @@ class ImageIndexer
             // safely update the paths without changing the ID.
             $this->images[$id][ImageInfo::KEY_IMAGE_FILE] = $imageFile->getPath();
             $this->images[$id][ImageInfo::KEY_SIDECAR_FILE] = $sidecarFile->getPath();
+            $this->images[$id][ImageInfo::KEY_PROPERTIES][ImageProperties::KEY_FOLDER_NAME] = $imageFile->getFolder()->getName();
 
             Console::line2('SKIP | Already indexed and modified.');
             return;
@@ -109,9 +111,7 @@ class ImageIndexer
             }
         }
 
-        if(!isset($props[ImageProperties::KEY_FOLDER_NAME])) {
-            $props[ImageProperties::KEY_FOLDER_NAME] = $imageFile->getFolder()->getName();
-        }
+        $props[ImageProperties::KEY_FOLDER_NAME] = $imageFile->getFolder()->getName();
 
         if(!isset($props[ImageProperties::KEY_SEED])) {
             $props[ImageProperties::KEY_SEED] = $seed;
