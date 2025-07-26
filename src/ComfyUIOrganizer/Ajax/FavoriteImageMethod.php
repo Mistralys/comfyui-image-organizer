@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mistralys\ComfyUIOrganizer\Ajax;
 
+use AppUtils\ConvertHelper;
 use Mistralys\ComfyUIOrganizer\ImageInfo;
 use Mistralys\ComfyUIOrganizer\OrganizerApp;
 
@@ -13,6 +14,7 @@ use Mistralys\ComfyUIOrganizer\OrganizerApp;
 class FavoriteImageMethod extends BaseImageMethod
 {
     public const string METHOD_NAME = 'FavoriteImage';
+    const string REQUEST_PARAM_FAVORITE = 'favorite';
 
     public function getID(): string
     {
@@ -21,8 +23,15 @@ class FavoriteImageMethod extends BaseImageMethod
 
     protected function processImage(ImageInfo $image): never
     {
-        $image->setFavorite(true)->save();
+        $favorite = $this->request->getBool(self::REQUEST_PARAM_FAVORITE);
 
-        $this->sendSuccess('Image deleted successfully.');
+        $image->setFavorite($favorite)->save();
+
+        $this->sendSuccess(
+            'Favorite successfully set to ['.ConvertHelper::bool2string($favorite, true).'].',
+            array(
+                self::REQUEST_PARAM_FAVORITE => $favorite
+            )
+        );
     }
 }
