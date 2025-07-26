@@ -21,6 +21,7 @@
     "ext-mbstring": "*"
   },
   "scripts": {
-    "build": "Mistralys\\ComfyUIOrganizer\\Builder::build"
+    "build": "Mistralys\\ComfyUIOrganizer\\Builder::build",
+    "post-autoload-dump": "Mistralys\\ComfyUIOrganizer\\Builder::postAutoload"
   }
 }
