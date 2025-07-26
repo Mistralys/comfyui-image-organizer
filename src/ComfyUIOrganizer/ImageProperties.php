@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mistralys\ComfyUIOrganizer;
 
 use AppUtils\ArrayDataCollection;
+use testsuites\Traits\RenderableTests;
 
 class ImageProperties
 {
@@ -68,5 +69,10 @@ class ImageProperties
     private function handleModified() : void
     {
         call_user_func($this->modifiedCallback);
+    }
+
+    public function isFavorite() : bool
+    {
+        return $this->data->getBool(self::KEY_FAVORITE);
     }
 }
