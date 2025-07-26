@@ -15,6 +15,7 @@ use AppUtils\Request;
  */
 class ImageCollection extends BaseStringPrimaryCollection
 {
+    const string REQUEST_PARAM_IMAGE_ID = 'imageID';
     private JSONFile $dataFile;
 
     public function __construct(JSONFile $dataFile)
@@ -114,7 +115,7 @@ class ImageCollection extends BaseStringPrimaryCollection
 
     public function getFromRequest() : ?ImageInfo
     {
-        $id = Request::getInstance()->registerParam('imageID')->setMD5()->get();
+        $id = Request::getInstance()->registerParam(self::REQUEST_PARAM_IMAGE_ID)->setMD5()->get();
         if(!empty($id) && $this->idExists($id)) {
             return $this->getByID($id);
         }
