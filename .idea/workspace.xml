@@ -5,9 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d06d220e-a3f0-4d6c-85ff-2fcc28e8e726" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/css/app.css" beforeDir="false" afterPath="$PROJECT_DIR$/css/app.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ComfyUIOrganizer/Pages/ImageBrowser.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/ComfyUIOrganizer/Pages/ImageBrowser.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ComfyUIOrganizer/ImageIndexer.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/ComfyUIOrganizer/ImageIndexer.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -64,7 +64,7 @@
     "RunOnceActivity.git.unshallow": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "git-widget-placeholder": "main",
-    "last_opened_file_path": "F:/Webserver/www/htdocs/personal/comfyui-image-organizer",
+    "last_opened_file_path": "F:/Webserver/www/htdocs/personal/comfyui-image-organizer/data",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -75,7 +75,11 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="F:\Webserver\www\htdocs\personal\comfyui-image-organizer\data" />
       <recent name="F:\Webserver\www\htdocs\personal\comfyui-image-organizer" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="F:\Webserver\www\htdocs\personal\comfyui-image-organizer\data\backup" />
     </key>
   </component>
   <component name="RunManager">
@@ -99,7 +103,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1753528108319</updated>
-      <workItem from="1753528109581" duration="15747000" />
+      <workItem from="1753528109581" duration="17156000" />
     </task>
     <servers />
   </component>
