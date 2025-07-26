@@ -70,10 +70,17 @@ class ImageIndexer
         $data = $sidecarFile->getData();
 
         $date = key($data);
-        $id = md5($imageFile->getPath().'/'.$date);
+        $id = hash_file('md5', $imageFile->getPath());
 
         // Do not change any images that have already been indexed and modified.
-        if(isset($this->images[$id][ImageInfo::KEY_MODIFIED]) && $this->images[$id][ImageInfo::KEY_MODIFIED] === true) {
+        if(isset($this->images[$id][ImageInfo::KEY_MODIFIED]) && $this->images[$id][ImageInfo::KEY_MODIFIED] === true)
+        {
+            // Update the image and sidecar file paths in the existing entry, as they
+            // may have been moved or renamed. Since the ID is a file hash, we can
+            // safely update the paths without changing the ID.
+            $this->images[$id][ImageInfo::KEY_IMAGE_FILE] = $imageFile->getPath();
+            $this->images[$id][ImageInfo::KEY_SIDECAR_FILE] = $sidecarFile->getPath();
+
             Console::line2('SKIP | Already indexed and modified.');
             return;
         }
@@ -124,13 +131,21 @@ class ImageIndexer
 
         $size = ImageHelper::getImageSize($imageFile->getPath());
 
+        $isUpscaled = isset($props['upscaleFactor']) || str_contains('upscale', $imageFile->getBaseName());
+
+        if($isUpscaled === false && ($size->getWidth() >= 2000 || $size->getHeight() >= 2000)) {
+            // If the image is larger than 2000x2000 pixels, we assume it is an upscaled image.
+            // This is a heuristic to avoid false positives.
+            $isUpscaled = true;
+        }
+
         $this->images[$id] = array(
-            ImageInfo::KEY_ID => md5($imageFile->getPath().'/'.$date),
+            ImageInfo::KEY_ID => $id,
             ImageInfo::KEY_IMAGE_FILE => $imageFile->getPath(),
             ImageInfo::KEY_SIDECAR_FILE => $sidecarFile->getPath(),
             ImageInfo::KEY_DATE => Microtime::createFromString(str_replace('/', '-', $date))->getISODate(),
             ImageInfo::KEY_CHECKPOINT => $checkpoint,
-            ImageInfo::KEY_UPSCALED => isset($props['upscaleFactor']) || str_contains('upscale', $imageFile->getBaseName()),
+            ImageInfo::KEY_UPSCALED => $isUpscaled,
             ImageInfo::KEY_IMAGE_SIZE => array('width' => $size->getWidth(), 'height' => $size->getHeight()),
             ImageInfo::KEY_PROPERTIES => $props
         );
