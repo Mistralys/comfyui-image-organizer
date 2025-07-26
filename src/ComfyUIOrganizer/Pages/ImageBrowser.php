@@ -216,6 +216,7 @@ class ImageBrowser extends BasePage
                 Test: <?php echo $props->getTestName() ?> #<?php echo $props->getTestNumber() ?><br>
                 Seed: <?php echo $props->getSeed() ?><br>
                 Folder: <?php echo $props->getFolderName() ?><br>
+                <a href="<?php echo $image->getViewDetailsURL() ?>" target="_blank"><?php pt('More...') ?></a>
             </div>
         </div>
         <?php
@@ -245,7 +246,8 @@ class ImageBrowser extends BasePage
     protected function getURLParams(): array
     {
         return array(
-            self::REQUEST_PARAM_UPSCALED => ConvertHelper::bool2string($this->request->getBool(self::REQUEST_PARAM_UPSCALED), true)
+            self::REQUEST_PARAM_UPSCALED => ConvertHelper::bool2string($this->request->getBool(self::REQUEST_PARAM_UPSCALED), true),
+            self::REQUEST_PARAM_FAVORITES => ConvertHelper::bool2string($this->request->getBool(self::REQUEST_PARAM_FAVORITES), true),
         );
     }
 }
