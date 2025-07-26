@@ -4,12 +4,9 @@ declare(strict_types=1);
 
 namespace Mistralys\ComfyUIOrganizer;
 
-use AppUtils\ArrayDataCollection;
 use AppUtils\Collections\BaseStringPrimaryCollection;
-use AppUtils\FileHelper\FileInfo;
 use AppUtils\FileHelper\JSONFile;
 use AppUtils\Interfaces\StringPrimaryRecordInterface;
-use AppUtils\Microtime;
 use AppUtils\Request;
 
 /**
@@ -47,7 +44,7 @@ class ImageCollection extends BaseStringPrimaryCollection
             }
         }
 
-        $this->dataFile->putData(array_values($data));
+        $this->dataFile->putData($data);
     }
 
     public function saveImage(ImageInfo $image) : void
@@ -71,11 +68,38 @@ class ImageCollection extends BaseStringPrimaryCollection
         );
     }
 
+    /**
+     * @var array<string,ImageInfo> $deleted
+     */
+    private array $missing = array();
+
     protected function registerItems(): void
     {
-        foreach($this->dataFile->getData() as $entry) {
-            $this->registerItem(ImageInfo::fromSerialized($entry));
+        $this->missing = array();
+
+        foreach($this->dataFile->getData() as $entry)
+        {
+            $image = ImageInfo::fromSerialized($entry);
+
+            // Automatic cleanup of images that no longer exist.
+            if(!$image->getImageFile()->exists()) {
+                $this->missing[$image->getID()] = $image;
+                continue;
+            }
+
+            $this->registerItem($image);
         }
+    }
+
+    /**
+     * Gets all missing images that were found in the index file,
+     * if any.
+     *
+     * @return array<string,ImageInfo>
+     */
+    public function getMissingImages(): array
+    {
+        return $this->missing;
     }
 
     /**
