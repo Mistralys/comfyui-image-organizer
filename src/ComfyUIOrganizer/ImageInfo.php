@@ -10,7 +10,10 @@ use AppUtils\FileHelper\JSONFile;
 use AppUtils\ImageHelper;
 use AppUtils\Interfaces\StringPrimaryRecordInterface;
 use AppUtils\Microtime;
+use AppUtils\Request;
 use Closure;
+use Mistralys\ComfyUIOrganizer\Pages\ImageDetails;
+use Mistralys\X4\UI\Page\BasePage;
 use const Mistralys\ComfyUIOrganizer\Config\APP_WEBROOT_URL;
 
 class ImageInfo implements StringPrimaryRecordInterface
@@ -70,6 +73,16 @@ class ImageInfo implements StringPrimaryRecordInterface
     public function isFavorite() : bool
     {
         return $this->properties->isFavorite();
+    }
+
+    public function getViewDetailsURL() : string
+    {
+        return Request::getInstance()
+            ->setBaseURL(APP_WEBROOT_URL)
+            ->buildURL(array(
+                BasePage::REQUEST_PARAM_PAGE => ImageDetails::URL_NAME,
+                ImageCollection::REQUEST_PARAM_IMAGE_ID => $this->getID()
+            ));
     }
 
     private function onPropertiesModified() : void
