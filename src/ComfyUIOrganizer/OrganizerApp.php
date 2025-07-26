@@ -8,6 +8,7 @@ use AppUtils\FileHelper\FolderInfo;
 use AppUtils\FileHelper\JSONFile;
 use AppUtils\FileHelper\PathInfoInterface;
 use Mistralys\ComfyUIOrganizer\Ajax\DeleteImageMethod;
+use Mistralys\ComfyUIOrganizer\Ajax\FavoriteImageMethod;
 use Mistralys\ComfyUIOrganizer\Pages\ImageBrowser;
 use Mistralys\X4\UI\Ajax\AjaxMethods;
 use Mistralys\X4\UI\UserInterface;
@@ -88,6 +89,7 @@ class OrganizerApp extends X4Application
     public function registerAjaxMethods(AjaxMethods $methods): void
     {
         $methods->addItem(new DeleteImageMethod($methods));
+        $methods->addItem(new FavoriteImageMethod($methods));
     }
 
     public function getDefaultPageID(): ?string
