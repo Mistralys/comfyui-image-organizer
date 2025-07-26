@@ -8,6 +8,7 @@ use AppUtils\ConvertHelper;
 use AppUtils\JSHelper;
 use AppUtils\OutputBuffering;
 use Mistralys\ComfyUIOrganizer\Ajax\DeleteImageMethod;
+use Mistralys\ComfyUIOrganizer\Ajax\FavoriteImageMethod;
 use Mistralys\ComfyUIOrganizer\ImageCollection;
 use Mistralys\ComfyUIOrganizer\OrganizerApp;
 use Mistralys\X4\UI\Page\BasePage;
@@ -49,6 +50,7 @@ class ImageBrowser extends BasePage
     {
         $this->ui->addInternalJS('ImageBrowser.js');
         $this->ui->addInternalJS('ImageHandler.js');
+        $this->ui->addInternalStylesheet('app.css');
 
         $objName = 'IB'.JSHelper::nextElementID();
 
@@ -58,7 +60,7 @@ class ImageBrowser extends BasePage
             $this->getURL(),
             ConvertHelper\JSONConverter::var2json(array(
                 'deleteImage' => DeleteImageMethod::METHOD_NAME,
-                'favoriteImage' => $this->ui->getAjaxMethodURL('FavoriteImage'),
+                'favoriteImage' => FavoriteImageMethod::METHOD_NAME,
             ))
         ));
 
@@ -93,9 +95,11 @@ class ImageBrowser extends BasePage
             $props = $image->getProperties();
 
             ?>
-            <div style="display: inline-block; margin: 10px;background: rgba(var(--bs-dark-rgb)" id="wrapper-<?php echo $image->getID() ?>">
+            <div id="wrapper-<?php echo $image->getID() ?>"
+                 class="image-wrapper <?php if($image->isFavorite()) { echo 'favorite'; } ?>"
+            >
                 <a href="<?php echo $image->getURL()  ?>" style="display: block">
-                    <img src="<?php echo $image->getThumbnailURL() ?>" alt="<?php echo $image->getLabel() ?>" loading="lazy" style="border: solid 1px #000"/>
+                    <img src="<?php echo $image->getThumbnailURL() ?>" alt="<?php echo $image->getLabel() ?>" loading="lazy" class="image-thumbnail"/>
                 </a>
                 <div style="padding:8px;">
                 <?php
@@ -109,10 +113,18 @@ class ImageBrowser extends BasePage
                 ?>
                 <a href="#" onclick="<?php echo $objName ?>.DeleteImage('<?php echo $image->getID() ?>');return false;"><?php pt('Delete') ?></a>
                     |
-                <a href="#" onclick="<?php echo $objName ?>.FavoriteImage('<?php echo $image->getID() ?>');return false;"><?php pt('Favorite') ?></a>
+                <a href="#" class="toggle-favorite" onclick="<?php echo $objName ?>.ToggleFavorite('<?php echo $image->getID() ?>');return false;">
+                    <?php
+                        if($image->isFavorite()) {
+                            pt('Unfavorite');
+                        } else {
+                            pt('Favorite');
+                        }
+                    ?>
+                </a>
 
                 <br>
-
+                ID: <?php echo $image->getID() ?><br>
                 Size: <?php echo $image->getImageSize()['width'] ?> x <?php echo $image->getImageSize()['height'] ?><br>
                 Checkpoint: <?php echo $image->getCheckpoint() ?><br>
                 Test: <?php echo $props->getTestName() ?> #<?php echo $props->getTestNumber() ?><br>
