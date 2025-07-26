@@ -5,14 +5,17 @@ declare(strict_types=1);
 namespace Mistralys\ComfyUIOrganizer\Pages;
 
 use AppUtils\ConvertHelper;
+use AppUtils\ConvertHelper\JSONConverter;
 use AppUtils\JSHelper;
 use AppUtils\OutputBuffering;
-use Mistralys\ComfyUIOrganizer\Ajax\DeleteImageMethod;
-use Mistralys\ComfyUIOrganizer\Ajax\FavoriteImageMethod;
+use Mistralys\ComfyUIOrganizer\Ajax\Methods\DeleteImageMethod;
+use Mistralys\ComfyUIOrganizer\Ajax\Methods\FavoriteImageMethod;
+use Mistralys\ComfyUIOrganizer\Ajax\Methods\SetUpscaledImageMethod;
 use Mistralys\ComfyUIOrganizer\ImageCollection;
 use Mistralys\ComfyUIOrganizer\OrganizerApp;
 use Mistralys\X4\UI\Page\BasePage;
 use function AppLocalize\pt;
+use function AppLocalize\pts;
 use function AppLocalize\t;
 
 class ImageBrowser extends BasePage
@@ -58,15 +61,39 @@ class ImageBrowser extends BasePage
             "const %s = new ImageBrowser('%s', %s);",
             $objName,
             $this->getURL(),
-            ConvertHelper\JSONConverter::var2json(array(
+            JSONConverter::var2json(array(
                 'deleteImage' => DeleteImageMethod::METHOD_NAME,
                 'favoriteImage' => FavoriteImageMethod::METHOD_NAME,
+                'setUpscaledImage' => SetUpscaledImageMethod::METHOD_NAME,
             ))
         ));
 
         $upscaledOnly = $this->request->getBool(self::REQUEST_PARAM_UPSCALED);
 
         OutputBuffering::start();
+
+        $missing = $this->collection->getMissingImages();
+
+        if(!empty($missing)) {
+            ?>
+            <div class="alert alert-warning">
+                <?php
+                    pts('The following images are missing.');
+                    pts('This can happen if the image files were deleted or moved outside of the organizer.');
+                    pts('It is recommended to refresh the index, then delete the images if they are indeed missing.');
+                ?><br>
+                <ul>
+                    <?php
+                    foreach($missing as $image) {
+                        ?>
+                        <li><?php echo $image->getID() ?></li>
+                        <?php
+                    }
+                    ?>
+                </ul>
+            </div>
+            <?php
+        }
 
         ?>
         <h3><?php pt('Filtering') ?></h3>
@@ -83,6 +110,11 @@ class ImageBrowser extends BasePage
         foreach($this->collection->getAll() as $image)
         {
             if($upscaledOnly && !$image->isUpscaled()) {
+                continue;
+            }
+
+            // Skip images that have an upscaled version, we only want to display the upscaled images.
+            if($image->prop()->getUpscaledImage() !== null) {
                 continue;
             }
 
@@ -122,7 +154,12 @@ class ImageBrowser extends BasePage
                         }
                     ?>
                 </a>
-
+                <?php if(!$image->isUpscaled()) { ?>
+                    |
+                    <a href="#" onclick="<?php echo $objName ?>.SetUpscaledID('<?php echo $image->getID() ?>');return false;">
+                        <?php pt('Upscaled ID...'); ?>
+                    </a>
+                <?php } ?>
                 <br>
                 ID: <?php echo $image->getID() ?><br>
                 Size: <?php echo $image->getImageSize()['width'] ?> x <?php echo $image->getImageSize()['height'] ?><br>
