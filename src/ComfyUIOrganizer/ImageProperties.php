@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Mistralys\ComfyUIOrganizer;
 
 use AppUtils\ArrayDataCollection;
-use testsuites\Traits\RenderableTests;
 
 class ImageProperties
 {
@@ -15,6 +14,7 @@ class ImageProperties
     const string KEY_FOLDER_NAME = 'folder';
     public const string KEY_IMG_BATCH_NR = 'imgBatchNr';
     public const string KEY_FAVORITE = 'favorite';
+    public const string KEY_UPSCALED_IMAGE = 'upscaledImage';
 
     private ArrayDataCollection $data;
 
@@ -57,6 +57,32 @@ class ImageProperties
     public function setFavorite(bool $favorite) : self
     {
         return $this->setKey(self::KEY_FAVORITE, $favorite);
+    }
+
+    private ?ImageInfo $upscaledImage = null;
+    private bool $upscaledImageSet = false;
+
+    public function getUpscaledImage() : ?ImageInfo
+    {
+        if($this->upscaledImageSet) {
+            return $this->upscaledImage;
+        }
+
+        $this->upscaledImageSet = true;
+
+        $id = $this->data->getString(self::KEY_UPSCALED_IMAGE);
+        $collection = OrganizerApp::create()->createImageCollection();
+
+        if(!empty($id) && $collection->idExists($id)) {
+            $this->upscaledImage = $collection->getByID($id);
+        }
+
+        return $this->upscaledImage;
+    }
+
+    public function setUpscaledImage(ImageInfo $image) : self
+    {
+        return $this->setKey(self::KEY_UPSCALED_IMAGE, $image->getID());
     }
 
     private function setKey(string $name, mixed $value) : self
