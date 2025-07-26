@@ -7,6 +7,7 @@ class ImageBrowser
      * @param {Object} ajaxMethodInfo
      * @param {String} ajaxMethodInfo.deleteImage
      * @param {String} ajaxMethodInfo.favoriteImage
+     * @param {String} ajaxMethodInfo.setUpscaledImage
      */
     constructor(pageURL, ajaxMethodInfo)
     {
@@ -54,6 +55,42 @@ class ImageBrowser
 
     /**
      * @param {String} imageID
+     */
+    SetUpscaledID(imageID)
+    {
+        let upscaledID = prompt('Enter the upscaled image ID for image [' + imageID + ']');
+        if(upscaledID === null || upscaledID.trim() === '') {
+            return;
+        }
+
+        const upscaledImage = this.GetImage(upscaledID.trim());
+        if(upscaledImage === null) {
+            alert('Upscaled image with ID [' + upscaledID + '] not found.');
+            return;
+        }
+
+        this.SendRequest(
+            this.RequireImage(imageID),
+            this.ajaxMethodInfo.setUpscaledImage,
+            this.HandleSetUpscaledResponse.bind(this),
+            {
+                'upscaledID': upscaledImage.GetID()
+            }
+        );
+    }
+
+    /**
+     * @param {ImageHandler} image
+     * @param {Object} response
+     * @param {String} response.upscaledID
+     */
+    HandleSetUpscaledResponse(image, response)
+    {
+        image.RemoveFromDOM();
+    }
+
+    /**
+     * @param {String} imageID
      * @returns {ImageHandler}
      */
     GetImage(imageID)
@@ -87,7 +124,7 @@ class ImageBrowser
         );
     }
 
-    HandleDeleteResponse(image, response)
+    HandleDeleteResponse(image)
     {
         delete this.images[image.GetID()];
 
