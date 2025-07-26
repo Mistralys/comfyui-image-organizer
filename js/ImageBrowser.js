@@ -4,15 +4,20 @@ class ImageBrowser
 {
     /**
      * @param {String} pageURL
+     * @param {Object} ajaxMethodInfo
+     * @param {String} ajaxMethodInfo.deleteImage
+     * @param {String} ajaxMethodInfo.favoriteImage
      */
-    constructor(pageURL)
+    constructor(pageURL, ajaxMethodInfo)
     {
         this.images = {};
         this.pageURL = pageURL;
+        this.ajaxMethodInfo = ajaxMethodInfo;
     }
 
     /**
      * @param {String} imageID
+     *
      */
     RegisterImage(imageID)
     {
@@ -24,9 +29,50 @@ class ImageBrowser
      * @param imageID
      * @constructor
      */
-    FavoriteImage(imageID)
+    ToggleFavorite(imageID)
     {
+        const image = this.RequireImage(imageID);
 
+        this.SendRequest(
+            image,
+            this.ajaxMethodInfo.favoriteImage,
+            this.HandleFavoriteResponse.bind(this),
+            {
+                'favorite': !image.IsFavorite()
+            }
+        );
+    }
+
+    /**
+     * @param {ImageHandler} image
+     * @param {Object} response
+     */
+    HandleFavoriteResponse(image, response)
+    {
+        image.SetFavorite(response.favorite);
+    }
+
+    /**
+     * @param {String} imageID
+     * @returns {ImageHandler}
+     */
+    GetImage(imageID)
+    {
+        if(typeof this.images[imageID] !== 'undefined') {
+            return this.images[imageID];
+        }
+
+        return null;
+    }
+
+    RequireImage(imageID)
+    {
+        const image = this.GetImage(imageID);
+        if(image !== null) {
+            return image;
+        }
+
+        throw new Error('Image not found for imageID [' + imageID + ']');
     }
 
     /**
@@ -34,37 +80,34 @@ class ImageBrowser
      */
     DeleteImage(imageID)
     {
-        if(typeof this.images[imageID] === 'undefined') {
-            console.error('ImageHandler not found for imageID:', imageID);
-            return;
-        }
-
-        this.SendRequest(imageID, 'deleteImage', this.HandleDeleteResponse.bind(this));
+        this.SendRequest(
+            this.RequireImage(imageID),
+            this.ajaxMethodInfo.deleteImage,
+            this.HandleDeleteResponse.bind(this)
+        );
     }
 
-    HandleDeleteResponse(imageID, response)
+    HandleDeleteResponse(image, response)
     {
-        const handler = this.images[imageID];
+        delete this.images[image.GetID()];
 
-        delete this.images[imageID];
-
-        handler.RemoveFromDOM();
+        image.RemoveFromDOM();
     }
 
     /**
      *
-     * @param {String} imageID
+     * @param {ImageHandler} image
      * @param {String} action
      * @param {Function} successHandler
      * @param {Object|null} params
      */
-    SendRequest(imageID, action, successHandler, params=null)
+    SendRequest(image, action, successHandler, params=null)
     {
         if(params === null) {
             params = {};
         }
 
-        params['imageID'] = imageID;
+        params['imageID'] = image.GetID();
         params['ajax'] = action;
 
         const urlParams = new URLSearchParams(params);
@@ -74,7 +117,14 @@ class ImageBrowser
             this.pageURL += '?';
         }
 
-        fetch(this.pageURL + '&' + urlParams.toString())
+        const endpoint = this.pageURL + '&' + urlParams.toString();
+
+        console.log('AJAX | ['+action+'] | Sending request.');
+        console.log('AJAX | ['+action+'] | Image ['+image.GetID()+']');
+        console.log('AJAX | ['+action+'] | Endpoint ['+endpoint+']');
+
+
+        fetch(endpoint)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Erreur réseau');
@@ -83,7 +133,7 @@ class ImageBrowser
             })
             .then(data => {
                 console.log('Réponse JSON :', data);
-                successHandler(imageID, data);
+                successHandler(image, data.payload);
             })
             .catch(error => {
                 console.error('Erreur :', error);
