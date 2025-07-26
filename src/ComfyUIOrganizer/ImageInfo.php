@@ -62,6 +62,11 @@ class ImageInfo implements StringPrimaryRecordInterface
         $this->properties = new ImageProperties($properties, $this->onPropertiesModified(...));
     }
 
+    public function prop() : ImageProperties
+    {
+        return $this->properties;
+    }
+
     public function isFavorite() : bool
     {
         return $this->properties->isFavorite();
