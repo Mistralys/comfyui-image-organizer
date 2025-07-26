@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Mistralys\ComfyUIOrganizer;
 
+use AppUtils\ClassHelper;
 use AppUtils\FileHelper\FolderInfo;
 use AppUtils\FileHelper\JSONFile;
 use AppUtils\FileHelper\PathInfoInterface;
-use Mistralys\ComfyUIOrganizer\Ajax\DeleteImageMethod;
-use Mistralys\ComfyUIOrganizer\Ajax\FavoriteImageMethod;
 use Mistralys\ComfyUIOrganizer\Pages\ImageBrowser;
+use Mistralys\X4\UI\Ajax\AjaxMethodInterface;
 use Mistralys\X4\UI\Ajax\AjaxMethods;
 use Mistralys\X4\UI\UserInterface;
 use Mistralys\X4\X4Application;
@@ -88,8 +88,15 @@ class OrganizerApp extends X4Application
 
     public function registerAjaxMethods(AjaxMethods $methods): void
     {
-        $methods->addItem(new DeleteImageMethod($methods));
-        $methods->addItem(new FavoriteImageMethod($methods));
+        $ajaxClasses = ClassHelper::findClassesInRepository(
+            FolderInfo::factory(__DIR__.'/Ajax/Methods'),
+            false,
+            AjaxMethodInterface::class
+        );
+
+        foreach($ajaxClasses->getClasses() as $class) {
+            $methods->addItem(new $class($methods));
+        }
     }
 
     public function getDefaultPageID(): ?string
