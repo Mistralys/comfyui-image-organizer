@@ -51,7 +51,11 @@ class ImageProperties
 
     public function serialize() : array
     {
-        return $this->data->getData();
+        $data = $this->data->getData();
+
+        ksort($data);
+
+        return $data;
     }
 
     public function setFavorite(bool $favorite) : self
