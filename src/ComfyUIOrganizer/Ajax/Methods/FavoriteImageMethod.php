@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Mistralys\ComfyUIOrganizer\Ajax;
+namespace Mistralys\ComfyUIOrganizer\Ajax\Methods;
 
 use AppUtils\ConvertHelper;
+use Mistralys\ComfyUIOrganizer\Ajax\BaseImageMethod;
 use Mistralys\ComfyUIOrganizer\ImageInfo;
 use Mistralys\ComfyUIOrganizer\OrganizerApp;
 
