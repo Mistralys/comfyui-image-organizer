@@ -3,3 +3,4 @@ composer.phar
 /cache/
 /config.php
 /data/images.json
+/data/backup/
