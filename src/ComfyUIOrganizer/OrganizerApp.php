@@ -9,6 +9,7 @@ use AppUtils\FileHelper\FolderInfo;
 use AppUtils\FileHelper\JSONFile;
 use AppUtils\FileHelper\PathInfoInterface;
 use Mistralys\ComfyUIOrganizer\Pages\ImageBrowser;
+use Mistralys\ComfyUIOrganizer\Pages\ImageDetails;
 use Mistralys\X4\UI\Ajax\AjaxMethodInterface;
 use Mistralys\X4\UI\Ajax\AjaxMethods;
 use Mistralys\X4\UI\UserInterface;
@@ -84,6 +85,7 @@ class OrganizerApp extends X4Application
     public function registerPages(UserInterface $ui): void
     {
         $ui->registerPage(ImageBrowser::URL_NAME, ImageBrowser::class);
+        $ui->registerPage(ImageDetails::URL_NAME, ImageDetails::class);
     }
 
     public function registerAjaxMethods(AjaxMethods $methods): void
