@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Mistralys\ComfyUIOrganizer;
 
 use AppUtils\ArrayDataCollection;
+use AppUtils\ClassHelper;
 use AppUtils\ConvertHelper\JSONConverter;
 use AppUtils\FileHelper\FileInfo;
+use AppUtils\FileHelper\FolderInfo;
 use AppUtils\FileHelper\JSONFile;
 use AppUtils\ImageHelper;
 use AppUtils\Interfaces\StringPrimaryRecordInterface;
@@ -114,6 +116,48 @@ class ImageInfo implements StringPrimaryRecordInterface
         );
 
         return array_map('mb_strtolower', $words);
+    }
+
+    private function resolveTargetFile(FolderInfo $targetFolder, FileInfo $sourceFile) : FileInfo
+    {
+        $targetImage = FileInfo::factory($targetFolder.'/'.$sourceFile->getName());
+        if(!$targetImage->exists()) {
+            return $targetImage;
+        }
+
+        return FileInfo::factory($targetFolder.'/'.$sourceFile->getBaseName().'-'.crc32($this->getID()).'.'.$sourceFile->getExtension());
+    }
+
+    /**
+     * Moves the image and sidecar file to the specified folder,
+     * and updates the properties to reflect the new folder name.
+     *
+     * @param string $folderName
+     * @return $this
+     */
+    public function moveToFolder(string $folderName) : self
+    {
+        $targetFolder = FolderInfo::factory($this->getImageFile()->getFolder()->getParentFolder().'/'.$folderName);
+
+        $newImageFile = $this->resolveTargetFile($targetFolder, $this->imageFile);
+        $this->imageFile->copyTo($newImageFile);
+
+        $newSidecarFile = ClassHelper::requireObjectInstanceOf(JSONFile::class, $this->resolveTargetFile($targetFolder, $this->sidecarFile));
+        $this->sidecarFile->copyTo($newSidecarFile);
+
+        // Update the folder name in the properties.
+        $this->prop()->setFolderName($folderName);
+
+        $this->save();
+
+        // Do this last, so that the image is not deleted if the save fails.
+        $this->imageFile->delete();
+        $this->sidecarFile->delete();
+
+        $this->imageFile = $newImageFile;
+        $this->sidecarFile = $newSidecarFile;
+
+        return $this;
     }
 
     private function onPropertiesModified() : void
