@@ -8,6 +8,7 @@ class ImageBrowser
      * @param {String} ajaxMethodInfo.deleteImage
      * @param {String} ajaxMethodInfo.favoriteImage
      * @param {String} ajaxMethodInfo.setUpscaledImage
+     * @param {String} ajaxMethodInfo.moveImage
      */
     constructor(pageURL, ajaxMethodInfo)
     {
@@ -295,5 +296,37 @@ class ImageBrowser
                 image.ToggleSelection();
             }
         }
+    }
+
+    /**
+     * @param {String} imageID
+     */
+    MoveImage(imageID)
+    {
+        const image = this.RequireImage(imageID);
+
+        const newFolder = prompt('Enter the new folder name:');
+
+        if(newFolder === null || newFolder.trim() === '') {
+            return;
+        }
+
+        this.SendRequest(
+            image,
+            this.ajaxMethodInfo.moveImage,
+            this.HandleMoveResponse.bind(this),
+            {
+                'folderName': newFolder.trim()
+            }
+        );
+    }
+
+    /**
+     * @param {ImageHandler} image
+     * @param {Object} response
+     */
+    HandleMoveResponse(image, response)
+    {
+        image.HandleMoved(response);
     }
 }
