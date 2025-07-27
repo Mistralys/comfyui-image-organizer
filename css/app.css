@@ -35,3 +35,12 @@ A.badge{
 .filter-toolbar .btn-group .btn.label {
     margin-right: 2px;
 }
+
+#image-search .reset-filters{
+    position: absolute;
+    right:6px;
+    top:7px;
+    color:#555;
+    z-index:900;
+    cursor:pointer;
+}
