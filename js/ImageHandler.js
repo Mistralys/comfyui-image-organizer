@@ -2,9 +2,39 @@
 
 class ImageHandler
 {
-    constructor(imageID)
+    /**
+     *
+     * @param {String} imageID
+     * @param {Array<String>} searchWords
+     */
+    constructor(imageID, searchWords = [])
     {
         this.imageID = imageID;
+        this.searchWords = searchWords;
+    }
+
+    /**
+     * @param {String} searchString
+     * @returns {boolean}
+     */
+    MatchesSearch(searchString)
+    {
+        searchString = searchString.toLowerCase().trim();
+
+        if(searchString.length === 0) {
+            return true; // No search string means all images match
+        }
+
+        for(const word of this.searchWords) {
+            if(word.includes(searchString)) {
+                return true; // If any search word matches, return true
+            }
+        }
+
+        console.log('Image [' + this.imageID + '] does not match search string: ' + searchString);
+        console.log(this.searchWords);
+
+        return false;
     }
 
     GetID()
