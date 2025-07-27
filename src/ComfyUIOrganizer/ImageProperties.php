@@ -105,4 +105,9 @@ class ImageProperties
     {
         return $this->data->getBool(self::KEY_FAVORITE);
     }
+
+    public function setFolderName(string $folderName) : self
+    {
+        return $this->setKey(self::KEY_FOLDER_NAME, $folderName);
+    }
 }
