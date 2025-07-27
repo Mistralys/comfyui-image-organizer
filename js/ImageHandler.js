@@ -45,7 +45,7 @@ class ImageHandler
     {
         this.selected = !this.selected;
 
-        let label = '';
+        let label;
 
         if(this.selected) {
             this.GetDOMElement().classList.add('selected');
@@ -112,5 +112,20 @@ class ImageHandler
     RemoveFromDOM()
     {
         this.GetDOMElement().remove();
+    }
+
+    /**
+     * Handle the event when an image is moved.
+     * @param {Object} imageData
+     * @param {Object} imageData.properties
+     * @param {String} imageData.properties.folder
+     */
+    HandleMoved(imageData)
+    {
+        const folder = imageData.properties.folder;
+
+        console.log('Image [' + this.imageID + '] | Handle moved event to ['+folder+'].');
+
+        this.getDOMElement(this.wrapperID + ' .folder-name').innerHTML = folder;
     }
 }
