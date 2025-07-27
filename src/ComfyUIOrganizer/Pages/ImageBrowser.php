@@ -58,9 +58,7 @@ class ImageBrowser extends BasePage
 
     protected function _render(): void
     {
-        $this->objName = 'IB'.JSHelper::nextElementID();
-
-        $this->injectScripts();
+        $this->objName = $this->collection->injectJS($this->ui, $this->getURL());
 
         $this->upscaledOnly = $this->request->getBool(self::REQUEST_PARAM_UPSCALED);
         $this->favoritesOnly = $this->request->getBool(self::REQUEST_PARAM_FAVORITES);
@@ -108,6 +106,11 @@ class ImageBrowser extends BasePage
                     $this->getURL(array(self::REQUEST_PARAM_FAVORITES => ''))
                 );
             ?>
+
+            <div style="display: inline-block; position:relative;" id="image-search">
+                <input type="text" placeholder="<?php pt('Filter by search...') ?>" onkeyup="<?php echo $this->objName ?>.FilterImages(this.value);return false;" class="form-control" style="width: 300px; display: inline-block; margin-left: 8px;">
+                <span class="reset-filters" onclick="<?php echo $this->objName ?>.ResetFilter()" title="<?php pt('Reset the filter terms') ?>"><?php echo Icon::delete() ?></span>
+            </div>
         </div>
         <?php
 
@@ -117,24 +120,6 @@ class ImageBrowser extends BasePage
         }
 
         OutputBuffering::flush();
-    }
-
-    private function injectScripts() : void
-    {
-        $this->ui->addInternalJS('ImageBrowser.js');
-        $this->ui->addInternalJS('ImageHandler.js');
-        $this->ui->addInternalStylesheet('app.css');
-
-        $this->ui->addJSHead(sprintf(
-            "const %s = new ImageBrowser('%s', %s);",
-            $this->objName,
-            $this->getURL(),
-            JSONConverter::var2json(array(
-                'deleteImage' => DeleteImageMethod::METHOD_NAME,
-                'favoriteImage' => FavoriteImageMethod::METHOD_NAME,
-                'setUpscaledImage' => SetUpscaledImageMethod::METHOD_NAME,
-            ))
-        ));
     }
 
     private function renderImage(ImageInfo $image) : void
@@ -152,11 +137,7 @@ class ImageBrowser extends BasePage
             return;
         }
 
-        $this->ui->addJSHead(sprintf(
-            "%s.RegisterImage('%s');",
-            $this->objName,
-            $image->getID()
-        ));
+        $image->injectJS($this->ui, $this->objName);
 
         $props = $image->getProperties();
 
@@ -168,7 +149,7 @@ class ImageBrowser extends BasePage
         <div id="wrapper-<?php echo $image->getID() ?>"
              class="image-wrapper <?php echo implode(' ', $classes) ?>"
         >
-            <a href="<?php echo $image->getURL()  ?>" style="display: block">
+            <a href="<?php echo $image->getURL()  ?>" style="display: block" target="_blank">
                 <img src="<?php echo $image->getThumbnailURL() ?>" alt="<?php echo $image->getLabel() ?>" loading="lazy" class="image-thumbnail"/>
             </a>
             <div style="padding:8px;">
