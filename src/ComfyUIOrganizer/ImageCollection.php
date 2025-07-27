@@ -12,6 +12,7 @@ use AppUtils\JSHelper;
 use AppUtils\Request;
 use Mistralys\ComfyUIOrganizer\Ajax\Methods\DeleteImageMethod;
 use Mistralys\ComfyUIOrganizer\Ajax\Methods\FavoriteImageMethod;
+use Mistralys\ComfyUIOrganizer\Ajax\Methods\MoveImageMethod;
 use Mistralys\ComfyUIOrganizer\Ajax\Methods\SetUpscaledImageMethod;
 use Mistralys\X4\UI\UserInterface;
 
@@ -96,6 +97,7 @@ class ImageCollection extends BaseStringPrimaryCollection
                 'deleteImage' => DeleteImageMethod::METHOD_NAME,
                 'favoriteImage' => FavoriteImageMethod::METHOD_NAME,
                 'setUpscaledImage' => SetUpscaledImageMethod::METHOD_NAME,
+                'moveImage' => MoveImageMethod::METHOD_NAME,
             ))
         ));
 
