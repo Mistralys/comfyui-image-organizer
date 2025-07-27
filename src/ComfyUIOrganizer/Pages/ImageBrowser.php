@@ -188,57 +188,66 @@ class ImageBrowser extends BasePage
             </a>
             <div style="padding:8px;">
                 <div class="image-toolbar">
-                    <?php
-                    if($image->isUpscaled()) {
-                        ?>
-                        <span class="badge text-bg-success" style="float:right"><?php echo mb_strtoupper(t('Upscaled')) ?></span>
-                        <?php
-                    }
-                    ?>
-                    <button
-                       onclick="<?php echo $this->objName ?>.DeleteImage('<?php echo $image->getID() ?>');return false;"
-                       class="btn btn-danger btn-sm"
-                    >
-                        <?php echo Icon::delete() ?>
-                        <?php pt('Delete') ?>
-                    </button>
-                    &#160;
-                    <?php
-                    $this->renderToggleButton(
-                        $image,
-                        $image->isFavorite(),
-                        'favorite',
-                        'ToggleFavorite',
-                        Icon::typeSolid('heart').' '.t('Favorite'),
-                        Icon::typeRegular('heart').' '.t('Unfavorite'),
-                    );
-                    ?>
-                    <?php if(!$image->isUpscaled()) { ?>
-                        &#160;
-                        <button
-                           onclick="<?php echo $this->objName ?>.SetUpscaledID('<?php echo $image->getID() ?>');return false;"
-                           class="btn btn-secondary btn-sm"
-                        >
-                            <?php pt('Upscaled ID...'); ?>
-                        </button>
-                    <?php } ?>
-                    &#160;
-                    <button
-                       onclick="<?php echo $this->objName ?>.ToggleSelection('<?php echo $image->getID() ?>');return false;"
-                       class="btn btn-info btn-sm toggle-selection"
-                    >
-                        <i class="fas fa-toggle-off"></i> <?php pt('Select') ?>
-                    </button>
+                    <?php $this->renderImageToolbar($image) ?>
                 </div>
                 ID: <?php echo $image->getID() ?><br>
                 Size: <?php echo $image->getImageSize()['width'] ?> x <?php echo $image->getImageSize()['height'] ?><br>
                 Checkpoint: <?php echo $image->getCheckpoint() ?><br>
                 Test: <?php echo $props->getTestName() ?> #<?php echo $props->getTestNumber() ?><br>
                 Seed: <?php echo $props->getSeed() ?><br>
-                Folder: <?php echo $props->getFolderName() ?><br>
+                Folder: <span class="folder-name"><?php echo $props->getFolderName() ?></span>
+                    (<a href="#" onclick="<?php echo $this->objName ?>.MoveImage('<?php echo $image->getID() ?>');return false;">
+                        <?php pt('Move...'); ?>
+                    </a>)
+                    <br>
                 <a href="<?php echo $image->getViewDetailsURL() ?>" target="_blank"><?php pt('More...') ?></a>
             </div>
         </div>
+        <?php
+    }
+
+    private function renderImageToolbar(ImageInfo $image) : void
+    {
+        if($image->isUpscaled()) {
+            ?>
+            <span class="badge text-bg-success" style="float:right"><?php echo mb_strtoupper(t('Upscaled')) ?></span>
+            <?php
+        }
+        ?>
+        <button
+            onclick="<?php echo $this->objName ?>.DeleteImage('<?php echo $image->getID() ?>');return false;"
+            class="btn btn-danger btn-sm"
+        >
+            <?php echo Icon::delete() ?>
+            <?php pt('Delete') ?>
+        </button>
+        &#160;
+        <?php
+            $this->renderToggleButton(
+                $image,
+                $image->isFavorite(),
+                'favorite',
+                'ToggleFavorite',
+                Icon::typeSolid('heart').' '.t('Favorite'),
+                Icon::typeRegular('heart').' '.t('Unfavorite'),
+            );
+        ?>
+        <?php if(!$image->isUpscaled()) { ?>
+        &#160;
+        <button
+                onclick="<?php echo $this->objName ?>.SetUpscaledID('<?php echo $image->getID() ?>');return false;"
+                class="btn btn-secondary btn-sm"
+        >
+            <?php pt('Upscaled ID...'); ?>
+        </button>
+        <?php } ?>
+        &#160;
+        <button
+                onclick="<?php echo $this->objName ?>.ToggleSelection('<?php echo $image->getID() ?>');return false;"
+                class="btn btn-info btn-sm toggle-selection"
+        >
+            <i class="fas fa-toggle-off"></i> <?php pt('Select') ?>
+        </button>
         <?php
     }
 
