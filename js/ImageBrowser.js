@@ -14,15 +14,16 @@ class ImageBrowser
         this.images = {};
         this.pageURL = pageURL;
         this.ajaxMethodInfo = ajaxMethodInfo;
+        this.filterTimeout = null;
     }
 
     /**
      * @param {String} imageID
-     *
+     * @param {Array<String>} searchWords
      */
-    RegisterImage(imageID)
+    RegisterImage(imageID, searchWords)
     {
-        this.images[imageID] = new ImageHandler(imageID);
+        this.images[imageID] = new ImageHandler(imageID, searchWords);
     }
 
     /**
@@ -87,6 +88,45 @@ class ImageBrowser
     HandleSetUpscaledResponse(image, response)
     {
         image.RemoveFromDOM();
+    }
+
+    /**
+     * @param {String} filter
+     */
+    FilterImages(filter)
+    {
+        if(this.filterTimeout !== null) {
+            clearTimeout(this.filterTimeout);
+            this.filterTimeout = null;
+        }
+
+        const search = filter.toLowerCase().trim();
+
+        if(search.length < 2) {
+            for(const imageID in this.images) {
+                const image = this.images[imageID];
+                image.GetDOMElement().hidden = false;
+            }
+            return;
+        }
+
+        this.filterTimeout = setTimeout(this.doFilterImages.bind(this, search), 600);
+    }
+
+    doFilterImages(search)
+    {
+        console.log('Filtering images with search string: ' + search);
+
+        for(const imageID in this.images) {
+            const image = this.images[imageID];
+            image.GetDOMElement().hidden = !image.MatchesSearch(search);
+        }
+    }
+
+    ResetFilter()
+    {
+        document.querySelector('#image-search INPUT').value = '';
+        this.FilterImages('');
     }
 
     /**
