@@ -5,9 +5,15 @@ declare(strict_types=1);
 namespace Mistralys\ComfyUIOrganizer;
 
 use AppUtils\Collections\BaseStringPrimaryCollection;
+use AppUtils\ConvertHelper\JSONConverter;
 use AppUtils\FileHelper\JSONFile;
 use AppUtils\Interfaces\StringPrimaryRecordInterface;
+use AppUtils\JSHelper;
 use AppUtils\Request;
+use Mistralys\ComfyUIOrganizer\Ajax\Methods\DeleteImageMethod;
+use Mistralys\ComfyUIOrganizer\Ajax\Methods\FavoriteImageMethod;
+use Mistralys\ComfyUIOrganizer\Ajax\Methods\SetUpscaledImageMethod;
+use Mistralys\X4\UI\UserInterface;
 
 /**
  * @method ImageInfo[] getAll()
@@ -73,6 +79,28 @@ class ImageCollection extends BaseStringPrimaryCollection
      * @var array<string,ImageInfo> $deleted
      */
     private array $missing = array();
+
+    public function injectJS(UserInterface $ui, string $baseURL) : string
+    {
+        $objName = 'IB'.JSHelper::nextElementID();
+
+        $ui->addInternalJS('ImageBrowser.js');
+        $ui->addInternalJS('ImageHandler.js');
+        $ui->addInternalStylesheet('app.css');
+
+        $ui->addJSHead(sprintf(
+            "const %s = new ImageBrowser('%s', %s);",
+            $objName,
+            $baseURL,
+            JSONConverter::var2json(array(
+                'deleteImage' => DeleteImageMethod::METHOD_NAME,
+                'favoriteImage' => FavoriteImageMethod::METHOD_NAME,
+                'setUpscaledImage' => SetUpscaledImageMethod::METHOD_NAME,
+            ))
+        ));
+
+        return $objName;
+    }
 
     protected function registerItems(): void
     {
