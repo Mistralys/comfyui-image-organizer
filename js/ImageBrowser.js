@@ -15,6 +15,7 @@ class ImageBrowser
         this.pageURL = pageURL;
         this.ajaxMethodInfo = ajaxMethodInfo;
         this.filterTimeout = null;
+        this.imageSelection = {};
     }
 
     /**
@@ -23,8 +24,44 @@ class ImageBrowser
      */
     RegisterImage(imageID, searchWords)
     {
-        this.images[imageID] = new ImageHandler(imageID, searchWords);
+        this.images[imageID] = new ImageHandler(imageID, searchWords, this.onImageSelected.bind(this));
     }
+
+    /**
+     *
+     * @param {ImageHandler} image
+     * @param {boolean} selected
+     */
+    onImageSelected(image, selected)
+    {
+        if(!selected) {
+            delete this.imageSelection[image.GetID()];
+        } else {
+            this.imageSelection[image.GetID()] = image;
+        }
+
+        const number = Object.keys(this.imageSelection).length;
+        const elSelection = document.getElementById('footer-selection');
+        const elEmpty = document.getElementById('footer-empty-selection');
+        const elCount = document.querySelector('#footer-selection .selected-count');
+
+        if(number === 0) {
+            elEmpty.hidden = false;
+            elSelection.hidden = true;
+            return;
+        }
+
+        elEmpty.hidden = true;
+        elSelection.hidden = false;
+        elCount.innerText = number;
+    }
+
+    DeleteSelectedImages()
+    {
+
+    }
+
+
 
     /**
      * Creates a new favorite image handler.
@@ -123,6 +160,11 @@ class ImageBrowser
         }
     }
 
+    ToggleSelection(imageID)
+    {
+        this.GetImage(imageID).ToggleSelection();
+    }
+
     ResetFilter()
     {
         document.querySelector('#image-search INPUT').value = '';
@@ -215,5 +257,33 @@ class ImageBrowser
             .catch(error => {
                 console.error('Erreur :', error);
             });
+    }
+
+    FavoriteSelected()
+    {
+        for(const imageID in this.imageSelection) {
+            const image = this.imageSelection[imageID];
+            if(!image.IsFavorite()) {
+                this.ToggleFavorite(imageID);
+            }
+        }
+    }
+
+    UnfavoriteSelected()
+    {
+        for (const imageID in this.imageSelection) {
+            const image = this.imageSelection[imageID];
+            if (image.IsFavorite()) {
+                this.ToggleFavorite(imageID);
+            }
+        }
+    }
+
+    DeleteSelected()
+    {
+        for(const imageID in this.imageSelection) {
+            const image = this.imageSelection[imageID];
+            this.DeleteImage(imageID);
+        }
     }
 }

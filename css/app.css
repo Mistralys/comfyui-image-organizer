@@ -5,8 +5,17 @@
     border: solid 2px transparent;
 }
 
-.image-wrapper .image-thumbnail{
+.image-wrapper .image-link{
+    display: block;
     border: solid 1px #000;
+}
+
+.image-wrapper.selected .image-link{
+    border-color: #22ac00;
+}
+
+.image-wrapper .image-thumbnail{
+    display: block;
 }
 
 .image-wrapper .image-toolbar{
@@ -43,4 +52,8 @@ A.badge{
     color:#555;
     z-index:900;
     cursor:pointer;
+}
+
+FOOTER.fixed-bottom{
+    background: #20374c;
 }

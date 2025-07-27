@@ -6,11 +6,15 @@ class ImageHandler
      *
      * @param {String} imageID
      * @param {Array<String>} searchWords
+     * @param {Function} selectedCallback
      */
-    constructor(imageID, searchWords = [])
+    constructor(imageID, searchWords, selectedCallback)
     {
         this.imageID = imageID;
         this.searchWords = searchWords;
+        this.selected = false;
+        this.wrapperID = '#wrapper-' + this.imageID;
+        this.selectedCallback = selectedCallback;
     }
 
     /**
@@ -37,6 +41,25 @@ class ImageHandler
         return false;
     }
 
+    ToggleSelection()
+    {
+        this.selected = !this.selected;
+
+        let label = '';
+
+        if(this.selected) {
+            this.GetDOMElement().classList.add('selected');
+            label = '<i class="fas fa-toggle-on"></i> Unselect';
+        } else {
+            this.GetDOMElement().classList.remove('selected');
+            label = '<i class="fas fa-toggle-off"></i> Select';
+        }
+
+        this.getDOMElement(this.wrapperID+' .toggle-selection').innerHTML = label;
+
+        this.selectedCallback(this, this.selected);
+    }
+
     GetID()
     {
         return this.imageID;
@@ -44,12 +67,7 @@ class ImageHandler
 
     GetDOMElement()
     {
-        return this.getDOMElement('#wrapper-' + this.imageID);
-    }
-
-    GetToggleElement()
-    {
-        return this.getDOMElement('#wrapper-' + this.imageID + ' .toggle-favorite');
+        return this.getDOMElement(this.wrapperID);
     }
 
     getDOMElement(selector)
@@ -72,15 +90,17 @@ class ImageHandler
     {
         console.log('Image ['+this.imageID+'] | Set favorite: ' + favorite);
 
-        const el = this.GetDOMElement();
-        const toggleEl = this.GetToggleElement();
+        const elEnabled = this.getDOMElement(this.wrapperID + ' .toggle-favorite.toggle-enabled');
+        const elDisabled = this.getDOMElement(this.wrapperID + ' .toggle-favorite.toggle-disabled');
 
         if(favorite) {
-            el.classList.add('favorite');
-            toggleEl.text = 'Unfavorite';
+            this.GetDOMElement().classList.add('favorite');
+            elEnabled.hidden = false;
+            elDisabled.hidden = true;
         } else {
-            el.classList.remove('favorite');
-            toggleEl.text = 'Favorite';
+            this.GetDOMElement().classList.remove('favorite');
+            elEnabled.hidden = true;
+            elDisabled.hidden = false;
         }
     }
 

@@ -5,12 +5,7 @@ declare(strict_types=1);
 namespace Mistralys\ComfyUIOrganizer\Pages;
 
 use AppUtils\ConvertHelper;
-use AppUtils\ConvertHelper\JSONConverter;
-use AppUtils\JSHelper;
 use AppUtils\OutputBuffering;
-use Mistralys\ComfyUIOrganizer\Ajax\Methods\DeleteImageMethod;
-use Mistralys\ComfyUIOrganizer\Ajax\Methods\FavoriteImageMethod;
-use Mistralys\ComfyUIOrganizer\Ajax\Methods\SetUpscaledImageMethod;
 use Mistralys\ComfyUIOrganizer\ImageCollection;
 use Mistralys\ComfyUIOrganizer\ImageInfo;
 use Mistralys\ComfyUIOrganizer\OrganizerApp;
@@ -119,7 +114,41 @@ class ImageBrowser extends BasePage
             $this->renderImage($image);
         }
 
+        $this->ui
+            ->makeFooterFixed()
+            ->setFooterContent($this->renderFooter());
+
         OutputBuffering::flush();
+    }
+
+    private function renderFooter() : string
+    {
+        OutputBuffering::start();
+
+        ?>
+        <div id="footer-empty-selection" hidden="hidden">
+            <?php pt('No images selected.'); ?> &#160;
+        </div>
+        <div id="footer-selection" hidden="hidden">
+            <span class="selected-count"></span> <?php pt('images selected.') ?>
+            <button class="btn btn-danger btn-sm" onclick="<?php echo $this->objName ?>.DeleteSelected()">
+                <?php echo Icon::delete() ?>
+                <?php pt('Delete') ?>
+            </button>
+            &#160;
+            <button class="btn btn-primary btn-sm" onclick="<?php echo $this->objName ?>.FavoriteSelected()">
+                <i class="fas fa-heart"></i>
+                <span class="favorite-label"><?php pt('Favorite') ?></span>
+            </button>
+            &#160;
+            <button class="btn btn-secondary btn-sm" onclick="<?php echo $this->objName ?>.UnfavoriteSelected()">
+                <i class="far fa-heart"></i>
+                <span class="favorite-label"><?php pt('Unfavorite') ?></span>
+            </button>
+        </div>
+        <?php
+
+        return OutputBuffering::get();
     }
 
     private function renderImage(ImageInfo $image) : void
@@ -149,7 +178,7 @@ class ImageBrowser extends BasePage
         <div id="wrapper-<?php echo $image->getID() ?>"
              class="image-wrapper <?php echo implode(' ', $classes) ?>"
         >
-            <a href="<?php echo $image->getURL()  ?>" style="display: block" target="_blank">
+            <a href="<?php echo $image->getURL()  ?>" class="image-link" target="_blank">
                 <img src="<?php echo $image->getThumbnailURL() ?>" alt="<?php echo $image->getLabel() ?>" loading="lazy" class="image-thumbnail"/>
             </a>
             <div style="padding:8px;">
@@ -161,35 +190,40 @@ class ImageBrowser extends BasePage
                         <?php
                     }
                     ?>
-                    <a href="#"
+                    <button
                        onclick="<?php echo $this->objName ?>.DeleteImage('<?php echo $image->getID() ?>');return false;"
-                       class="badge text-bg-danger"
+                       class="btn btn-danger btn-sm"
                     >
                         <?php echo Icon::delete() ?>
                         <?php pt('Delete') ?>
-                    </a>
+                    </button>
                     &#160;
-                    <a href="#"
-                       class="toggle-favorite badge text-bg-primary"
-                       onclick="<?php echo $this->objName ?>.ToggleFavorite('<?php echo $image->getID() ?>');return false;"
-                    >
-                        <?php
-                        if($image->isFavorite()) {
-                            pt('Unfavorite');
-                        } else {
-                            pt('Favorite');
-                        }
-                        ?>
-                    </a>
+                    <?php
+                    $this->renderToggleButton(
+                        $image,
+                        $image->isFavorite(),
+                        'favorite',
+                        'ToggleFavorite',
+                        Icon::typeSolid('heart').' '.t('Favorite'),
+                        Icon::typeRegular('heart').' '.t('Unfavorite'),
+                    );
+                    ?>
                     <?php if(!$image->isUpscaled()) { ?>
                         &#160;
-                        <a href="#"
+                        <button
                            onclick="<?php echo $this->objName ?>.SetUpscaledID('<?php echo $image->getID() ?>');return false;"
-                           class="badge text-bg-secondary"
+                           class="btn btn-secondary btn-sm"
                         >
                             <?php pt('Upscaled ID...'); ?>
-                        </a>
+                        </button>
                     <?php } ?>
+                    &#160;
+                    <button
+                       onclick="<?php echo $this->objName ?>.ToggleSelection('<?php echo $image->getID() ?>');return false;"
+                       class="btn btn-info btn-sm toggle-selection"
+                    >
+                        <i class="fas fa-toggle-off"></i> <?php pt('Select') ?>
+                    </button>
                 </div>
                 ID: <?php echo $image->getID() ?><br>
                 Size: <?php echo $image->getImageSize()['width'] ?> x <?php echo $image->getImageSize()['height'] ?><br>
@@ -203,17 +237,46 @@ class ImageBrowser extends BasePage
         <?php
     }
 
+    private function renderToggleButton(
+            ImageInfo $image,
+            bool $enabled,
+            string $id,
+            string $function,
+            string $labelEnable,
+            string $labelDisable
+    ) : void
+    {
+        $statement = $this->objName.'.'.$function."('".$image->getID()."');return false";
+
+        ?>
+        <button
+            class="toggle-<?php echo $id ?> btn btn-secondary btn-sm toggle-enabled"
+            onclick="<?php echo $statement ?>"
+            <?php if(!$enabled) { ?>hidden="hidden"<?php } ?>
+        >
+            <span><?php echo $labelDisable ?></span>
+        </button>
+        <button
+            class="toggle-<?php echo $id ?> btn btn-primary btn-sm toggle-disabled"
+            onclick="<?php echo $statement ?>"
+            <?php if($enabled) { ?>hidden="hidden"<?php } ?>
+        >
+            <span><?php echo $labelEnable ?></span>
+        </button>
+        <?php
+    }
+
     private function renderFilterToggle(string $label, bool $enabled, string $urlEnable, string $urlDisable): void
     {
         ?>
         <div class="btn-group" role="group">
             <button type="button" class="btn btn-secondary label"><?php echo $label ?></button>
             <?php if($enabled) { ?>
-                <a href="#" onclick="return false" class="btn btn-primary">ON</a>
-                <a href="<?php echo $urlDisable ?>" class="btn btn-secondary">OFF</a>
+                <a href="#" onclick="return false" class="btn btn-primary"><?php pt('ON' ) ?></a>
+                <a href="<?php echo $urlDisable ?>" class="btn btn-secondary"><?php pt('OFF' ) ?></a>
             <?php } else { ?>
-                <a href="<?php echo $urlEnable ?>" class="btn btn-secondary">ON</a>
-                <a href="#" onclick="return false" class="btn btn-primary">OFF</a>
+                <a href="<?php echo $urlEnable ?>" class="btn btn-secondary"><?php pt('ON' ) ?></a>
+                <button onclick="return false" class="btn btn-primary"><?php pt('OFF' ) ?></button>
             <?php } ?>
         </div>
         <?php
