@@ -286,4 +286,14 @@ class ImageBrowser
             this.DeleteImage(imageID);
         }
     }
+
+    DeselectAll()
+    {
+        for(const imageID in this.imageSelection) {
+            const image = this.imageSelection[imageID];
+            if(image.IsSelected()) {
+                image.ToggleSelection();
+            }
+        }
+    }
 }
