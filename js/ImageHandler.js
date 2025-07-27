@@ -86,6 +86,11 @@ class ImageHandler
         return this.GetDOMElement().classList.contains('favorite');
     }
 
+    IsSelected()
+    {
+        return this.selected;
+    }
+
     SetFavorite(favorite)
     {
         console.log('Image ['+this.imageID+'] | Set favorite: ' + favorite);
