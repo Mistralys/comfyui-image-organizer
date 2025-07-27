@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mistralys\ComfyUIOrganizer;
 
 use AppUtils\ArrayDataCollection;
+use AppUtils\ConvertHelper\JSONConverter;
 use AppUtils\FileHelper\FileInfo;
 use AppUtils\FileHelper\JSONFile;
 use AppUtils\ImageHelper;
@@ -14,6 +15,7 @@ use AppUtils\Request;
 use Closure;
 use Mistralys\ComfyUIOrganizer\Pages\ImageDetails;
 use Mistralys\X4\UI\Page\BasePage;
+use Mistralys\X4\UI\UserInterface;
 use const Mistralys\ComfyUIOrganizer\Config\APP_WEBROOT_URL;
 
 class ImageInfo implements StringPrimaryRecordInterface
@@ -83,6 +85,35 @@ class ImageInfo implements StringPrimaryRecordInterface
                 BasePage::REQUEST_PARAM_PAGE => ImageDetails::URL_NAME,
                 ImageCollection::REQUEST_PARAM_IMAGE_ID => $this->getID()
             ));
+    }
+
+    public function injectJS(UserInterface $ui,  string $objName) : void
+    {
+        $ui->addJSHead(sprintf(
+            "%s.RegisterImage('%s', %s);",
+            $objName,
+            $this->getID(),
+            JSONConverter::var2json($this->getSearchWords())
+        ));
+    }
+
+    /**
+     * Returns a list of words that can be used to search for this image.
+     * The words are all lowercased.
+     * @return string[]
+     */
+    public function getSearchWords() : array
+    {
+        $words = array(
+            $this->getID(),
+            $this->imageFile->getName(),
+            $this->prop()->getSeed(),
+            $this->imageFile->getFolder()->getName(),
+            $this->checkpoint,
+            $this->prop()->getTestName()
+        );
+
+        return array_map('mb_strtolower', $words);
     }
 
     private function onPropertiesModified() : void
