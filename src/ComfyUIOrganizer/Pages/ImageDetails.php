@@ -16,6 +16,11 @@ class ImageDetails extends BasePage
     public const string URL_NAME = 'image-details';
     private ?ImageInfo $image;
 
+    public function getID(): string
+    {
+        return self::URL_NAME;
+    }
+
     public function getTitle(): string
     {
         return t('Image details');
@@ -52,9 +57,14 @@ class ImageDetails extends BasePage
         OutputBuffering::start();
 
         ?>
-        <p>
-            <img src="<?php echo $this->image->getURL() ?>" style="width: 100%">
-        </p>
+        <div id="wrapper-<?php echo $this->image->getID() ?>">
+            <p>
+                <img src="<?php echo $this->image->getURL() ?>" style="width: 100%">
+            </p>
+            <p>
+
+            </p>
+        </div>
         <?php
 
         $grid = $this->ui->createDataGrid();
