@@ -6,16 +6,16 @@ namespace Mistralys\ComfyUIOrganizer\Pages;
 
 use AppUtils\ConvertHelper;
 use AppUtils\OutputBuffering;
+use Mistralys\ComfyUIOrganizer\BaseOrganizerPage;
 use Mistralys\ComfyUIOrganizer\ImageCollection;
 use Mistralys\ComfyUIOrganizer\ImageInfo;
 use Mistralys\ComfyUIOrganizer\OrganizerApp;
 use Mistralys\X4\UI\Icon;
-use Mistralys\X4\UI\Page\BasePage;
 use function AppLocalize\pt;
 use function AppLocalize\pts;
 use function AppLocalize\t;
 
-class ImageBrowser extends BasePage
+class ImageBrowser extends BaseOrganizerPage
 {
     public const string URL_NAME = 'image-browser';
     public const string REQUEST_PARAM_UPSCALED = 'upscaled';
@@ -23,6 +23,11 @@ class ImageBrowser extends BasePage
     public const string REQUEST_PARAM_FOLDER_NAME = 'folderName';
 
     private ImageCollection $collection;
+
+    public function getID(): string
+    {
+        return self::URL_NAME;
+    }
 
     public function getTitle(): string
     {
@@ -369,11 +374,6 @@ class ImageBrowser extends BasePage
             <?php } ?>
         </div>
         <?php
-    }
-
-    public function getNavItems(): array
-    {
-        return array();
     }
 
     protected function getURLParams(): array
