@@ -5,9 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d06d220e-a3f0-4d6c-85ff-2fcc28e8e726" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ComfyUIOrganizer/ImageIndexer.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/ComfyUIOrganizer/ImageIndexer.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/index.php" beforeDir="false" afterPath="$PROJECT_DIR$/index.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/js/ImageBrowser.js" beforeDir="false" afterPath="$PROJECT_DIR$/js/ImageBrowser.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ComfyUIOrganizer/Ajax/Methods/MoveImageMethod.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/ComfyUIOrganizer/Ajax/Methods/MoveImageMethod.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ComfyUIOrganizer/ImageCollection.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/ComfyUIOrganizer/ImageCollection.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ComfyUIOrganizer/ImageInfo.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/ComfyUIOrganizer/ImageInfo.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ComfyUIOrganizer/OrganizerException.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/ComfyUIOrganizer/OrganizerException.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ComfyUIOrganizer/Pages/ImageBrowser.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/ComfyUIOrganizer/Pages/ImageBrowser.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ComfyUIOrganizer/Pages/ImageDetails.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/ComfyUIOrganizer/Pages/ImageDetails.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -44,10 +50,10 @@
       <path value="$PROJECT_DIR$/vendor/thomaspark/bootswatch" />
     </include_path>
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "customColor": "",
-  "associatedIndex": 4
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 4
+}</component>
   <component name="ProjectId" id="30PTG4Pte7JlBFyP0WEzm9qSpxk" />
   <component name="ProjectLevelVcsManager">
     <ConfirmationsSetting value="1" id="Add" />
@@ -56,23 +62,25 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "git-widget-placeholder": "main",
-    "last_opened_file_path": "F:/Webserver/www/htdocs/personal/comfyui-image-organizer/data",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;F:/Webserver/www/htdocs/personal/comfyui-image-organizer/data&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;php.override.implement.member.chooser.php.doc&quot;: &quot;NONE&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="F:\Webserver\www\htdocs\personal\comfyui-image-organizer\data" />
@@ -82,12 +90,6 @@
       <recent name="F:\Webserver\www\htdocs\personal\comfyui-image-organizer\data\backup" />
     </key>
   </component>
-  <component name="RunManager">
-    <configuration default="true" type="ComposerRunConfigurationType" factoryName="Composer Script">
-      <option name="pathToComposerJson" value="$PROJECT_DIR$/composer.json" />
-      <method v="2" />
-    </configuration>
-  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -96,6 +98,9 @@
       </set>
     </attachedChunks>
   </component>
+  <component name="StructureViewState">
+    <option name="selectedTab" value="PHP" />
+  </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="d06d220e-a3f0-4d6c-85ff-2fcc28e8e726" name="Changes" comment="" />
@@ -103,7 +108,9 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1753528108319</updated>
-      <workItem from="1753528109581" duration="17156000" />
+      <workItem from="1753528109581" duration="22828000" />
+      <workItem from="1753597745281" duration="29006000" />
+      <workItem from="1753647474243" duration="7860000" />
     </task>
     <servers />
   </component>
