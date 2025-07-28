@@ -152,4 +152,20 @@ class ImageCollection extends BaseStringPrimaryCollection
 
         return null;
     }
+
+    public function getFolderNames() : array
+    {
+        $result = array();
+
+        foreach($this->getAll() as $image) {
+            $folderName = $image->prop()->getFolderName();
+            if (!empty($folderName) && !in_array($folderName, $result)) {
+                $result[] = $folderName;
+            }
+        }
+
+        usort($result, 'strnatcasecmp');
+
+        return $result;
+    }
 }
