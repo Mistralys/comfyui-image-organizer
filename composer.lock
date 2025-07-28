@@ -337,16 +337,16 @@
         },
         {
             "name": "mistralys/application-utils-core",
-            "version": "2.3.13",
+            "version": "2.3.14",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Mistralys/application-utils-core.git",
-                "reference": "199fa40bc934fe8df5e2a614c56bd97a6496453f"
+                "reference": "01ed0859e646d5e6fb13641e8f0ccfc238cbbaad"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Mistralys/application-utils-core/zipball/199fa40bc934fe8df5e2a614c56bd97a6496453f",
-                "reference": "199fa40bc934fe8df5e2a614c56bd97a6496453f",
+                "url": "https://api.github.com/repos/Mistralys/application-utils-core/zipball/01ed0859e646d5e6fb13641e8f0ccfc238cbbaad",
+                "reference": "01ed0859e646d5e6fb13641e8f0ccfc238cbbaad",
                 "shasum": ""
             },
             "require": {
@@ -393,9 +393,9 @@
             "description": "Drop-in utilities for PHP applications.",
             "support": {
                 "issues": "https://github.com/Mistralys/application-utils-core/issues",
-                "source": "https://github.com/Mistralys/application-utils-core/tree/2.3.13"
+                "source": "https://github.com/Mistralys/application-utils-core/tree/2.3.14"
             },
-            "time": "2025-06-19T07:15:06+00:00"
+            "time": "2025-07-27T14:53:35+00:00"
         },
         {
             "name": "mistralys/application-utils-image",
