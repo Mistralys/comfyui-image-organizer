@@ -148,16 +148,49 @@ class ImageInfo implements StringPrimaryRecordInterface
         // Update the folder name in the properties.
         $this->prop()->setFolderName($folderName);
 
-        $this->save();
-
-        // Do this last, so that the image is not deleted if the save fails.
-        $this->imageFile->delete();
-        $this->sidecarFile->delete();
+        $oldImage = $this->imageFile;
+        $oldSidecar = $this->sidecarFile;
 
         $this->imageFile = $newImageFile;
         $this->sidecarFile = $newSidecarFile;
 
+        $this->save();
+
+        // Do this last, so that the image is not deleted if the save fails.
+        $oldImage->delete();
+        $oldSidecar->delete();
+
+        // Also move all the low-resolution versions of this image.
+        foreach($this->findLowResVersions() as $lowResImage) {
+            $lowResImage->moveToFolder($folderName);
+        }
+
+        // If this image has an upscaled version, move it as well.
+        $this->prop()->getUpscaledImage()?->moveToFolder($folderName);
+
         return $this;
+    }
+
+    /**
+     * Returns a list of low-resolution versions of this image.
+     * @return ImageInfo[]
+     */
+    public function findLowResVersions() : array
+    {
+        if(!$this->isUpscaled()) {
+            return array();
+        }
+
+        $id = $this->getID();
+        $result = array();
+        foreach(OrganizerApp::create()->createImageCollection()->getAll() as $image) {
+            $upscaled = $image->prop()->getUpscaledImage();
+            if($upscaled !== null && $upscaled->getID() === $id) {
+                $result[] = $image;
+            }
+        }
+
+        return $result;
     }
 
     private function onPropertiesModified() : void
