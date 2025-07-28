@@ -305,18 +305,21 @@ class ImageBrowser
     {
         const image = this.RequireImage(imageID);
 
-        const newFolder = prompt('Enter the new folder name:');
+        const newFolder = this.RequestFolder();
 
-        if(newFolder === null || newFolder.trim() === '') {
-            return;
+        if(newFolder !== null) {
+            this.doMove(image, newFolder);
         }
+    }
 
+    doMove(image, folderName)
+    {
         this.SendRequest(
             image,
             this.ajaxMethodInfo.moveImage,
             this.HandleMoveResponse.bind(this),
             {
-                'folderName': newFolder.trim()
+                'folderName': folderName
             }
         );
     }
@@ -328,5 +331,34 @@ class ImageBrowser
     HandleMoveResponse(image, response)
     {
         image.HandleMoved(response);
+    }
+
+    /**
+     * @returns {String|null}
+     */
+    RequestFolder()
+    {
+        const newFolder = prompt('Enter the new folder name:');
+
+        if(newFolder === null || newFolder.trim() === '') {
+            return null;
+        }
+
+        return newFolder.trim();
+    }
+
+    MoveSelected()
+    {
+        const newFolder = this.RequestFolder();
+        if(newFolder === null) {
+            return;
+        }
+
+        for(const imageID in this.imageSelection) {
+            const image = this.imageSelection[imageID];
+            this.doMove(image, newFolder);
+        }
+
+        alert('All images moved.');
     }
 }
