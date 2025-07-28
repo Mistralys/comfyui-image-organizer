@@ -10,6 +10,7 @@ use AppUtils\FileHelper\JSONFile;
 use AppUtils\FileHelper\PathInfoInterface;
 use Mistralys\ComfyUIOrganizer\Pages\ImageBrowser;
 use Mistralys\ComfyUIOrganizer\Pages\ImageDetails;
+use Mistralys\ComfyUIOrganizer\Pages\IndexManagerPage;
 use Mistralys\X4\UI\Ajax\AjaxMethodInterface;
 use Mistralys\X4\UI\Ajax\AjaxMethods;
 use Mistralys\X4\UI\UserInterface;
@@ -23,6 +24,7 @@ class OrganizerApp extends X4Application
     private FolderInfo $imageFolder;
     private FolderInfo $storageFolder;
     private FolderInfo $cacheFolder;
+    private UserInterface $ui;
 
     public function __construct(SplFileInfo|string|PathInfoInterface $imageFolder)
     {
@@ -86,6 +88,7 @@ class OrganizerApp extends X4Application
     {
         $ui->registerPage(ImageBrowser::URL_NAME, ImageBrowser::class);
         $ui->registerPage(ImageDetails::URL_NAME, ImageDetails::class);
+        $ui->registerPage(IndexManagerPage::URL_NAME, IndexManagerPage::class);
     }
 
     public function registerAjaxMethods(AjaxMethods $methods): void
@@ -109,5 +112,15 @@ class OrganizerApp extends X4Application
     public function getVersion(): string
     {
         return '1.0.0';
+    }
+
+    public function url() : URLs
+    {
+        return new URLs($this->ui);
+    }
+
+    public function setUI(UserInterface $ui) : void
+    {
+        $this->ui = $ui;
     }
 }

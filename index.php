@@ -9,10 +9,14 @@ require_once __DIR__.'/prepend.php';
 use Mistralys\X4\UI\UserInterface;
 use const Mistralys\ComfyUIOrganizer\Config\APP_WEBROOT_URL;
 
+$app = OrganizerApp::create();
+
 $ui = new UserInterface(
-    OrganizerApp::create(),
+    $app,
     APP_WEBROOT_URL,
     APP_WEBROOT_URL.'/vendor'
 );
+
+$app->setUI($ui);
 
 $ui->display();
