@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace Mistralys\ComfyUIOrganizer;
 
 use AppUtils\ClassHelper;
-use AppUtils\ClassHelper\Repository\ClassRepository;
 use Mistralys\X4\UI\Console;
-use const Mistralys\ComfyUIOrganizer\Config\APP_IMAGE_FOLDER;
 
 class Builder
 {
