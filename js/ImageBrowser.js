@@ -17,6 +17,8 @@ class ImageBrowser
         this.ajaxMethodInfo = ajaxMethodInfo;
         this.filterTimeout = null;
         this.imageSelection = {};
+        this.moveStack = [];
+        this.moveTarget = '';
     }
 
     /**
@@ -25,7 +27,7 @@ class ImageBrowser
      */
     RegisterImage(imageID, searchWords)
     {
-        this.images[imageID] = new ImageHandler(imageID, searchWords, this.onImageSelected.bind(this));
+        this.images[imageID] = new ImageHandler(imageID, searchWords, this.HandleImageSelected.bind(this));
     }
 
     /**
@@ -33,7 +35,7 @@ class ImageBrowser
      * @param {ImageHandler} image
      * @param {boolean} selected
      */
-    onImageSelected(image, selected)
+    HandleImageSelected(image, selected)
     {
         if(!selected) {
             delete this.imageSelection[image.GetID()];
@@ -314,6 +316,8 @@ class ImageBrowser
 
     doMove(image, folderName)
     {
+        console.log('Move images | Folder [' + folderName + '] | Moving image [' + image.GetID() + ']...');
+
         this.SendRequest(
             image,
             this.ajaxMethodInfo.moveImage,
@@ -331,6 +335,21 @@ class ImageBrowser
     HandleMoveResponse(image, response)
     {
         image.HandleMoved(response);
+
+        // Handle moving multiple images
+        if(this.moveStack.length > 0) {
+            this.moveNext();
+        } else if(this.moveTarget !== '') {
+            alert('All selected images have been moved to folder [' + this.moveTarget+'].');
+            this.moveTarget = '';
+        }
+    }
+
+    moveNext()
+    {
+        console.log('Move images | Folder ['+this.moveTarget+'] | ['+this.moveStack.length+'] images to move.');
+
+        this.doMove(this.GetImage(this.moveStack.shift()), this.moveTarget);
     }
 
     /**
@@ -349,16 +368,21 @@ class ImageBrowser
 
     MoveSelected()
     {
+        if(this.imageSelection.length === 0) {
+            alert('No images selected for moving.');
+            return;
+        }
+
         const newFolder = this.RequestFolder();
         if(newFolder === null) {
             return;
         }
 
-        for(const imageID in this.imageSelection) {
-            const image = this.imageSelection[imageID];
-            this.doMove(image, newFolder);
-        }
+        // Populate the move stack with the selected images
+        this.moveStack = Object.keys(this.imageSelection);
+        this.moveTarget = newFolder;
 
-        alert('All images moved.');
+        // Start the moving process
+        this.moveNext();
     }
 }
