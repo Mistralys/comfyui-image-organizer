@@ -120,12 +120,22 @@ class ImageInfo implements StringPrimaryRecordInterface
 
     private function resolveTargetFile(FolderInfo $targetFolder, FileInfo $sourceFile) : FileInfo
     {
-        $targetImage = FileInfo::factory($targetFolder.'/'.$sourceFile->getName());
-        if(!$targetImage->exists()) {
-            return $targetImage;
+        $targetFile = FileInfo::factory($targetFolder.'/'.$sourceFile->getName());
+
+        if(!$targetFile->exists()) {
+            return $targetFile;
         }
 
-        return FileInfo::factory($targetFolder.'/'.$sourceFile->getBaseName().'-'.crc32($this->getID()).'.'.$sourceFile->getExtension());
+        throw new OrganizerException(
+            'File already exists in the target folder.',
+            sprintf(
+                'Attempted to move image [%s] to folder [%s], but the file already exists at [%s].',
+                $sourceFile->getPath(),
+                $targetFolder->getPath(),
+                $targetFile->getPath()
+            ),
+            OrganizerException::ERROR_CANNOT_MOVE_FILE_EXISTS
+        );
     }
 
     /**
@@ -137,12 +147,16 @@ class ImageInfo implements StringPrimaryRecordInterface
      */
     public function moveToFolder(string $folderName) : self
     {
+        if($folderName === $this->prop()->getFolderName()) {
+            return $this;
+        }
+
         $targetFolder = FolderInfo::factory($this->getImageFile()->getFolder()->getParentFolder().'/'.$folderName);
 
         $newImageFile = $this->resolveTargetFile($targetFolder, $this->imageFile);
-        $this->imageFile->copyTo($newImageFile);
-
         $newSidecarFile = ClassHelper::requireObjectInstanceOf(JSONFile::class, $this->resolveTargetFile($targetFolder, $this->sidecarFile));
+
+        $this->imageFile->copyTo($newImageFile);
         $this->sidecarFile->copyTo($newSidecarFile);
 
         // Update the folder name in the properties.
@@ -160,13 +174,12 @@ class ImageInfo implements StringPrimaryRecordInterface
         $oldImage->delete();
         $oldSidecar->delete();
 
-        // Also move all the low-resolution versions of this image.
+        // Also move all the low-resolution versions of this image
+        // in case this is an upscaled image. We do this because
+        // the low-resolution versions are not shown in the UI.
         foreach($this->findLowResVersions() as $lowResImage) {
             $lowResImage->moveToFolder($folderName);
         }
-
-        // If this image has an upscaled version, move it as well.
-        $this->prop()->getUpscaledImage()?->moveToFolder($folderName);
 
         return $this;
     }
