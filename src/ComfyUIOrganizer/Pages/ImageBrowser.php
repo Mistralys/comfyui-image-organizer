@@ -20,6 +20,8 @@ class ImageBrowser extends BasePage
     public const string URL_NAME = 'image-browser';
     public const string REQUEST_PARAM_UPSCALED = 'upscaled';
     public const string REQUEST_PARAM_FAVORITES = 'favorites';
+    public const string REQUEST_PARAM_FOLDER_NAME = 'folderName';
+
     private ImageCollection $collection;
 
     public function getTitle(): string
@@ -50,6 +52,12 @@ class ImageBrowser extends BasePage
     private string $objName;
     private bool $upscaledOnly = false;
     private bool $favoritesOnly = false;
+    private string $activeFolder = '';
+
+    /**
+     * @var string[]
+     */
+    private array $folders = array();
 
     protected function _render(): void
     {
@@ -57,6 +65,9 @@ class ImageBrowser extends BasePage
 
         $this->upscaledOnly = $this->request->getBool(self::REQUEST_PARAM_UPSCALED);
         $this->favoritesOnly = $this->request->getBool(self::REQUEST_PARAM_FAVORITES);
+
+        $this->folders = $this->collection->getFolderNames();
+        $this->activeFolder = $this->request->registerParam(self::REQUEST_PARAM_FOLDER_NAME)->setEnum($this->folders)->getString();
 
         OutputBuffering::start();
 
@@ -100,6 +111,8 @@ class ImageBrowser extends BasePage
                     $this->getURL(array(self::REQUEST_PARAM_FAVORITES => 'yes')),
                     $this->getURL(array(self::REQUEST_PARAM_FAVORITES => ''))
                 );
+
+                $this->renderFolderFilter();
             ?>
 
             <div style="display: inline-block; position:relative;" id="image-search">
@@ -109,16 +122,86 @@ class ImageBrowser extends BasePage
         </div>
         <?php
 
-        foreach($this->collection->getAll() as $image)
+        $images = $this->resolveFilteredImages();
+
+        ?>
+        <p><?php pt('Found %1$s images.', count($images)); ?></p>
+        <?php
+
+        foreach($images as $image)
         {
             $this->renderImage($image);
         }
+
+        ?>
+        <p style="padding-bottom: 6rem">&#160;</p>
+        <?php
 
         $this->ui
             ->makeFooterFixed()
             ->setFooterContent($this->renderFooter());
 
         OutputBuffering::flush();
+    }
+
+    private function resolveFilteredImages() : array
+    {
+        $result = array();
+
+        foreach($this->collection->getAll() as $image) {
+            if($this->isImageMatch($image)) {
+                $result[] = $image;
+            }
+        }
+
+        return $result;
+    }
+
+    private function isImageMatch(ImageInfo $image) : bool
+    {
+        if($this->upscaledOnly && !$image->isUpscaled()) {
+            return false;
+        }
+
+        if($this->favoritesOnly && !$image->isFavorite()) {
+            return false;
+        }
+
+        if($this->activeFolder !== '' && $image->getProperties()->getFolderName() !== $this->activeFolder) {
+            return false;
+        }
+
+        // Skip images that have an upscaled version, we only want to display the upscaled images.
+        if($image->prop()->getUpscaledImage() !== null) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private function renderFolderFilter() : void
+    {
+        $baseURL = $this->getURL(array(self::REQUEST_PARAM_FOLDER_NAME => '__FOLDERNAME__'));
+
+        ?>
+        <select onchange="document.location.href='<?php echo $baseURL ?>'.replace('__FOLDERNAME__', this.value);" class="form-select" style="display:inline-block; width: 200px">
+            <option><?php pt('Select a folder...') ?></option>
+            <?php
+
+            foreach($this->folders as $folderName) {
+                $active = '';
+                if($folderName === $this->activeFolder) {
+                    $active = ' selected="selected"';
+                }
+                ?>
+                <option value="<?php echo $folderName ?>" <?php echo $active ?>>
+                    <?php echo $folderName ?>
+                </option>
+                <?php
+            }
+            ?>
+        </select>
+        <?php
     }
 
     private function renderFooter() : string
@@ -163,19 +246,6 @@ class ImageBrowser extends BasePage
 
     private function renderImage(ImageInfo $image) : void
     {
-        if($this->upscaledOnly && !$image->isUpscaled()) {
-            return;
-        }
-
-        if($this->favoritesOnly && !$image->isFavorite()) {
-            return;
-        }
-
-        // Skip images that have an upscaled version, we only want to display the upscaled images.
-        if($image->prop()->getUpscaledImage() !== null) {
-            return;
-        }
-
         $image->injectJS($this->ui, $this->objName);
 
         $props = $image->getProperties();
@@ -311,6 +381,7 @@ class ImageBrowser extends BasePage
         return array(
             self::REQUEST_PARAM_UPSCALED => ConvertHelper::bool2string($this->request->getBool(self::REQUEST_PARAM_UPSCALED), true),
             self::REQUEST_PARAM_FAVORITES => ConvertHelper::bool2string($this->request->getBool(self::REQUEST_PARAM_FAVORITES), true),
+            self::REQUEST_PARAM_FOLDER_NAME => $this->activeFolder
         );
     }
 }
