@@ -138,17 +138,22 @@ class ImageBrowser extends BasePage
             &#160;
             <button class="btn btn-primary btn-sm" onclick="<?php echo $this->objName ?>.FavoriteSelected()">
                 <i class="fas fa-heart"></i>
-                <span class="favorite-label"><?php pt('Favorite') ?></span>
+                <?php pt('Favorite') ?>
             </button>
             &#160;
             <button class="btn btn-secondary btn-sm" onclick="<?php echo $this->objName ?>.UnfavoriteSelected()">
                 <i class="far fa-heart"></i>
-                <span class="favorite-label"><?php pt('Unfavorite') ?></span>
+                <?php pt('Unfavorite') ?>
+            </button>
+            &#160;
+            <button class="btn btn-secondary btn-sm" onclick="<?php echo $this->objName ?>.MoveSelected()">
+                <i class="fas fa-file-export"></i>
+                <?php pt('Move folder...') ?>
             </button>
             &#160;
             <button class="btn btn-info btn-sm" onclick="<?php echo $this->objName ?>.DeselectAll()">
                 <i class="fas fa-toggle-on"></i>
-                <span class="favorite-label"><?php pt('Deselect all') ?></span>
+                <?php pt('Deselect all') ?>
             </button>
         </div>
         <?php
