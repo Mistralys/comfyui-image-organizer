@@ -1,8 +1,17 @@
+:root{
+    --element-spacing-m: 0.3rem;
+    --element-spacing-l: 0.6rem;
+}
+
 .image-wrapper{
     display: inline-block;
     margin: 8px;
     background: #20374c;
     border: solid 2px transparent;
+}
+
+.image-wrapper .image-badges{
+    margin-bottom: var(--element-spacing-m);
 }
 
 .image-wrapper .image-link{
@@ -19,7 +28,7 @@
 }
 
 .image-wrapper .image-toolbar{
-    margin-bottom: 10px;
+    margin-bottom: var(--element-spacing-m);
 }
 
 .image-wrapper.upscaled{
@@ -34,7 +43,7 @@ A.badge{
 }
 
 .filter-toolbar{
-    margin-bottom: 30px;
+    margin-bottom: var(--element-spacing-l);
 }
 
 .filter-toolbar .btn-group{
@@ -56,4 +65,68 @@ A.badge{
 
 FOOTER.fixed-bottom{
     background: #20374c;
+}
+
+.image-wrapper .image-details{
+    padding: 0.4rem;
+}
+
+.image-wrapper.size-s{
+    font-size: 50%;
+}
+
+.image-wrapper.size-s .image-details{
+    padding: 0.2rem;
+}
+
+.image-wrapper.size-s .btn{
+    --bs-btn-padding-y: .15rem;
+    --bs-btn-padding-x: .3rem;
+    --bs-btn-font-size: .45rem;
+}
+
+.image-wrapper.size-s .image-thumbnail{
+    width: 200px;
+}
+
+.image-wrapper.size-m{
+    font-size: 80%;
+}
+
+.image-wrapper.size-m .image-details{
+    padding: 0.3rem;
+}
+
+.image-wrapper.size-m .btn{
+    --bs-btn-padding-y: .25rem;
+    --bs-btn-padding-x: .45rem;
+    --bs-btn-font-size: .65rem;
+}
+
+.image-wrapper.size-m .image-thumbnail{
+    width: 300px;
+}
+
+.image-wrapper.size-l .image-thumbnail{
+    width: 400px;
+}
+
+.image-wrapper.size-xl .image-thumbnail{
+    width: 540px;
+}
+
+#size-selector{
+    margin-bottom: var(--element-spacing-m);
+}
+
+#status-bar{
+    background: #0f5383;
+    border: solid 1px #389fe4;
+    color: #fff;
+    padding: 0.7rem;
+    position: fixed;
+    top: 6rem;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
 }
