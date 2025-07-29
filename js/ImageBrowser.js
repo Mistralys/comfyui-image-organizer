@@ -9,6 +9,7 @@ class ImageBrowser
      * @param {String} ajaxMethodInfo.favoriteImage
      * @param {String} ajaxMethodInfo.setUpscaledImage
      * @param {String} ajaxMethodInfo.moveImage
+     * @param {String} ajaxMethodInfo.setCardSize
      */
     constructor(pageURL, ajaxMethodInfo)
     {
@@ -218,7 +219,7 @@ class ImageBrowser
 
     /**
      *
-     * @param {ImageHandler} image
+     * @param {ImageHandler|null} image
      * @param {String} action
      * @param {Function} successHandler
      * @param {Object|null} params
@@ -229,7 +230,10 @@ class ImageBrowser
             params = {};
         }
 
-        params['imageID'] = image.GetID();
+        if(image !== null) {
+            params['imageID'] = image.GetID();
+        }
+
         params['ajax'] = action;
 
         const urlParams = new URLSearchParams(params);
@@ -242,23 +246,29 @@ class ImageBrowser
         const endpoint = this.pageURL + '&' + urlParams.toString();
 
         console.log('AJAX | ['+action+'] | Sending request.');
-        console.log('AJAX | ['+action+'] | Image ['+image.GetID()+']');
         console.log('AJAX | ['+action+'] | Endpoint ['+endpoint+']');
 
+        if(image !== null) {
+            console.log('AJAX | [' + action + '] | Image [' + image.GetID() + ']');
+        }
 
         fetch(endpoint)
             .then(response => {
                 if (!response.ok) {
-                    throw new Error('Erreur réseau');
+                    throw new Error('Network response was not ok: ' + response.statusText);
                 }
                 return response.json();
             })
             .then(data => {
-                console.log('Réponse JSON :', data);
-                successHandler(image, data.payload);
+                console.log('JSON response:', data);
+                if(image !== null) {
+                    successHandler(image, data.payload);
+                } else {
+                    successHandler(data.payload);
+                }
             })
             .catch(error => {
-                console.error('Erreur :', error);
+                console.error('Error:', error);
             });
     }
 
@@ -340,7 +350,7 @@ class ImageBrowser
         if(this.moveStack.length > 0) {
             this.moveNext();
         } else if(this.moveTarget !== '') {
-            alert('All selected images have been moved to folder [' + this.moveTarget+'].');
+            UserInterface.ShowStatus('All selected images have been moved to <strong>' + this.moveTarget+'</strong>.');
             this.moveTarget = '';
         }
     }
@@ -348,6 +358,8 @@ class ImageBrowser
     moveNext()
     {
         console.log('Move images | Folder ['+this.moveTarget+'] | ['+this.moveStack.length+'] images to move.');
+
+        UserInterface.ShowStatus('Moving image <strong>' + this.moveStack[0] + '</strong>...');
 
         this.doMove(this.GetImage(this.moveStack.shift()), this.moveTarget);
     }
@@ -369,7 +381,7 @@ class ImageBrowser
     MoveSelected()
     {
         if(this.imageSelection.length === 0) {
-            alert('No images selected for moving.');
+            UserInterface.ShowStatus('No images selected for moving.');
             return;
         }
 
@@ -384,5 +396,54 @@ class ImageBrowser
 
         // Start the moving process
         this.moveNext();
+    }
+
+    /**
+     * @param {String} size
+     */
+    SwitchImageSize(size)
+    {
+        const className = 'size-' + size;
+
+        document.getElementById('size-selector')
+            .setAttribute('data-size', size);
+
+        document.querySelectorAll('#size-selector .btn').
+            forEach(el => {
+                if(el.classList.contains('size-'+size)) {
+                    el.classList.add('active');
+                } else {
+                    el.classList.remove('active');
+                }
+            });
+
+        // Add the class name to all image thumbnails
+        document.querySelectorAll('#image-list .image-wrapper').
+            forEach(el =>
+            {
+                el.classList.remove('size-s', 'size-m', 'size-l', 'size-xl');
+                el.classList.add(className);
+            });
+    }
+
+    ApplyImageSize()
+    {
+        const size = document
+            .getElementById('size-selector')
+            .getAttribute('data-size');
+
+        this.SendRequest(
+            null,
+            this.ajaxMethodInfo.setCardSize,
+            this.HandleSetCardSize.bind(this),
+            {
+                'cardSize': size
+            }
+        );
+    }
+
+    HandleSetCardSize()
+    {
+        UserInterface.ShowStatus('The card size has been applied successfully.');
     }
 }
