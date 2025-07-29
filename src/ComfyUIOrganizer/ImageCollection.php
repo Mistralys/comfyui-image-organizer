@@ -13,6 +13,7 @@ use AppUtils\Request;
 use Mistralys\ComfyUIOrganizer\Ajax\Methods\DeleteImageMethod;
 use Mistralys\ComfyUIOrganizer\Ajax\Methods\FavoriteImageMethod;
 use Mistralys\ComfyUIOrganizer\Ajax\Methods\MoveImageMethod;
+use Mistralys\ComfyUIOrganizer\Ajax\Methods\SetCardSizeMethod;
 use Mistralys\ComfyUIOrganizer\Ajax\Methods\SetUpscaledImageMethod;
 use Mistralys\X4\UI\UserInterface;
 
@@ -53,6 +54,10 @@ class ImageCollection extends BaseStringPrimaryCollection
         }
 
         $this->dataFile->putData($data);
+
+        foreach($image->findLowResVersions() as $lowResVersion) {
+            $this->deleteImage($lowResVersion);
+        }
     }
 
     public function saveImage(ImageInfo $image) : void
@@ -87,6 +92,7 @@ class ImageCollection extends BaseStringPrimaryCollection
 
         $ui->addInternalJS('ImageBrowser.js');
         $ui->addInternalJS('ImageHandler.js');
+        $ui->addInternalJS('UI.js');
         $ui->addInternalStylesheet('app.css');
 
         $ui->addJSHead(sprintf(
@@ -98,6 +104,7 @@ class ImageCollection extends BaseStringPrimaryCollection
                 'favoriteImage' => FavoriteImageMethod::METHOD_NAME,
                 'setUpscaledImage' => SetUpscaledImageMethod::METHOD_NAME,
                 'moveImage' => MoveImageMethod::METHOD_NAME,
+                'setCardSize' => SetCardSizeMethod::METHOD_NAME,
             ))
         ));
 
