@@ -21,8 +21,20 @@ class ImageBrowser extends BaseOrganizerPage
     public const string REQUEST_PARAM_UPSCALED = 'upscaled';
     public const string REQUEST_PARAM_FAVORITES = 'favorites';
     public const string REQUEST_PARAM_FOLDER_NAME = 'folderName';
+    const string REQUEST_VAR_CARD_SIZE = 'cardSize';
+    const string CARD_SIZE_S = 's';
+    const string CARD_SIZE_M = 'm';
+    const string CARD_SIZE_L = 'l';
+    const string CARD_SIZE_XL = 'xl';
 
     private ImageCollection $collection;
+    private string $defaultSize;
+
+    /**
+     * @var array<string, string>
+     */
+    private array $cardSizes;
+    private string $activeCardSize;
 
     public function getID(): string
     {
@@ -52,6 +64,83 @@ class ImageBrowser extends BaseOrganizerPage
     protected function preRender(): void
     {
         $this->collection = OrganizerApp::create()->createImageCollection();
+
+        $this->defaultSize = self::CARD_SIZE_L;
+
+        $this->cardSizes = self::getCardSizes();
+
+        $this->activeCardSize = $this->resolveActiveCardSize();
+    }
+
+    public static function getCardSizes() : array
+    {
+        return array(
+            self::CARD_SIZE_S => t('Small'),
+            self::CARD_SIZE_M => t('Medium'),
+            self::CARD_SIZE_L => t('Large'),
+            self::CARD_SIZE_XL => t('Extra large')
+        );
+    }
+
+    public static function setCardSize(string $size) : void
+    {
+        if(in_array($size, array_keys(self::getCardSizes()))) {
+            $_SESSION[self::REQUEST_VAR_CARD_SIZE] = $size;
+        }
+    }
+
+    private function resolveActiveCardSize() : string
+    {
+        $size = $this->defaultSize;
+
+        if(isset($_SESSION[self::REQUEST_VAR_CARD_SIZE])) {
+            $size = $_SESSION[self::REQUEST_VAR_CARD_SIZE];
+        }
+
+        $requestSize = $this->request->registerParam(self::REQUEST_VAR_CARD_SIZE)->setEnum(array_keys($this->cardSizes))->getString();
+        if(!empty($requestSize)) {
+            $size = $requestSize;
+        }
+
+        self::setCardSize($size);
+
+        return $size;
+    }
+
+    private function resolveBooleanToggle(string $name) : bool
+    {
+        $result = false;
+
+        if(isset($_SESSION[$name])) {
+            $result = $_SESSION[$name] === true;
+        }
+
+        $requestVal = $this->request->registerParam($name)->setEnum(array('yes', 'no'))->getString();
+        if(!empty($requestVal)) {
+            $result = $requestVal === 'yes';
+        }
+
+        $_SESSION[$name] = $result;
+
+        return $result;
+    }
+
+    private function resolveActiveFolder() : string
+    {
+        $result = '';
+
+        if(isset($_SESSION[self::REQUEST_PARAM_FOLDER_NAME])) {
+            $result = $_SESSION[self::REQUEST_PARAM_FOLDER_NAME];
+        }
+
+        $folder = $this->request->registerParam(self::REQUEST_PARAM_FOLDER_NAME)->setEnum($this->folders)->getString();
+        if(!empty($folder)) {
+            $result = $folder;
+        }
+
+        $_SESSION[self::REQUEST_PARAM_FOLDER_NAME] = $result;
+
+        return $result;
     }
 
     private string $objName;
@@ -68,15 +157,20 @@ class ImageBrowser extends BaseOrganizerPage
     {
         $this->objName = $this->collection->injectJS($this->ui, $this->getURL());
 
-        $this->upscaledOnly = $this->request->getBool(self::REQUEST_PARAM_UPSCALED);
-        $this->favoritesOnly = $this->request->getBool(self::REQUEST_PARAM_FAVORITES);
+        $this->upscaledOnly = $this->resolveBooleanToggle(self::REQUEST_PARAM_UPSCALED);
+        $this->favoritesOnly = $this->resolveBooleanToggle(self::REQUEST_PARAM_FAVORITES);
 
         $this->folders = $this->collection->getFolderNames();
-        $this->activeFolder = $this->request->registerParam(self::REQUEST_PARAM_FOLDER_NAME)->setEnum($this->folders)->getString();
+        $this->activeFolder = $this->resolveActiveFolder();
 
         OutputBuffering::start();
 
         $missing = $this->collection->getMissingImages();
+        $images = $this->resolveFilteredImages();
+
+        ?>
+        <div id="status-bar" hidden="hidden"></div>
+        <?php
 
         if(!empty($missing)) {
             ?>
@@ -107,14 +201,14 @@ class ImageBrowser extends BaseOrganizerPage
                     t('Upscaling'),
                     $this->upscaledOnly,
                     $this->getURL(array(self::REQUEST_PARAM_UPSCALED => 'yes')),
-                    $this->getURL(array(self::REQUEST_PARAM_UPSCALED => ''))
+                    $this->getURL(array(self::REQUEST_PARAM_UPSCALED => 'no'))
                 );
 
                 $this->renderFilterToggle(
                     t('Favorites'),
                     $this->favoritesOnly,
                     $this->getURL(array(self::REQUEST_PARAM_FAVORITES => 'yes')),
-                    $this->getURL(array(self::REQUEST_PARAM_FAVORITES => ''))
+                    $this->getURL(array(self::REQUEST_PARAM_FAVORITES => 'no'))
                 );
 
                 $this->renderFolderFilter();
@@ -125,20 +219,18 @@ class ImageBrowser extends BaseOrganizerPage
                 <span class="reset-filters" onclick="<?php echo $this->objName ?>.ResetFilter()" title="<?php pt('Reset the filter terms') ?>"><?php echo Icon::delete() ?></span>
             </div>
         </div>
-        <?php
-
-        $images = $this->resolveFilteredImages();
-
-        ?>
         <p><?php pt('Found %1$s images.', count($images)); ?></p>
         <?php
-
-        foreach($images as $image)
-        {
-            $this->renderImage($image);
-        }
+        $this->renderSizeSelector();
 
         ?>
+        <div id="image-list">
+            <?php
+            foreach($images as $image) {
+                $this->renderImage($image);
+            }
+            ?>
+        </div>
         <p style="padding-bottom: 6rem">&#160;</p>
         <?php
 
@@ -147,6 +239,43 @@ class ImageBrowser extends BaseOrganizerPage
             ->setFooterContent($this->renderFooter());
 
         OutputBuffering::flush();
+    }
+
+    private function renderSizeSelector() : void
+    {
+        ?>
+        <div id="size-selector" data-size="<?php echo $this->activeCardSize ?>">
+            <div class="btn-group">
+                <?php
+                foreach($this->cardSizes as $size => $label)
+                {
+                    $active = '';
+                    if($size === $this->activeCardSize) {
+                        $active = ' active';
+                    }
+
+                    ?>
+                    <button
+                        class="btn btn-secondary<?php echo $active ?> size-<?php echo $size ?>"
+                        onclick="<?php echo $this->objName ?>.SwitchImageSize('<?php echo $size ?>')"
+                        title="<?php echo $label ?>"
+                    >
+                        <?php echo strtoupper($size) ?>
+                    </button>
+                    <?php
+                }
+
+                ?>
+                <button
+                    class="btn btn-info"
+                    onclick="<?php echo $this->objName ?>.ApplyImageSize();"
+                    title="<?php pt('Apply the size preference') ?>"
+                >
+                    <?php echo Icon::save().' '; pt('Apply'); ?>
+                </button>
+            </div>
+        </div>
+        <?php
     }
 
     private function resolveFilteredImages() : array
@@ -223,22 +352,18 @@ class ImageBrowser extends BaseOrganizerPage
                 <?php echo Icon::delete() ?>
                 <?php pt('Delete') ?>
             </button>
-            &#160;
             <button class="btn btn-primary btn-sm" onclick="<?php echo $this->objName ?>.FavoriteSelected()">
                 <i class="fas fa-heart"></i>
                 <?php pt('Favorite') ?>
             </button>
-            &#160;
             <button class="btn btn-secondary btn-sm" onclick="<?php echo $this->objName ?>.UnfavoriteSelected()">
                 <i class="far fa-heart"></i>
                 <?php pt('Unfavorite') ?>
             </button>
-            &#160;
             <button class="btn btn-secondary btn-sm" onclick="<?php echo $this->objName ?>.MoveSelected()">
                 <i class="fas fa-file-export"></i>
                 <?php pt('Move folder...') ?>
             </button>
-            &#160;
             <button class="btn btn-info btn-sm" onclick="<?php echo $this->objName ?>.DeselectAll()">
                 <i class="fas fa-toggle-on"></i>
                 <?php pt('Deselect all') ?>
@@ -256,30 +381,41 @@ class ImageBrowser extends BaseOrganizerPage
         $props = $image->getProperties();
 
         $classes = array();
+        $classes[] = 'size-'.$this->activeCardSize;
         if($image->isFavorite()) { $classes[] = 'favorite'; }
         if($image->isUpscaled()) { $classes[] = 'upscaled'; }
+
 
         ?>
         <div id="wrapper-<?php echo $image->getID() ?>"
              class="image-wrapper <?php echo implode(' ', $classes) ?>"
         >
             <a href="<?php echo $image->getURL()  ?>" class="image-link" target="_blank">
-                <img src="<?php echo $image->getThumbnailURL() ?>" alt="<?php echo $image->getLabel() ?>" loading="lazy" class="image-thumbnail"/>
+                <img src="<?php echo $image->getThumbnailURL() ?>" alt="<?php echo $image->getLabel() ?>" loading="lazy" class="image-thumbnail thumbnail-xl"/>
             </a>
-            <div style="padding:8px;">
+            <div class="image-details">
                 <div class="image-toolbar">
                     <?php $this->renderImageToolbar($image) ?>
+                </div>
+                <div class="image-badges">
+                    <?php
+                    if($image->isUpscaled()) {
+                        ?>
+                        <span class="badge text-bg-success"><?php echo mb_strtoupper(t('Upscaled')) ?></span>
+                        <?php
+                    } else {
+                        ?>
+                        <span class="badge text-bg-secondary"><?php echo mb_strtoupper(t('Regular')) ?></span>
+                        <?php
+                    }
+                    ?>
                 </div>
                 ID: <?php echo $image->getID() ?><br>
                 Size: <?php echo $image->getImageSize()['width'] ?> x <?php echo $image->getImageSize()['height'] ?><br>
                 Checkpoint: <?php echo $image->getCheckpoint() ?><br>
                 Test: <?php echo $props->getTestName() ?> #<?php echo $props->getTestNumber() ?><br>
                 Seed: <?php echo $props->getSeed() ?><br>
-                Folder: <span class="folder-name"><?php echo $props->getFolderName() ?></span>
-                    (<a href="#" onclick="<?php echo $this->objName ?>.MoveImage('<?php echo $image->getID() ?>');return false;">
-                        <?php pt('Move...'); ?>
-                    </a>)
-                    <br>
+                Folder: <span class="folder-name"><?php echo $props->getFolderName() ?></span><br>
                 <a href="<?php echo $image->getViewDetailsURL() ?>" target="_blank"><?php pt('More...') ?></a>
             </div>
         </div>
@@ -288,11 +424,6 @@ class ImageBrowser extends BaseOrganizerPage
 
     private function renderImageToolbar(ImageInfo $image) : void
     {
-        if($image->isUpscaled()) {
-            ?>
-            <span class="badge text-bg-success" style="float:right"><?php echo mb_strtoupper(t('Upscaled')) ?></span>
-            <?php
-        }
         ?>
         <button
             onclick="<?php echo $this->objName ?>.DeleteImage('<?php echo $image->getID() ?>');return false;"
@@ -301,7 +432,6 @@ class ImageBrowser extends BaseOrganizerPage
             <?php echo Icon::delete() ?>
             <?php pt('Delete') ?>
         </button>
-        &#160;
         <?php
             $this->renderToggleButton(
                 $image,
@@ -312,16 +442,42 @@ class ImageBrowser extends BaseOrganizerPage
                 Icon::typeRegular('heart').' '.t('Unfavorite'),
             );
         ?>
-        <?php if(!$image->isUpscaled()) { ?>
-        &#160;
-        <button
-                onclick="<?php echo $this->objName ?>.SetUpscaledID('<?php echo $image->getID() ?>');return false;"
-                class="btn btn-secondary btn-sm"
-        >
-            <?php pt('Upscaled ID...'); ?>
-        </button>
-        <?php } ?>
-        &#160;
+        <div class="dropdown" style="display: inline-block">
+            <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <?php pt('More'); ?>
+            </button>
+            <ul class="dropdown-menu">
+                <?php if(!$image->isUpscaled()) { ?>
+                    <li>
+                        <a href="#"
+                           onclick="<?php echo $this->objName ?>.SetUpscaledID('<?php echo $image->getID() ?>');return false;"
+                           class="dropdown-item"
+                        >
+                            <?php echo Icon::typeSolid('expand') ?>
+                            <?php pt('Set upscaled ID...'); ?>
+                        </a>
+                    </li>
+                <?php } ?>
+                <li>
+                    <a class="dropdown-item"
+                       href="#"
+                       onclick="return false;"
+                    >
+                        <?php echo Icon::typeSolid('images') ?>
+                        <?php pt('Choose for gallery'); ?>
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item"
+                       href="#"
+                       onclick="<?php echo $this->objName ?>.MoveImage('<?php echo $image->getID() ?>');return false;"
+                    >
+                        <?php echo Icon::typeSolid('folder-open') ?>
+                        <?php pt('Move to folder...'); ?>
+                    </a
+                </li>
+            </ul>
+        </div>
         <button
                 onclick="<?php echo $this->objName ?>.ToggleSelection('<?php echo $image->getID() ?>');return false;"
                 class="btn btn-info btn-sm toggle-selection"
@@ -381,7 +537,8 @@ class ImageBrowser extends BaseOrganizerPage
         return array(
             self::REQUEST_PARAM_UPSCALED => ConvertHelper::bool2string($this->request->getBool(self::REQUEST_PARAM_UPSCALED), true),
             self::REQUEST_PARAM_FAVORITES => ConvertHelper::bool2string($this->request->getBool(self::REQUEST_PARAM_FAVORITES), true),
-            self::REQUEST_PARAM_FOLDER_NAME => $this->activeFolder
+            self::REQUEST_PARAM_FOLDER_NAME => $this->activeFolder,
+            self::REQUEST_VAR_CARD_SIZE => $this->activeCardSize
         );
     }
 }
