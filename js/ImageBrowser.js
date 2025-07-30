@@ -10,6 +10,7 @@ class ImageBrowser
      * @param {String} ajaxMethodInfo.setUpscaledImage
      * @param {String} ajaxMethodInfo.moveImage
      * @param {String} ajaxMethodInfo.setCardSize
+     * @param {String} ajaxMethodInfo.setForGallery
      */
     constructor(pageURL, ajaxMethodInfo)
     {
@@ -445,5 +446,33 @@ class ImageBrowser
     HandleSetCardSize()
     {
         UserInterface.ShowStatus('The card size has been applied successfully.');
+    }
+
+    /**
+     * @param {String} imageID
+     */
+    ToggleForGallery(imageID)
+    {
+        const image = this.RequireImage(imageID);
+
+        this.SendRequest(
+            image,
+            this.ajaxMethodInfo.setForGallery,
+            this.HandleSetForGalleryResponse.bind(this),
+            {
+                'forGallery': !image.IsForGallery()
+            }
+        );
+    }
+
+    /**
+     * @param {ImageHandler} image
+     * @param {Object} response
+     */
+    HandleSetForGalleryResponse(image, response)
+    {
+        image.SetForGallery(response.forGallery);
+
+        UserInterface.ShowStatus('The image has been ' + (response.forGallery ? 'added to' : 'removed from') + ' the gallery.');
     }
 }

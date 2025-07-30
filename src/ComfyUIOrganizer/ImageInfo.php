@@ -31,6 +31,7 @@ class ImageInfo implements StringPrimaryRecordInterface
     public const string KEY_UPSCALED = 'upscaled';
     public const string KEY_IMAGE_SIZE = 'imageSize';
     public const string KEY_MODIFIED = 'modified';
+    public const string KEY_FOR_GALLERY = 'forGallery';
 
     private FileInfo $imageFile;
     private Microtime $date;
@@ -44,6 +45,7 @@ class ImageInfo implements StringPrimaryRecordInterface
      * @var array{width:int, height:int}
      */
     private array $imageSize;
+    private bool $forGallery;
 
     /**
      * @param string $id
@@ -52,11 +54,12 @@ class ImageInfo implements StringPrimaryRecordInterface
      * @param Microtime $date
      * @param string $checkpoint
      * @param bool $upscaled
+     * @param bool $forGallery
      * @param bool $modified
      * @param array{width:int, height:int} $imageSize
      * @param ArrayDataCollection $properties
      */
-    public function __construct(string $id, FileInfo $imageFile, JSONFile $sidecarFile, Microtime $date, string $checkpoint, bool $upscaled, bool $modified, array $imageSize, ArrayDataCollection $properties)
+    public function __construct(string $id, FileInfo $imageFile, JSONFile $sidecarFile, Microtime $date, string $checkpoint, bool $upscaled, bool $forGallery, bool $modified, array $imageSize, ArrayDataCollection $properties)
     {
         $this->id = $id;
         $this->imageFile = $imageFile;
@@ -64,6 +67,7 @@ class ImageInfo implements StringPrimaryRecordInterface
         $this->imageSize = $imageSize;
         $this->date = $date;
         $this->upscaled = $upscaled;
+        $this->forGallery = $forGallery;
         $this->modified = $modified;
         $this->checkpoint = $checkpoint;
         $this->properties = new ImageProperties($properties, $this->onPropertiesModified(...));
@@ -72,6 +76,18 @@ class ImageInfo implements StringPrimaryRecordInterface
     public function prop() : ImageProperties
     {
         return $this->properties;
+    }
+
+    public function isForGallery() : bool
+    {
+        return $this->forGallery;
+    }
+
+    public function setForGallery(bool $forGallery) : self
+    {
+        $this->forGallery = $forGallery;
+        $this->setDataChanged();
+        return $this;
     }
 
     public function isFavorite() : bool
@@ -211,8 +227,20 @@ class ImageInfo implements StringPrimaryRecordInterface
         $this->setDataChanged();
     }
 
+    const array KEY_DEFAULTS = array(
+        self::KEY_FOR_GALLERY => false,
+        self::KEY_UPSCALED => false,
+        self::KEY_MODIFIED => false
+    );
+
     public static function fromSerialized(mixed $entry) : ImageInfo
     {
+        foreach(self::KEY_DEFAULTS as $key => $default) {
+            if(!isset($entry[$key])) {
+                $entry[$key] = $default;
+            }
+        }
+
         return new ImageInfo(
             $entry['id'],
             FileInfo::factory($entry[ImageInfo::KEY_IMAGE_FILE]),
@@ -220,7 +248,8 @@ class ImageInfo implements StringPrimaryRecordInterface
             Microtime::createFromString($entry[ImageInfo::KEY_DATE]),
             $entry[ImageInfo::KEY_CHECKPOINT],
             $entry[ImageInfo::KEY_UPSCALED] === true,
-            $entry[ImageInfo::KEY_MODIFIED] ?? false,
+            $entry[ImageInfo::KEY_FOR_GALLERY] === true,
+            $entry[ImageInfo::KEY_MODIFIED] === true,
             $entry[ImageInfo::KEY_IMAGE_SIZE],
             ArrayDataCollection::create($entry[ImageInfo::KEY_PROPERTIES])
         );
@@ -235,6 +264,7 @@ class ImageInfo implements StringPrimaryRecordInterface
             self::KEY_DATE => $this->date->getISODate(),
             self::KEY_CHECKPOINT => $this->checkpoint,
             self::KEY_UPSCALED => $this->upscaled,
+            self::KEY_FOR_GALLERY => $this->forGallery,
             self::KEY_IMAGE_SIZE => $this->imageSize,
             self::KEY_MODIFIED => $this->modified,
             self::KEY_PROPERTIES => $this->properties->serialize()

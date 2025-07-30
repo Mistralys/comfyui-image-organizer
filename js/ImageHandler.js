@@ -128,4 +128,27 @@ class ImageHandler
 
         this.getDOMElement(this.wrapperID + ' .folder-name').innerHTML = folder;
     }
+
+    IsForGallery()
+    {
+        return this.GetDOMElement().classList.contains('forGallery');
+    }
+
+    SetForGallery(forGallery)
+    {
+        console.log('Image ['+this.imageID+'] | Set forGallery: ' + forGallery);
+
+        const elEnabled = this.getDOMElement(this.wrapperID + ' .toggle-for-gallery .toggle-enabled');
+        const elDisabled = this.getDOMElement(this.wrapperID + ' .toggle-for-gallery .toggle-disabled');
+
+        if(forGallery) {
+            this.GetDOMElement().classList.add('forGallery');
+            elEnabled.hidden = false;
+            elDisabled.hidden = true;
+        } else {
+            this.GetDOMElement().classList.remove('forGallery');
+            elEnabled.hidden = true;
+            elDisabled.hidden = false;
+        }
+    }
 }

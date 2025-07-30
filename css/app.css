@@ -37,6 +37,10 @@
 .image-wrapper.favorite{
     border-color: #df6919;
 }
+.image-wrapper.forGallery,
+.image-wrapper.favorite.forGallery{
+    border-color: #cb00cc;
+}
 
 A.badge{
     text-decoration: none;

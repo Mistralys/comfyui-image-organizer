@@ -20,6 +20,7 @@ class ImageBrowser extends BaseOrganizerPage
     public const string URL_NAME = 'image-browser';
     public const string REQUEST_PARAM_UPSCALED = 'upscaled';
     public const string REQUEST_PARAM_FAVORITES = 'favorites';
+    public const string REQUEST_PARAM_GALLERY = 'gallery';
     public const string REQUEST_PARAM_FOLDER_NAME = 'folderName';
     const string REQUEST_VAR_CARD_SIZE = 'cardSize';
     const string CARD_SIZE_S = 's';
@@ -146,6 +147,7 @@ class ImageBrowser extends BaseOrganizerPage
     private string $objName;
     private bool $upscaledOnly = false;
     private bool $favoritesOnly = false;
+    private bool $galleryOnly = false;
     private string $activeFolder = '';
 
     /**
@@ -159,6 +161,7 @@ class ImageBrowser extends BaseOrganizerPage
 
         $this->upscaledOnly = $this->resolveBooleanToggle(self::REQUEST_PARAM_UPSCALED);
         $this->favoritesOnly = $this->resolveBooleanToggle(self::REQUEST_PARAM_FAVORITES);
+        $this->galleryOnly = $this->resolveBooleanToggle(self::REQUEST_PARAM_GALLERY);
 
         $this->folders = $this->collection->getFolderNames();
         $this->activeFolder = $this->resolveActiveFolder();
@@ -193,34 +196,7 @@ class ImageBrowser extends BaseOrganizerPage
             <?php
         }
 
-        ?>
-        <h3><?php pt('Filtering') ?></h3>
-        <div class="filter-toolbar">
-            <?php
-                $this->renderFilterToggle(
-                    t('Upscaling'),
-                    $this->upscaledOnly,
-                    $this->getURL(array(self::REQUEST_PARAM_UPSCALED => 'yes')),
-                    $this->getURL(array(self::REQUEST_PARAM_UPSCALED => 'no'))
-                );
-
-                $this->renderFilterToggle(
-                    t('Favorites'),
-                    $this->favoritesOnly,
-                    $this->getURL(array(self::REQUEST_PARAM_FAVORITES => 'yes')),
-                    $this->getURL(array(self::REQUEST_PARAM_FAVORITES => 'no'))
-                );
-
-                $this->renderFolderFilter();
-            ?>
-
-            <div style="display: inline-block; position:relative;" id="image-search">
-                <input type="text" placeholder="<?php pt('Filter by search...') ?>" onkeyup="<?php echo $this->objName ?>.FilterImages(this.value);return false;" class="form-control" style="width: 300px; display: inline-block; margin-left: 8px;">
-                <span class="reset-filters" onclick="<?php echo $this->objName ?>.ResetFilter()" title="<?php pt('Reset the filter terms') ?>"><?php echo Icon::delete() ?></span>
-            </div>
-        </div>
-        <p><?php pt('Found %1$s images.', count($images)); ?></p>
-        <?php
+        $this->renderFilterToolbar(count($images));
         $this->renderSizeSelector();
 
         ?>
@@ -239,6 +215,49 @@ class ImageBrowser extends BaseOrganizerPage
             ->setFooterContent($this->renderFooter());
 
         OutputBuffering::flush();
+    }
+
+    private function renderFilterToolbar(int $imageCount) : void
+    {
+        ?>
+        <h3><?php pt('Filtering') ?></h3>
+        <div class="filter-toolbar">
+            <?php
+            $this->renderFilterToggle(
+                t('Upscaling'),
+                $this->upscaledOnly,
+                $this->getURL(array(self::REQUEST_PARAM_UPSCALED => 'yes')),
+                $this->getURL(array(self::REQUEST_PARAM_UPSCALED => 'no'))
+            );
+
+            $this->renderFilterToggle(
+                t('Favorites'),
+                $this->favoritesOnly,
+                $this->getURL(array(self::REQUEST_PARAM_FAVORITES => 'yes')),
+                $this->getURL(array(self::REQUEST_PARAM_FAVORITES => 'no'))
+            );
+
+            $this->renderFilterToggle(
+                t('Gallery'),
+                $this->galleryOnly,
+                $this->getURL(array(self::REQUEST_PARAM_GALLERY => 'yes')),
+                $this->getURL(array(self::REQUEST_PARAM_GALLERY => 'no'))
+            );
+
+            $this->renderFolderFilter();
+            ?>
+
+            <div style="display: inline-block; position:relative;" id="image-search">
+                <input type="text"
+                       placeholder="<?php pt('Filter by search...') ?>"
+                       onkeyup="<?php echo $this->objName ?>.FilterImages(this.value);return false;"
+                       class="form-control"
+                       style="width: 300px; display: inline-block; margin-left: 8px;">
+                <span class="reset-filters" onclick="<?php echo $this->objName ?>.ResetFilter()" title="<?php pt('Reset the filter terms') ?>"><?php echo Icon::delete() ?></span>
+            </div>
+        </div>
+        <p><?php pt('Found %1$s images.', $imageCount); ?></p>
+        <?php
     }
 
     private function renderSizeSelector() : void
@@ -298,6 +317,10 @@ class ImageBrowser extends BaseOrganizerPage
         }
 
         if($this->favoritesOnly && !$image->isFavorite()) {
+            return false;
+        }
+
+        if($this->galleryOnly && !$image->isForGallery()) {
             return false;
         }
 
@@ -384,7 +407,7 @@ class ImageBrowser extends BaseOrganizerPage
         $classes[] = 'size-'.$this->activeCardSize;
         if($image->isFavorite()) { $classes[] = 'favorite'; }
         if($image->isUpscaled()) { $classes[] = 'upscaled'; }
-
+        if($image->isForGallery()) { $classes[] = 'forGallery'; }
 
         ?>
         <div id="wrapper-<?php echo $image->getID() ?>"
@@ -458,13 +481,19 @@ class ImageBrowser extends BaseOrganizerPage
                         </a>
                     </li>
                 <?php } ?>
-                <li>
-                    <a class="dropdown-item"
-                       href="#"
-                       onclick="return false;"
+                <li class="toggle-for-gallery">
+                    <a href="#"
+                       onclick="<?php echo $this->objName ?>.ToggleForGallery('<?php echo $image->getID() ?>');return false;"
+                       class="dropdown-item"
                     >
-                        <?php echo Icon::typeSolid('images') ?>
-                        <?php pt('Choose for gallery'); ?>
+                        <span class="toggle-enabled" <?php if(!$image->isForGallery()) { ?>hidden="hidden"<?php } ?>>
+                            <?php echo Icon::typeSolid('images') ?>
+                            <?php pt('Remove from gallery'); ?>
+                        </span>
+                        <span class="toggle-disabled" <?php if($image->isForGallery()) { ?>hidden="hidden"<?php } ?>>
+                            <?php echo Icon::typeRegular('images') ?>
+                            <?php pt('Set for gallery'); ?>
+                        </span>
                     </a>
                 </li>
                 <li>

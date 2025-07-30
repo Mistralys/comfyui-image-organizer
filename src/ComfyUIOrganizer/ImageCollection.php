@@ -14,6 +14,7 @@ use Mistralys\ComfyUIOrganizer\Ajax\Methods\DeleteImageMethod;
 use Mistralys\ComfyUIOrganizer\Ajax\Methods\FavoriteImageMethod;
 use Mistralys\ComfyUIOrganizer\Ajax\Methods\MoveImageMethod;
 use Mistralys\ComfyUIOrganizer\Ajax\Methods\SetCardSizeMethod;
+use Mistralys\ComfyUIOrganizer\Ajax\Methods\SetForGalleryMethod;
 use Mistralys\ComfyUIOrganizer\Ajax\Methods\SetUpscaledImageMethod;
 use Mistralys\X4\UI\UserInterface;
 
@@ -105,6 +106,7 @@ class ImageCollection extends BaseStringPrimaryCollection
                 'setUpscaledImage' => SetUpscaledImageMethod::METHOD_NAME,
                 'moveImage' => MoveImageMethod::METHOD_NAME,
                 'setCardSize' => SetCardSizeMethod::METHOD_NAME,
+                'setForGallery' => SetForGalleryMethod::METHOD_NAME,
             ))
         ));
 
