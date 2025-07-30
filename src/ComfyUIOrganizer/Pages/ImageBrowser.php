@@ -248,11 +248,14 @@ class ImageBrowser extends BaseOrganizerPage
             ?>
 
             <div style="display: inline-block; position:relative;" id="image-search">
-                <input type="text"
+                <label for="image-search-field"></label>
+                <input type="search"
+                       id="image-search-field"
                        placeholder="<?php pt('Filter by search...') ?>"
                        onkeyup="<?php echo $this->objName ?>.FilterImages(this.value);return false;"
-                       class="form-control"
-                       style="width: 300px; display: inline-block; margin-left: 8px;">
+                       onfocus="this.classList.add('focused')"
+                       onblur="this.classList.remove('focused')"
+                       class="form-control">
                 <span class="reset-filters" onclick="<?php echo $this->objName ?>.ResetFilter()" title="<?php pt('Reset the filter terms') ?>"><?php echo Icon::delete() ?></span>
             </div>
         </div>
@@ -341,7 +344,11 @@ class ImageBrowser extends BaseOrganizerPage
         $baseURL = $this->getURL(array(self::REQUEST_PARAM_FOLDER_NAME => '__FOLDERNAME__'));
 
         ?>
-        <select onchange="document.location.href='<?php echo $baseURL ?>'.replace('__FOLDERNAME__', this.value);" class="form-select" style="display:inline-block; width: 200px">
+        <label for="folder-selector" hidden="hidden"><?php pt('Folder') ?></label>
+        <select id="folder-selector"
+                name="folder-selector"
+                onchange="document.location.href='<?php echo $baseURL ?>'.replace('__FOLDERNAME__', this.value);"
+                class="form-select">
             <option><?php pt('Select a folder...') ?></option>
             <?php
 

@@ -42,6 +42,21 @@
     border-color: #cb00cc;
 }
 
+#image-search-field{
+    width: 200px;
+    display: inline-block;
+    margin-left: 8px;
+}
+
+#image-search-field.focused{
+    width: 300px;
+}
+
+#folder-selector{
+    display:inline-block;
+    width: 240px;
+}
+
 A.badge{
     text-decoration: none;
 }
