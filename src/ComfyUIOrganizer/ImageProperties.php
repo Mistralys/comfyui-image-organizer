@@ -44,6 +44,11 @@ class ImageProperties
         return $this->data->getInt(self::KEY_TEST_NUMBER);
     }
 
+    public function getBatchNumber() : int
+    {
+        return $this->data->getInt(self::KEY_IMG_BATCH_NR);
+    }
+
     public function getTestName() : string
     {
         return $this->data->getString(self::KEY_TEST_NAME);
