@@ -443,7 +443,7 @@ class ImageBrowser extends BaseOrganizerPage
                 ID: <?php echo $image->getID() ?><br>
                 Size: <?php echo $image->getImageSize()['width'] ?> x <?php echo $image->getImageSize()['height'] ?><br>
                 Checkpoint: <?php echo $image->getCheckpoint() ?><br>
-                Test: <?php echo $props->getTestName() ?> #<?php echo $props->getTestNumber() ?><br>
+                Test: <?php echo $props->getTestName() ?> #<?php echo $props->getTestNumber() ?>-<?php echo $props->getBatchNumber() ?><br>
                 Seed: <?php echo $props->getSeed() ?><br>
                 Folder: <span class="folder-name"><?php echo $props->getFolderName() ?></span><br>
                 <a href="<?php echo $image->getViewDetailsURL() ?>" target="_blank"><?php pt('More...') ?></a>
