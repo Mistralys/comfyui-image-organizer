@@ -59,7 +59,9 @@ class ImageDetails extends BasePage
         ?>
         <div id="wrapper-<?php echo $this->image->getID() ?>">
             <p>
-                <img src="<?php echo $this->image->getURL() ?>" style="width: 100%">
+                <a href="<?php echo $this->image->getURL() ?>">
+                    <img src="<?php echo $this->image->getURL() ?>" style="width: 100%" alt="<?php echo t('Full image preview') ?>">
+                </a>
             </p>
             <p>
 
