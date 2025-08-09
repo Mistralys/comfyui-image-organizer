@@ -12,6 +12,9 @@ class SetUpscaledImageMethod extends BaseImageMethod
     public const string METHOD_NAME = 'SetUpscaledImage';
     public const string REQUEST_PARAM_UPSCALED_ID = 'upscaledID';
     public const int ERROR_UPSCALED_IMAGE_NOT_FOUND = 179501;
+    public const string RESPONSE_UPSCALED_FOR_GALLERY = 'upscaledForGallery';
+    public const string RESPONSE_UPSCALED_FAVORITE = 'upscaledFavorite';
+    public const string RESPONSE_UPSCALED_ID = 'upscaledID';
 
     public function getID(): string
     {
@@ -29,13 +32,18 @@ class SetUpscaledImageMethod extends BaseImageMethod
             );
         }
 
-        $image->prop()->setUpscaledImage($this->collection->getByID($upscaledID));
-        $image->save();
+        $upscaledImage = $this->collection->getByID($upscaledID);
+
+        $image->prop()->setUpscaledImage($upscaledImage);
+
+        $this->collection->save();
 
         $this->sendSuccess(
             'Successfully set upscaled image to ['.$upscaledID.'].',
             array(
-                self::REQUEST_PARAM_UPSCALED_ID => $upscaledID
+                self::RESPONSE_UPSCALED_ID => $upscaledID,
+                self::RESPONSE_UPSCALED_FAVORITE => $upscaledImage->isFavorite(),
+                self::RESPONSE_UPSCALED_FOR_GALLERY => $upscaledImage->isForGallery()
             )
         );
     }
