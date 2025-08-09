@@ -4,3 +4,4 @@ composer.phar
 /config.php
 /data/images.json
 /data/backup/
+/output-images/*.png
