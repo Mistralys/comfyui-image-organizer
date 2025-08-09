@@ -134,8 +134,15 @@ class ImageBrowser extends BaseOrganizerPage
             $result = $_SESSION[self::REQUEST_PARAM_FOLDER_NAME];
         }
 
-        $folder = $this->request->registerParam(self::REQUEST_PARAM_FOLDER_NAME)->setEnum($this->folders)->getString();
+        $folders = $this->folders;
+        $folders[] = 'all';
+
+        $folder = $this->request->registerParam(self::REQUEST_PARAM_FOLDER_NAME)->setEnum($folders)->getString();
         if(!empty($folder)) {
+            if($folder === 'all') {
+                $folder = '';
+            }
+
             $result = $folder;
         }
 
@@ -212,7 +219,7 @@ class ImageBrowser extends BaseOrganizerPage
 
         $this->ui
             ->makeFooterFixed()
-            ->setFooterContent($this->renderFooter());
+            ->setFooterContent($this->renderSelectionStatusBar());
 
         OutputBuffering::flush();
     }
@@ -296,6 +303,16 @@ class ImageBrowser extends BaseOrganizerPage
                     <?php echo Icon::save().' '; pt('Apply'); ?>
                 </button>
             </div>
+            <div class="btn-group">
+                <button class="btn btn-info" onclick="<?php echo $this->objName ?>.SelectAll()" style="margin-left: var(--element-spacing-l);">
+                    <?php echo Icon::typeSolid('toggle-on') ?>
+                    <?php pt('Select all') ?>
+                </button>
+                <button class="btn btn-info" onclick="<?php echo $this->objName ?>.DeselectAll()">
+                    <?php echo Icon::typeSolid('toggle-off') ?>
+                    <?php pt('Select none') ?>
+                </button>
+            </div>
         </div>
         <?php
     }
@@ -349,7 +366,7 @@ class ImageBrowser extends BaseOrganizerPage
                 name="folder-selector"
                 onchange="document.location.href='<?php echo $baseURL ?>'.replace('__FOLDERNAME__', this.value);"
                 class="form-select">
-            <option><?php pt('Select a folder...') ?></option>
+            <option value="all"><?php pt('Select a folder...') ?></option>
             <?php
 
             foreach($this->folders as $folderName) {
@@ -368,12 +385,12 @@ class ImageBrowser extends BaseOrganizerPage
         <?php
     }
 
-    private function renderFooter() : string
+    private function renderSelectionStatusBar() : string
     {
         OutputBuffering::start();
 
         ?>
-        <div id="footer-empty-selection" hidden="hidden">
+        <div id="footer-empty-selection">
             <?php pt('No images selected.'); ?> &#160;
         </div>
         <div id="footer-selection" hidden="hidden">
@@ -394,9 +411,13 @@ class ImageBrowser extends BaseOrganizerPage
                 <i class="fas fa-file-export"></i>
                 <?php pt('Move folder...') ?>
             </button>
-            <button class="btn btn-info btn-sm" onclick="<?php echo $this->objName ?>.DeselectAll()">
-                <i class="fas fa-toggle-on"></i>
-                <?php pt('Deselect all') ?>
+            <button class="btn btn-secondary btn-sm" onclick="<?php echo $this->objName ?>.LabelSelected()">
+                <?php echo Icon::typeSolid('font') ?>
+                <?php pt('Set label...') ?>
+            </button>
+            <button class="btn btn-secondary btn-sm" onclick="<?php echo $this->objName ?>.CopySelectedToOutput()">
+                <?php echo Icon::typeSolid('copy') ?>
+                <?php pt('Copy to output') ?>
             </button>
         </div>
         <?php
@@ -420,7 +441,7 @@ class ImageBrowser extends BaseOrganizerPage
         <div id="wrapper-<?php echo $image->getID() ?>"
              class="image-wrapper <?php echo implode(' ', $classes) ?>"
         >
-            <a href="<?php echo $image->getURL()  ?>" class="image-link" target="_blank">
+            <a href="<?php echo $image->getViewDetailsURL()  ?>" class="image-link" target="_blank">
                 <img src="<?php echo $image->getThumbnailURL() ?>" alt="<?php echo $image->getLabel() ?>" loading="lazy" class="image-thumbnail thumbnail-xl"/>
             </a>
             <div class="image-details">
@@ -441,12 +462,24 @@ class ImageBrowser extends BaseOrganizerPage
                     ?>
                 </div>
                 ID: <?php echo $image->getID() ?><br>
+                Label: <span class="image-label">
+                        <?php
+                            $label = $image->getLabel();
+                            if(empty($label)) {
+                                ?><a href="#" onclick="<?php echo $this->objName ?>.SetLabel('<?php echo $image->getID() ?>');return false;"><?php pt('Set...') ?></a><?php
+                            } else {
+                                echo htmlspecialchars($label);
+                            }
+                        ?>
+                    </span><br>
                 Size: <?php echo $image->getImageSize()['width'] ?> x <?php echo $image->getImageSize()['height'] ?><br>
                 Checkpoint: <?php echo $image->getCheckpoint() ?><br>
                 Test: <?php echo $props->getTestName() ?> #<?php echo $props->getTestNumber() ?>-<?php echo $props->getBatchNumber() ?><br>
                 Seed: <?php echo $props->getSeed() ?><br>
-                Folder: <span class="folder-name"><?php echo $props->getFolderName() ?></span><br>
-                <a href="<?php echo $image->getViewDetailsURL() ?>" target="_blank"><?php pt('More...') ?></a>
+
+                <?php if(empty($this->activeFolder) || $this->activeFolder === 'all') { ?>
+                    Folder: <span class="folder-name"><?php echo $props->getFolderName() ?></span><br>
+                <?php } ?>
             </div>
         </div>
         <?php
@@ -476,43 +509,7 @@ class ImageBrowser extends BaseOrganizerPage
             <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                 <?php pt('More'); ?>
             </button>
-            <ul class="dropdown-menu">
-                <?php if(!$image->isUpscaled()) { ?>
-                    <li>
-                        <a href="#"
-                           onclick="<?php echo $this->objName ?>.SetUpscaledID('<?php echo $image->getID() ?>');return false;"
-                           class="dropdown-item"
-                        >
-                            <?php echo Icon::typeSolid('expand') ?>
-                            <?php pt('Set upscaled ID...'); ?>
-                        </a>
-                    </li>
-                <?php } ?>
-                <li class="toggle-for-gallery">
-                    <a href="#"
-                       onclick="<?php echo $this->objName ?>.ToggleForGallery('<?php echo $image->getID() ?>');return false;"
-                       class="dropdown-item"
-                    >
-                        <span class="toggle-enabled" <?php if(!$image->isForGallery()) { ?>hidden="hidden"<?php } ?>>
-                            <?php echo Icon::typeSolid('images') ?>
-                            <?php pt('Remove from gallery'); ?>
-                        </span>
-                        <span class="toggle-disabled" <?php if($image->isForGallery()) { ?>hidden="hidden"<?php } ?>>
-                            <?php echo Icon::typeRegular('images') ?>
-                            <?php pt('Set for gallery'); ?>
-                        </span>
-                    </a>
-                </li>
-                <li>
-                    <a class="dropdown-item"
-                       href="#"
-                       onclick="<?php echo $this->objName ?>.MoveImage('<?php echo $image->getID() ?>');return false;"
-                    >
-                        <?php echo Icon::typeSolid('folder-open') ?>
-                        <?php pt('Move to folder...'); ?>
-                    </a
-                </li>
-            </ul>
+            <?php $this->renderImageMenu($image) ?>
         </div>
         <button
                 onclick="<?php echo $this->objName ?>.ToggleSelection('<?php echo $image->getID() ?>');return false;"
@@ -520,6 +517,68 @@ class ImageBrowser extends BaseOrganizerPage
         >
             <i class="fas fa-toggle-off"></i> <?php pt('Select') ?>
         </button>
+        <?php
+    }
+
+    private function renderImageMenu(ImageInfo $image) : void
+    {
+        ?>
+        <ul class="dropdown-menu">
+            <li>
+                <a href="#"
+                   onclick="<?php echo $this->objName ?>.SetLabel('<?php echo $image->getID() ?>');return false;"
+                   class="dropdown-item"
+                >
+                    <?php echo Icon::typeSolid('font') ?>
+                    <?php pt('Set label...'); ?>
+                </a>
+            </li>
+            <?php if(!$image->isUpscaled()) { ?>
+            <li>
+                <a href="#"
+                   onclick="<?php echo $this->objName ?>.SetUpscaledID('<?php echo $image->getID() ?>');return false;"
+                   class="dropdown-item"
+                >
+                    <?php echo Icon::typeSolid('expand') ?>
+                    <?php pt('Set upscaled ID...'); ?>
+                </a>
+            </li>
+        <?php } ?>
+            <li class="toggle-for-gallery">
+                <a href="#"
+                   onclick="<?php echo $this->objName ?>.ToggleForGallery('<?php echo $image->getID() ?>');return false;"
+                   class="dropdown-item"
+                >
+                    <span class="toggle-enabled" <?php if(!$image->isForGallery()) { ?>hidden="hidden"<?php } ?>>
+                        <?php echo Icon::typeSolid('images') ?>
+                        <?php pt('Remove from gallery'); ?>
+                    </span>
+                    <span class="toggle-disabled" <?php if($image->isForGallery()) { ?>hidden="hidden"<?php } ?>>
+                        <?php echo Icon::typeRegular('images') ?>
+                        <?php pt('Set for gallery'); ?>
+                    </span>
+                </a>
+            </li>
+            <li>
+                <a class="dropdown-item"
+                   href="#"
+                   onclick="<?php echo $this->objName ?>.MoveImage('<?php echo $image->getID() ?>');return false;"
+                >
+                    <?php echo Icon::typeSolid('folder-open') ?>
+                    <?php pt('Move to folder...'); ?>
+                </a
+            </li>
+
+            <li>
+                <a class="dropdown-item"
+                   href="#"
+                   onclick="<?php echo $this->objName ?>.CopyToOutput('<?php echo $image->getID() ?>');return false;"
+                >
+                    <?php echo Icon::typeSolid('copy') ?>
+                    <?php pt('Copy to output folder'); ?>
+                </a
+            </li>
+        </ul>
         <?php
     }
 
