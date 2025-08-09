@@ -6,6 +6,7 @@ namespace Mistralys\ComfyUIOrganizer;
 
 use AppUtils\ArrayDataCollection;
 use AppUtils\ClassHelper;
+use AppUtils\ConvertHelper;
 use AppUtils\ConvertHelper\JSONConverter;
 use AppUtils\FileHelper\FileInfo;
 use AppUtils\FileHelper\FolderInfo;
@@ -27,6 +28,7 @@ class ImageInfo implements StringPrimaryRecordInterface
     public const string KEY_ID = 'id';
     public const string KEY_IMAGE_FILE = 'imageFile';
     public const string KEY_DATE = 'date';
+    public const string KEY_LABEL = 'label';
     public const string KEY_SIDECAR_FILE = 'sidecarFile';
     public const string KEY_UPSCALED = 'upscaled';
     public const string KEY_IMAGE_SIZE = 'imageSize';
@@ -46,6 +48,7 @@ class ImageInfo implements StringPrimaryRecordInterface
      */
     private array $imageSize;
     private bool $forGallery;
+    private string $label;
 
     /**
      * @param string $id
@@ -56,11 +59,23 @@ class ImageInfo implements StringPrimaryRecordInterface
      * @param bool $upscaled
      * @param bool $forGallery
      * @param bool $modified
+     * @param string $label
      * @param array{width:int, height:int} $imageSize
      * @param ArrayDataCollection $properties
      */
-    public function __construct(string $id, FileInfo $imageFile, JSONFile $sidecarFile, Microtime $date, string $checkpoint, bool $upscaled, bool $forGallery, bool $modified, array $imageSize, ArrayDataCollection $properties)
-    {
+    public function __construct(
+        string $id,
+        FileInfo $imageFile,
+        JSONFile $sidecarFile,
+        Microtime $date,
+        string $checkpoint,
+        bool $upscaled,
+        bool $forGallery,
+        bool $modified,
+        string $label,
+        array $imageSize,
+        ArrayDataCollection $properties
+    ) {
         $this->id = $id;
         $this->imageFile = $imageFile;
         $this->sidecarFile = $sidecarFile;
@@ -68,9 +83,10 @@ class ImageInfo implements StringPrimaryRecordInterface
         $this->date = $date;
         $this->upscaled = $upscaled;
         $this->forGallery = $forGallery;
+        $this->label = $label;
         $this->modified = $modified;
         $this->checkpoint = $checkpoint;
-        $this->properties = new ImageProperties($properties, $this->onPropertiesModified(...));
+        $this->properties = new ImageProperties($this, $properties, $this->onPropertiesModified(...));
     }
 
     public function prop() : ImageProperties
@@ -184,7 +200,7 @@ class ImageInfo implements StringPrimaryRecordInterface
         $this->imageFile = $newImageFile;
         $this->sidecarFile = $newSidecarFile;
 
-        $this->save();
+        OrganizerApp::create()->createImageCollection()->save();
 
         // Do this last, so that the image is not deleted if the save fails.
         $oldImage->delete();
@@ -222,6 +238,67 @@ class ImageInfo implements StringPrimaryRecordInterface
         return $result;
     }
 
+    public function copyToOutput() : void
+    {
+        $label = $this->getLabel();
+        if(empty($label)) {
+            $label = $this->getID();
+        }
+
+        $outputFile = FileInfo::factory(sprintf(
+            '%s/%s-%s-%s.png',
+            OUTPUT_FOLDER,
+            ConvertHelper::transliterate($label),
+            $this->prop()->getTestNumber(),
+            $this->prop()->getBatchNumber()
+        ));
+
+        if($outputFile->exists()) {
+            $outputFile->delete();
+        }
+
+        $this->imageFile->copyTo($outputFile);
+    }
+
+    public function registerLowResImage(ImageInfo $image) : void
+    {
+        $this->syncProperties();
+    }
+
+    /**
+     * Synchronizes the properties of this image with all
+     * low-resolution versions of this image.
+     *
+     * @return void
+     */
+    private function syncProperties() : void
+    {
+        $thisFavorite = $this->isFavorite();
+        $thisForGallery = $this->isForGallery();
+        $thisLabel = $this->getLabel();
+
+        foreach($this->findLowResVersions() as $lowResImage)
+        {
+            if ($thisFavorite) {
+                $lowResImage->setFavorite(true);
+            } else if ($lowResImage->isFavorite()) {
+                $this->setFavorite(true);
+            }
+
+            if ($thisForGallery) {
+                $lowResImage->setForGallery(true);
+            } else if ($lowResImage->isForGallery()) {
+                $this->setForGallery(true);
+            }
+
+            if(!empty($thisLabel)) {
+                $lowResImage->setLabel($thisLabel);
+            } else if(!empty($lowResImage->getLabel())) {
+                $this->setLabel($lowResImage->getLabel());
+            }
+        }
+    }
+
     private function onPropertiesModified() : void
     {
         $this->setDataChanged();
@@ -241,17 +318,20 @@ class ImageInfo implements StringPrimaryRecordInterface
             }
         }
 
+        $data = ArrayDataCollection::create($entry);
+
         return new ImageInfo(
-            $entry['id'],
-            FileInfo::factory($entry[ImageInfo::KEY_IMAGE_FILE]),
-            JSONFile::factory($entry[ImageInfo::KEY_SIDECAR_FILE]),
-            Microtime::createFromString($entry[ImageInfo::KEY_DATE]),
-            $entry[ImageInfo::KEY_CHECKPOINT],
-            $entry[ImageInfo::KEY_UPSCALED] === true,
-            $entry[ImageInfo::KEY_FOR_GALLERY] === true,
-            $entry[ImageInfo::KEY_MODIFIED] === true,
-            $entry[ImageInfo::KEY_IMAGE_SIZE],
-            ArrayDataCollection::create($entry[ImageInfo::KEY_PROPERTIES])
+            $data->getString('id'),
+            FileInfo::factory($data->getString(self::KEY_IMAGE_FILE)),
+            JSONFile::factory($data->getString(self::KEY_SIDECAR_FILE)),
+            Microtime::createFromString($data->getString(self::KEY_DATE)),
+            $data->getString(self::KEY_CHECKPOINT),
+            $data->getBool(self::KEY_UPSCALED),
+            $data->getBool(self::KEY_FOR_GALLERY),
+            $data->getBool(self::KEY_MODIFIED),
+            $data->getString(self::KEY_LABEL),
+            $data->getArray(self::KEY_IMAGE_SIZE),
+            ArrayDataCollection::create($data->getArray(self::KEY_PROPERTIES))
         );
     }
 
@@ -267,6 +347,7 @@ class ImageInfo implements StringPrimaryRecordInterface
             self::KEY_FOR_GALLERY => $this->forGallery,
             self::KEY_IMAGE_SIZE => $this->imageSize,
             self::KEY_MODIFIED => $this->modified,
+            self::KEY_LABEL => $this->label,
             self::KEY_PROPERTIES => $this->properties->serialize()
         );
     }
@@ -301,7 +382,7 @@ class ImageInfo implements StringPrimaryRecordInterface
 
     public function getLabel() : string
     {
-        return $this->imageFile->getBaseName();
+        return $this->label;
     }
 
     public function getDate() : Microtime
@@ -377,26 +458,29 @@ class ImageInfo implements StringPrimaryRecordInterface
         return $this;
     }
 
-    public function save() : self
+    public function setLabel(string $label) : self
     {
-        if($this->dataChanged)
-        {
-            // Set the modified flag if any data has changed,
-            // to protect the image from being overwritten by the
-            // indexer.
-            $this->modified = true;
-
-            OrganizerApp::create()->createImageCollection()->saveImage($this);
-        }
-
+        $this->label = $label;
+        $this->setDataChanged();
         return $this;
     }
 
     private bool $modified = false;
 
-    private bool $dataChanged = false;
+    public bool $dataChanged = false;
+
     private function setDataChanged() : void
     {
+        // Set the modified flag if any data has changed,
+        // to protect the image from being overwritten by the
+        // indexer.
+        $this->modified = true;
+
         $this->dataChanged = true;
+    }
+
+    public function isDataChanged() : bool
+    {
+        return $this->dataChanged;
     }
 }
