@@ -26,7 +26,9 @@ class SetForGalleryMethod extends BaseImageMethod
     {
         $forGallery = $this->request->getBool(self::REQUEST_PARAM_FOR_GALLERY);
 
-        $image->setForGallery($forGallery)->save();
+        $image->setForGallery($forGallery);
+
+        $this->collection->save();
 
         $this->sendSuccess(
             'Gallery successfully set to ['.ConvertHelper::bool2string($forGallery, true).'].',
