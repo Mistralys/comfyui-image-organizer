@@ -22,9 +22,11 @@ class ImageProperties
      * @var callable
      */
     private $modifiedCallback;
+    private ImageInfo $image;
 
-    public function __construct(ArrayDataCollection $data, callable $modifiedCallback)
+    public function __construct(ImageInfo $image, ArrayDataCollection $data, callable $modifiedCallback)
     {
+        $this->image = $image;
         $this->data = $data;
         $this->modifiedCallback = $modifiedCallback;
     }
@@ -89,9 +91,26 @@ class ImageProperties
         return $this->upscaledImage;
     }
 
+    /**
+     * Sets the upscaled image for this image.
+     *
+     * > NOTE: The upscaled image will also inherit this
+     * > image's favorite status and gallery status if they
+     * > are enabled for this image.
+     *
+     * @param ImageInfo $image
+     * @return self
+     */
     public function setUpscaledImage(ImageInfo $image) : self
     {
-        return $this->setKey(self::KEY_UPSCALED_IMAGE, $image->getID());
+        $this->upscaledImageSet = false;
+        $this->upscaledImage = null;
+
+        $this->setKey(self::KEY_UPSCALED_IMAGE, $image->getID());
+
+        $image->registerLowResImage($this->image);
+
+        return $this;
     }
 
     private function setKey(string $name, mixed $value) : self
