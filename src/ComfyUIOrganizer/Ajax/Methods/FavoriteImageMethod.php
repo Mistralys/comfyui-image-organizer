@@ -26,7 +26,9 @@ class FavoriteImageMethod extends BaseImageMethod
     {
         $favorite = $this->request->getBool(self::REQUEST_PARAM_FAVORITE);
 
-        $image->setFavorite($favorite)->save();
+        $image->setFavorite($favorite);
+
+        $this->collection->save();
 
         $this->sendSuccess(
             'Favorite successfully set to ['.ConvertHelper::bool2string($favorite, true).'].',
