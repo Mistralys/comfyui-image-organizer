@@ -43,11 +43,21 @@ class ImageHandler
 
     ToggleSelection()
     {
-        this.selected = !this.selected;
+        this.SetSelected(!this.selected);
+    }
+
+    /**
+     * @param {Boolean} selected
+     */
+    SetSelected(selected)
+    {
+        console.log('Image [' + this.imageID + '] | Set selected: ' + selected);
 
         let label;
 
-        if(this.selected) {
+        this.selected = selected;
+
+        if(selected) {
             this.GetDOMElement().classList.add('selected');
             label = '<i class="fas fa-toggle-on"></i> Unselect';
         } else {
@@ -91,8 +101,15 @@ class ImageHandler
         return this.selected;
     }
 
+    /**
+     * @param {Boolean} favorite
+     */
     SetFavorite(favorite)
     {
+        if(favorite === this.IsFavorite()) {
+            return;
+        }
+
         console.log('Image ['+this.imageID+'] | Set favorite: ' + favorite);
 
         const elEnabled = this.getDOMElement(this.wrapperID + ' .toggle-favorite.toggle-enabled');
@@ -111,6 +128,7 @@ class ImageHandler
 
     RemoveFromDOM()
     {
+        this.SetSelected(false); // Deselect the image if it is selected
         this.GetDOMElement().remove();
     }
 
@@ -126,7 +144,7 @@ class ImageHandler
 
         console.log('Image [' + this.imageID + '] | Handle moved event to ['+folder+'].');
 
-        this.getDOMElement(this.wrapperID + ' .folder-name').innerHTML = folder;
+        this.RemoveFromDOM();
     }
 
     IsForGallery()
@@ -134,8 +152,20 @@ class ImageHandler
         return this.GetDOMElement().classList.contains('forGallery');
     }
 
+    /**
+     * @param {Boolean} forGallery
+     */
     SetForGallery(forGallery)
     {
+        if(forGallery === this.IsForGallery()) {
+            return; // No change needed
+        }
+
+        // Automatically set as favorite if forGallery is true
+        if(forGallery === true) {
+            this.SetFavorite(true);
+        }
+
         console.log('Image ['+this.imageID+'] | Set forGallery: ' + forGallery);
 
         const elEnabled = this.getDOMElement(this.wrapperID + ' .toggle-for-gallery .toggle-enabled');
@@ -150,5 +180,10 @@ class ImageHandler
             elEnabled.hidden = true;
             elDisabled.hidden = false;
         }
+    }
+
+    SetLabel(label)
+    {
+        this.getDOMElement(this.wrapperID + ' .image-label').innerHTML = label;
     }
 }

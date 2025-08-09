@@ -11,6 +11,9 @@ class ImageBrowser
      * @param {String} ajaxMethodInfo.moveImage
      * @param {String} ajaxMethodInfo.setCardSize
      * @param {String} ajaxMethodInfo.setForGallery
+     * @param {String} ajaxMethodInfo.setLabel
+     * @param {String} ajaxMethodInfo.copyToOutput
+     * @param {String} ajaxMethodInfo.imageID
      */
     constructor(pageURL, ajaxMethodInfo)
     {
@@ -60,13 +63,6 @@ class ImageBrowser
         elSelection.hidden = false;
         elCount.innerText = number;
     }
-
-    DeleteSelectedImages()
-    {
-
-    }
-
-
 
     /**
      * Creates a new favorite image handler.
@@ -126,10 +122,42 @@ class ImageBrowser
      * @param {ImageHandler} image
      * @param {Object} response
      * @param {String} response.upscaledID
+     * @param {Boolean} response.upscaledFavorite
+     * @param {Boolean} response.upscaledForGallery
      */
     HandleSetUpscaledResponse(image, response)
     {
         image.RemoveFromDOM();
+
+        const upscaledImage = this.RequireImage(response.upscaledID);
+
+        // Update the image with the modified properties
+        // in case they have changed server-side.
+
+        if(response.upscaledFavorite) {
+            upscaledImage.SetFavorite(true);
+        }
+
+        if(response.upscaledForGallery) {
+            upscaledImage.SetForGallery(true);
+        }
+    }
+
+    CopyToOutput(imageID)
+    {
+        const image = this.RequireImage(imageID);
+
+        this.SendRequest(
+            image,
+            this.ajaxMethodInfo.copyToOutput,
+            this.HandleCopyToOutputResponse.bind(this),
+            {}
+        );
+    }
+
+    HandleCopyToOutputResponse(image, response)
+    {
+        UserInterface.ShowStatus('Image [' + image.GetID() + '] has been copied to the output folder.');
     }
 
     /**
@@ -232,7 +260,7 @@ class ImageBrowser
         }
 
         if(image !== null) {
-            params['imageID'] = image.GetID();
+            params[this.ajaxMethodInfo.imageID] = image.GetID();
         }
 
         params['ajax'] = action;
@@ -293,11 +321,47 @@ class ImageBrowser
         }
     }
 
+    LabelSelected()
+    {
+        let label = prompt('Enter the label for the images');
+
+        if(label === null) {
+            return;
+        }
+
+        label = label.trim();
+
+        for(const imageID in this.imageSelection) {
+            const image = this.imageSelection[imageID];
+            this.doSetLabel(image, label);
+            image.SetSelected(false);
+        }
+    }
+
+    CopySelectedToOutput()
+    {
+        for(const imageID in this.imageSelection) {
+            const image = this.imageSelection[imageID];
+            this.CopyToOutput(image.GetID());
+        }
+    }
+
     DeleteSelected()
     {
         for(const imageID in this.imageSelection) {
             const image = this.imageSelection[imageID];
+            this.HandleImageSelected(image, false);
             this.DeleteImage(imageID);
+        }
+    }
+
+    SelectAll()
+    {
+        for(const imageID in this.images) {
+            const image = this.images[imageID];
+            if(!image.IsSelected()) {
+                image.ToggleSelection();
+            }
         }
     }
 
@@ -474,5 +538,56 @@ class ImageBrowser
         image.SetForGallery(response.forGallery);
 
         UserInterface.ShowStatus('The image has been ' + (response.forGallery ? 'added to' : 'removed from') + ' the gallery.');
+    }
+
+    /**
+     * @param {String} imageID
+     */
+    SetLabel(imageID)
+    {
+        const image = this.RequireImage(imageID);
+        if(image === null) {
+            alert('Image with ID [' + imageID + '] not found.');
+            return;
+        }
+
+        let label = prompt('Enter the label for image [' + imageID + ']');
+        if(label === null) {
+            return;
+        }
+
+        this.doSetLabel(image, label);
+    }
+
+    /**
+     * @param {ImageHandler} image
+     * @param {String|null} label
+     */
+    doSetLabel(image, label)
+    {
+        if(label === null) {
+            label = '';
+        }
+
+        this.SendRequest(
+            image,
+            this.ajaxMethodInfo.setLabel,
+            this.HandleSetLabelResponse.bind(this),
+            {
+                'label': label.trim()
+            }
+        );
+    }
+
+    /**
+     * @param {ImageHandler} image
+     * @param {Object} response
+     * @param {String} response.label
+     */
+    HandleSetLabelResponse(image, response)
+    {
+        image.SetLabel(response.label);
+
+        UserInterface.ShowStatus('The label has been set to: ' + response.label);
     }
 }
