@@ -10,11 +10,13 @@ use AppUtils\FileHelper\JSONFile;
 use AppUtils\Interfaces\StringPrimaryRecordInterface;
 use AppUtils\JSHelper;
 use AppUtils\Request;
+use Mistralys\ComfyUIOrganizer\Ajax\Methods\CopyToOutputMethod;
 use Mistralys\ComfyUIOrganizer\Ajax\Methods\DeleteImageMethod;
 use Mistralys\ComfyUIOrganizer\Ajax\Methods\FavoriteImageMethod;
 use Mistralys\ComfyUIOrganizer\Ajax\Methods\MoveImageMethod;
 use Mistralys\ComfyUIOrganizer\Ajax\Methods\SetCardSizeMethod;
 use Mistralys\ComfyUIOrganizer\Ajax\Methods\SetForGalleryMethod;
+use Mistralys\ComfyUIOrganizer\Ajax\Methods\SetLabelMethod;
 use Mistralys\ComfyUIOrganizer\Ajax\Methods\SetUpscaledImageMethod;
 use Mistralys\X4\UI\UserInterface;
 
@@ -26,10 +28,15 @@ class ImageCollection extends BaseStringPrimaryCollection
 {
     const string REQUEST_PARAM_IMAGE_ID = 'imageID';
     private JSONFile $dataFile;
+    /**
+     * @var array<int|string,mixed>
+     */
+    private array $data;
 
     public function __construct(JSONFile $dataFile)
     {
         $this->dataFile = $dataFile;
+        $this->data = $dataFile->getData();
     }
 
     public function getDefaultID(): string
@@ -45,41 +52,29 @@ class ImageCollection extends BaseStringPrimaryCollection
         $image->getSidecarFile()->delete();
         $image->getThumbnailFile()->delete();
 
-        $data = $this->dataFile->getData();
-
-        foreach($data as $index => $entry) {
+        foreach($this->data as $index => $entry) {
             if($entry[ImageInfo::KEY_ID] === $image->getID()) {
-                unset($data[$index]);
+                unset($this->data[$index]);
                 break;
             }
         }
 
-        $this->dataFile->putData($data);
-
         foreach($image->findLowResVersions() as $lowResVersion) {
             $this->deleteImage($lowResVersion);
         }
+
+        $this->save();
     }
 
-    public function saveImage(ImageInfo $image) : void
+    public function save() : void
     {
-        $data = $this->dataFile->getData();
-        $id = $image->getID();
-
-        if(isset($data[$id])) {
-            $data[$id] = $image->serialize();
-            $this->dataFile->putData($data);
-            return;
+        foreach($this->getAll() as $image) {
+            if($image->isDataChanged()) {
+                $this->data[$image->getID()] = $image->serialize();
+            }
         }
 
-        throw new OrganizerException(
-            'Cannot save inexistent image.',
-            sprintf(
-                'Cannot save image [%s] to collection, no such ID found in the data.',
-            $id
-            ),
-            OrganizerException::ERROR_CANNOT_SAVE_INEXISTENT_IMAGE
-        );
+        $this->dataFile->putData($this->data);
     }
 
     /**
@@ -107,6 +102,9 @@ class ImageCollection extends BaseStringPrimaryCollection
                 'moveImage' => MoveImageMethod::METHOD_NAME,
                 'setCardSize' => SetCardSizeMethod::METHOD_NAME,
                 'setForGallery' => SetForGalleryMethod::METHOD_NAME,
+                'setLabel' => SetLabelMethod::METHOD_NAME,
+                'copyToOutput' => CopyToOutputMethod::METHOD_NAME,
+                'imageID' => self::REQUEST_PARAM_IMAGE_ID
             ))
         ));
 
@@ -117,7 +115,7 @@ class ImageCollection extends BaseStringPrimaryCollection
     {
         $this->missing = array();
 
-        foreach($this->dataFile->getData() as $entry)
+        foreach($this->data as $entry)
         {
             $image = ImageInfo::fromSerialized($entry);
 
