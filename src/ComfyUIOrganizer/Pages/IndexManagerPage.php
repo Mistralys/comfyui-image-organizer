@@ -8,13 +8,14 @@ use AppUtils\OutputBuffering;
 use Mistralys\ComfyUIOrganizer\BaseOrganizerPage;
 use Mistralys\ComfyUIOrganizer\ImageIndexer;
 use Mistralys\ComfyUIOrganizer\OrganizerApp;
-use Mistralys\X4\UI\Page\BasePage;
+use function AppLocalize\pt;
 use function AppLocalize\t;
 
 class IndexManagerPage extends BaseOrganizerPage
 {
     public const string URL_NAME = 'index-manager';
     private string $output;
+    private string $message = '';
 
     public function getID(): string
     {
@@ -47,27 +48,42 @@ class IndexManagerPage extends BaseOrganizerPage
             OutputBuffering::start();
             new ImageIndexer(OrganizerApp::create())->indexImages();
             $this->output = OutputBuffering::get();
+            $this->message = t('The index has been successfully refreshed.');
+        }
+
+        if($this->getRequest()->getBool('detectUpscaled')) {
+            OutputBuffering::start();
+            new ImageIndexer(OrganizerApp::create())->detectUpscaledImages();
+            $this->output = OutputBuffering::get();
+            $this->message = t('Upscaled images have been successfully detected.');
         }
     }
 
     protected function _render(): void
     {
-        if(!empty($this->output)) {
+        if(!empty($this->message)) {
             ?>
             <div class="alert alert-success">
-                <?php echo t('The index has been successfully rebuilt.'); ?>
+                <?php echo $this->message ?>
             </div>
             <pre><?php echo $this->output; ?></pre>
             <?php
         } else {
             ?>
             <p>
-                <?php echo t('This page allows you to rebuild the index of your images.'); ?>
+                <a href="<?php echo OrganizerApp::create()->url()->indexManager(array('rebuild' => 'yes')) ?>" class="btn btn-primary">
+                    <?php echo t('Refresh image index'); ?>
+                </a>
+                <br>
+                <?php pt('Rebuilds the image index to detect changes on disk.'); ?>
             </p>
             <p>
-                <a href="<?php echo OrganizerApp::create()->url()->indexManager(array('rebuild' => 'yes')) ?>" class="btn btn-primary">
-                    <?php echo t('Rebuild Index'); ?>
+
+                <a href="<?php echo OrganizerApp::create()->url()->indexManager(array('detectUpscaled' => 'yes')) ?>" class="btn btn-secondary">
+                    <?php echo t('Auto-detect upscaled'); ?>
                 </a>
+                <br>
+                <?php pt('Auto-detects upscaled versions of images when there is a single regular and upscaled image with the same generation settings.'); ?>
             </p>
             <?php
         }
