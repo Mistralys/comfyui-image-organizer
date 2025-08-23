@@ -451,6 +451,17 @@ class ImageBrowser
         return newFolder;
     }
 
+    /**
+     * @param {String} imageID
+     * @param event event
+     */
+    HandleImageClicked(imageID, event)
+    {
+        if(event.ctrlKey) {
+            this.ToggleSelection(imageID);
+        }
+    }
+
     MoveSelected()
     {
         if(this.imageSelection.length === 0) {
