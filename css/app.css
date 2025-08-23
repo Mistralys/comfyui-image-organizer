@@ -19,8 +19,13 @@
     border: solid 1px #000;
 }
 
+.image-wrapper.selected,
+.image-wrapper.upscaled.selected{
+    background: #2c5d8a;
+}
+
 .image-wrapper.selected .image-link{
-    border-color: #22ac00;
+    border-color: #83e1ff;
 }
 
 .image-wrapper .image-thumbnail{
