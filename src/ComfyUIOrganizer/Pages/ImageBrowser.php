@@ -506,7 +506,7 @@ class ImageBrowser extends BaseOrganizerPage
             );
         ?>
         <div class="dropdown" style="display: inline-block">
-            <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                 <?php pt('More'); ?>
             </button>
             <?php $this->renderImageMenu($image) ?>
