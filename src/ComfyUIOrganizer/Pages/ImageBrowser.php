@@ -314,6 +314,15 @@ class ImageBrowser extends BaseOrganizerPage
                 </button>
             </div>
         </div>
+        <hr>
+        <p>
+            <i>
+            <?php
+                pts('Note:');
+                pts('Use CTRL + click to toggle the selection of images.');
+            ?>
+            </i>
+        </p>
         <?php
     }
 
@@ -440,6 +449,7 @@ class ImageBrowser extends BaseOrganizerPage
         ?>
         <div id="wrapper-<?php echo $image->getID() ?>"
              class="image-wrapper <?php echo implode(' ', $classes) ?>"
+             onclick="<?php echo $this->objName ?>.HandleImageClicked('<?php echo $image->getID() ?>', event);return false;"
         >
             <a href="<?php echo $image->getViewDetailsURL()  ?>" class="image-link" target="_blank">
                 <img src="<?php echo $image->getThumbnailURL() ?>" alt="<?php echo $image->getLabel() ?>" loading="lazy" class="image-thumbnail thumbnail-xl"/>
