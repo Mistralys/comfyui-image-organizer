@@ -6,14 +6,16 @@
   <component name="ChangeListManager">
     <list default="true" id="d06d220e-a3f0-4d6c-85ff-2fcc28e8e726" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/index.php" beforeDir="false" afterPath="$PROJECT_DIR$/index.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/composer.json" beforeDir="false" afterPath="$PROJECT_DIR$/composer.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/composer.lock" beforeDir="false" afterPath="$PROJECT_DIR$/composer.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/js/ImageBrowser.js" beforeDir="false" afterPath="$PROJECT_DIR$/js/ImageBrowser.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ComfyUIOrganizer/Ajax/Methods/MoveImageMethod.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/ComfyUIOrganizer/Ajax/Methods/MoveImageMethod.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ComfyUIOrganizer/ImageCollection.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/ComfyUIOrganizer/ImageCollection.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ComfyUIOrganizer/Builder.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/ComfyUIOrganizer/Builder.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ComfyUIOrganizer/ImageIndexer.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/ComfyUIOrganizer/ImageIndexer.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/ComfyUIOrganizer/ImageInfo.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/ComfyUIOrganizer/ImageInfo.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ComfyUIOrganizer/OrganizerException.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/ComfyUIOrganizer/OrganizerException.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ComfyUIOrganizer/ImageProperties.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/ComfyUIOrganizer/ImageProperties.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/ComfyUIOrganizer/Pages/ImageBrowser.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/ComfyUIOrganizer/Pages/ImageBrowser.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/ComfyUIOrganizer/Pages/ImageDetails.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/ComfyUIOrganizer/Pages/ImageDetails.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ComfyUIOrganizer/Pages/IndexManagerPage.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/ComfyUIOrganizer/Pages/IndexManagerPage.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -62,25 +64,26 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;F:/Webserver/www/htdocs/personal/comfyui-image-organizer/data&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;php.override.implement.member.chooser.php.doc&quot;: &quot;NONE&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "com.jetbrains.php.refactoring.introduce.introduceConstant.PhpClassConstantInplaceIntroducer.lastSelectedVisibility": "public",
+    "git-widget-placeholder": "main",
+    "ignore.virus.scanning.warn.message": "true",
+    "last_opened_file_path": "F:/Webserver/www/htdocs/personal/comfyui-image-organizer/data",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "php.override.implement.member.chooser.php.doc": "NONE",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="F:\Webserver\www\htdocs\personal\comfyui-image-organizer\data" />
@@ -110,7 +113,15 @@
       <updated>1753528108319</updated>
       <workItem from="1753528109581" duration="22828000" />
       <workItem from="1753597745281" duration="29006000" />
-      <workItem from="1753647474243" duration="7860000" />
+      <workItem from="1753647474243" duration="16722000" />
+      <workItem from="1753800744171" duration="24755000" />
+      <workItem from="1753980266154" duration="1202000" />
+      <workItem from="1754389559725" duration="13074000" />
+      <workItem from="1754544973319" duration="12189000" />
+      <workItem from="1754663753173" duration="3658000" />
+      <workItem from="1754727699204" duration="10817000" />
+      <workItem from="1755970299307" duration="181000" />
+      <workItem from="1755970503017" duration="6422000" />
     </task>
     <servers />
   </component>
