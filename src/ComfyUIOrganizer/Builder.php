@@ -13,7 +13,25 @@ class Builder
     {
         self::init();
 
-        new ImageIndexer(OrganizerApp::create())->indexImages();
+        new ImageIndexer(OrganizerApp::create())
+            ->indexImages()
+            ->detectUpscaledImages();
+    }
+
+    public static function index(): void
+    {
+        self::init();
+
+        new ImageIndexer(OrganizerApp::create())
+            ->indexImages();
+    }
+
+    public static function detectUpscaled(): void
+    {
+        self::init();
+
+        new ImageIndexer(OrganizerApp::create())
+            ->detectUpscaledImages();
     }
 
     public static function postAutoload(): void

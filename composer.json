@@ -22,6 +22,8 @@
   },
   "scripts": {
     "build": "Mistralys\\ComfyUIOrganizer\\Builder::build",
+    "index": "Mistralys\\ComfyUIOrganizer\\Builder::index",
+    "detect-upscaled": "Mistralys\\ComfyUIOrganizer\\Builder::detectUpscaled",
     "post-autoload-dump": "Mistralys\\ComfyUIOrganizer\\Builder::postAutoload"
   }
 }

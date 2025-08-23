@@ -227,16 +227,16 @@
         },
         {
             "name": "mistralys/application-utils",
-            "version": "3.1.7",
+            "version": "3.1.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Mistralys/application-utils.git",
-                "reference": "fccc43db43c2b29d2ea4504e168a6c9da6737338"
+                "reference": "0bb12129f61873bcfc206db9233947cb2dd30fb0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Mistralys/application-utils/zipball/fccc43db43c2b29d2ea4504e168a6c9da6737338",
-                "reference": "fccc43db43c2b29d2ea4504e168a6c9da6737338",
+                "url": "https://api.github.com/repos/Mistralys/application-utils/zipball/0bb12129f61873bcfc206db9233947cb2dd30fb0",
+                "reference": "0bb12129f61873bcfc206db9233947cb2dd30fb0",
                 "shasum": ""
             },
             "require": {
@@ -284,9 +284,9 @@
             "description": "Drop-in utilities for PHP applications.",
             "support": {
                 "issues": "https://github.com/Mistralys/application-utils/issues",
-                "source": "https://github.com/Mistralys/application-utils/tree/3.1.7"
+                "source": "https://github.com/Mistralys/application-utils/tree/3.1.9"
             },
-            "time": "2025-04-01T21:16:58+00:00"
+            "time": "2025-08-01T12:36:48+00:00"
         },
         {
             "name": "mistralys/application-utils-collections",
@@ -562,12 +562,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/Mistralys/x4-core.git",
-                "reference": "12445ed1a5d77ddaadfcbb3e2004f2c3397bc8bf"
+                "reference": "9ca8a1c1214182a7de04f92097a39eea82b26500"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Mistralys/x4-core/zipball/12445ed1a5d77ddaadfcbb3e2004f2c3397bc8bf",
-                "reference": "12445ed1a5d77ddaadfcbb3e2004f2c3397bc8bf",
+                "url": "https://api.github.com/repos/Mistralys/x4-core/zipball/9ca8a1c1214182a7de04f92097a39eea82b26500",
+                "reference": "9ca8a1c1214182a7de04f92097a39eea82b26500",
                 "shasum": ""
             },
             "require": {
@@ -613,7 +613,7 @@
                 "issues": "https://github.com/Mistralys/x4-core/issues",
                 "source": "https://github.com/Mistralys/x4-core/tree/main"
             },
-            "time": "2025-07-29T19:58:31+00:00"
+            "time": "2025-08-10T16:12:04+00:00"
         },
         {
             "name": "mistralys/x4-data-extractor",
