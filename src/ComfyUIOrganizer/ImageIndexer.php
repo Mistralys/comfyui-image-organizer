@@ -23,7 +23,7 @@ class ImageIndexer
         $this->storageFile = $this->app->getStorageFile();
     }
 
-    public function indexImages(): void
+    public function indexImages(): self
     {
         Console::header('Indexing images');
 
@@ -60,6 +60,8 @@ class ImageIndexer
 
         Console::line1('ALL DONE!');
         Console::nl();
+
+        return $this;
     }
 
     private function analyzeImage(FileInfo $imageFile, JSONFile $sidecarFile): void
@@ -180,5 +182,82 @@ class ImageIndexer
         }
 
         return $result;
+    }
+
+    public function detectUpscaledImages() : self
+    {
+        Console::header('Upscaled images detection');
+
+        $collection = new ImageCollection($this->app->getStorageFile());
+
+        foreach($this->detectSettingHashes($collection) as $hash => $images)
+        {
+            // We can only handle pairs of images: One regular and one upscaled.
+            // Other more complex cases must be handled manually, as the choice
+            // is not obvious.
+            if(count($images) !== 2) {
+                continue;
+            }
+
+            Console::line1('Hash match', $hash);
+
+            $regular = null;
+            $upscaled = null;
+
+            foreach($images as $image) {
+                if(!$image->isUpscaled()) {
+                    $regular = $image;
+                } else {
+                    $upscaled = $image;
+                }
+
+                Console::line2(
+                    'Image ID [%s] | Size [%dx%d] | Upscaled [%s] | Facefix [%s]',
+                    $image->getImageFile()->getBaseName(),
+                    $image->getImageSize()['width'], $image->getImageSize()['height'],
+                    ConvertHelper::boolStrict2string($image->isUpscaled(), true),
+                    ConvertHelper::boolStrict2string($image->prop()->isFacefix(), true)
+                );
+            }
+
+            if($regular && $upscaled)
+            {
+                Console::line2('OK | Linking upscaled image [%s] to regular image [%s].', $upscaled->getImageFile()->getBaseName(), $regular->getImageFile()->getBaseName());
+                $regular->prop()->setUpscaledImage($upscaled);
+            } else {
+                Console::line2('SKIP | Could not determine which image is the upscaled one, skipping.');
+            }
+        }
+
+        $collection->save();
+
+        return $this;
+    }
+
+    /**
+     * @return array<string,ImageInfo[]>
+     */
+    private function detectSettingHashes(ImageCollection $collection) : array
+    {
+        $hashes = array();
+
+        foreach($collection->getAll() as $image)
+        {
+            // Skip images that are already marked as upscaled or already have an upscaled image assigned.
+            if($image->prop()->getUpscaledImage() !== null) {
+                continue;
+            }
+
+            $hash = $image->getSettingsHash();
+            if(!isset($hashes[$hash])) {
+                $hashes[$hash] = array();
+            }
+
+            $hashes[$hash][] = $image;
+        }
+
+        Console::line1('Found [%d] unique image settings hashes.', count($hashes));
+
+        return $hashes;
     }
 }
