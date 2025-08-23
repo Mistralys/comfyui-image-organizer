@@ -15,6 +15,7 @@ use AppUtils\ImageHelper;
 use AppUtils\Interfaces\StringPrimaryRecordInterface;
 use AppUtils\Microtime;
 use AppUtils\Request;
+use AppUtils\StringHelper;
 use Closure;
 use Mistralys\ComfyUIOrganizer\Pages\ImageDetails;
 use Mistralys\X4\UI\Page\BasePage;
@@ -179,11 +180,11 @@ class ImageInfo implements StringPrimaryRecordInterface
      */
     public function moveToFolder(string $folderName) : self
     {
-        if($folderName === $this->prop()->getFolderName()) {
+        if ($folderName === $this->prop()->getFolderName()) {
             return $this;
         }
 
-        $targetFolder = FolderInfo::factory($this->getImageFile()->getFolder()->getParentFolder().'/'.$folderName);
+        $targetFolder = FolderInfo::factory($this->getImageFile()->getFolder()->getParentFolder() . '/' . $folderName);
 
         $newImageFile = $this->resolveTargetFile($targetFolder, $this->imageFile);
         $newSidecarFile = ClassHelper::requireObjectInstanceOf(JSONFile::class, $this->resolveTargetFile($targetFolder, $this->sidecarFile));
@@ -209,11 +210,59 @@ class ImageInfo implements StringPrimaryRecordInterface
         // Also move all the low-resolution versions of this image
         // in case this is an upscaled image. We do this because
         // the low-resolution versions are not shown in the UI.
-        foreach($this->findLowResVersions() as $lowResImage) {
+        foreach ($this->findLowResVersions() as $lowResImage) {
             $lowResImage->moveToFolder($folderName);
         }
 
         return $this;
+    }
+
+    /**
+     * Retrieves a hash that represents the settings that were
+     * used to generate this image, and which can be shared
+     * across sizes (regular / upscaled...).
+     *
+     * The name, folder, date and other non-generation-related
+     * properties are not included in this hash.
+     *
+     * @return string
+     */
+    public function getSettingsHash() : string
+    {
+        return md5($this->getSettingsAsText());
+    }
+
+    /**
+     * Compiles a text representation of the settings
+     * that were used to generate this image.
+     *
+     * @return string
+     */
+    private function getSettingsAsText() : string
+    {
+        $props = $this->prop();
+
+        $mandatory = array(
+            $this->getCheckpoint(),
+            $props->getSeed(),
+            (string)$props->getCFG(),
+            $props->getPromptPositive(),
+            $props->getSampler(),
+            (string)$props->getSamplerSteps(),
+            $props->getScheduler(),
+        );
+
+        // If any mandatory value is empty, return the unique image ID to avoid mixups.
+        if (array_any($mandatory, fn($value) => $value === '')) {
+            return $this->getID();
+        }
+
+        $optional = array(
+            $props->getPromptNegative(),
+            $props->getLoRASummary()
+        );
+
+        return implode('$$', array_merge($mandatory, $optional));
     }
 
     /**
