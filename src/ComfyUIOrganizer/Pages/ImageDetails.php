@@ -6,6 +6,7 @@ namespace Mistralys\ComfyUIOrganizer\Pages;
 
 use AppUtils\OutputBuffering;
 use Mistralys\ComfyUIOrganizer\ImageInfo;
+use Mistralys\ComfyUIOrganizer\LoRAs\LoRAsCollection;
 use Mistralys\ComfyUIOrganizer\OrganizerApp;
 use Mistralys\X4\UI\Page\BasePage;
 use function AppUtils\t;
@@ -23,7 +24,7 @@ class ImageDetails extends BasePage
 
     public function getTitle(): string
     {
-        return t('Image details');
+        return '🔎 '.$this->image->getLabel();
     }
 
     public function getSubtitle(): string
@@ -84,12 +85,36 @@ class ImageDetails extends BasePage
 
         $list = array_merge($list, $this->image->prop()->serialize());
 
-        foreach($list as $key => $value) {
+        $loraIDs = LoRAsCollection::getInstance()->getIDs();
+
+        $loras = array();
+        foreach($list as $key => $value)
+        {
+            if(in_array($key, $loraIDs)) {
+                $loras[$key] = $value;
+                continue;
+            }
+
             $grid->addRowFromArray(array(
                 'key' => $key,
                 'value' => $value
             ));
         }
+
+        ksort($loras);
+
+        foreach ($loras as $key => $value)
+        {
+            $grid->addRowFromArray(array(
+                'key' => t('LoRA: ').$key,
+                'value' => $value
+            ));
+        }
+
+        $grid->addRowFromArray(array(
+            'key' => t('LoRA summary'),
+            'value' => $this->image->prop()->getLoRASummary()
+        ));
 
         echo $grid;
 
