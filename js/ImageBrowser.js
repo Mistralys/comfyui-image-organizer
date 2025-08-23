@@ -430,17 +430,25 @@ class ImageBrowser
     }
 
     /**
+     * @param {String} defaultFolder
      * @returns {String|null}
      */
-    RequestFolder()
+    RequestFolder(defaultFolder = '')
     {
-        const newFolder = prompt('Enter the new folder name:');
+        let newFolder = prompt('Enter the new folder name:', defaultFolder);
 
         if(newFolder === null || newFolder.trim() === '') {
             return null;
         }
 
-        return newFolder.trim();
+        newFolder = newFolder.trim();
+
+        if(!/^[A-Za-z0-9_-]+$/.test(newFolder)) {
+            alert('Invalid folder name. Only alphanumeric characters, underscores, and hyphens are allowed.');
+            return this.RequestFolder(newFolder);
+        }
+
+        return newFolder;
     }
 
     MoveSelected()
@@ -450,7 +458,7 @@ class ImageBrowser
             return;
         }
 
-        const newFolder = this.RequestFolder();
+        let newFolder = this.RequestFolder();
         if(newFolder === null) {
             return;
         }
