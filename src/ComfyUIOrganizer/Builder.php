@@ -15,7 +15,8 @@ class Builder
 
         new ImageIndexer(OrganizerApp::create())
             ->indexImages()
-            ->detectUpscaledImages();
+            ->detectUpscaledImages()
+            ->cleanUpFolders();
     }
 
     public static function index(): void
@@ -23,7 +24,8 @@ class Builder
         self::init();
 
         new ImageIndexer(OrganizerApp::create())
-            ->indexImages();
+            ->indexImages()
+            ->cleanUpFolders();
     }
 
     public static function detectUpscaled(): void
@@ -32,6 +34,14 @@ class Builder
 
         new ImageIndexer(OrganizerApp::create())
             ->detectUpscaledImages();
+    }
+
+    public static function cleanFolders(): void
+    {
+        self::init();
+
+        new ImageIndexer(OrganizerApp::create())
+            ->cleanUpFolders();
     }
 
     public static function postAutoload(): void
