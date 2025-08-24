@@ -116,11 +116,6 @@ class OrganizerApp extends X4Application
 
     public function url() : URLs
     {
-        return new URLs($this->ui);
-    }
-
-    public function setUI(UserInterface $ui) : void
-    {
-        $this->ui = $ui;
+        return new URLs($this->getUI());
     }
 }
