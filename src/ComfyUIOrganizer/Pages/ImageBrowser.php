@@ -511,15 +511,7 @@ class ImageBrowser extends BaseOrganizerPage
                 </div>
                 <div class="image-badges">
                     <?php
-                    if($image->isUpscaled()) {
-                        ?>
-                        <span class="badge text-bg-success"><?php echo mb_strtoupper(t('Upscaled')) ?></span>
-                        <?php
-                    } else {
-                        ?>
-                        <span class="badge text-bg-secondary"><?php echo mb_strtoupper(t('Regular')) ?></span>
-                        <?php
-                    }
+                    echo $image->getUpscalingBadge();
                     ?>
                 </div>
                 ID: <?php echo $image->getID() ?><br>
