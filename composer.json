@@ -3,6 +3,8 @@
   "description": "PHP tool used to organize and manage my collection of ComfyUI-generated images.",
   "type": "tool",
   "license": "MIT",
+  "minimum-stability": "dev",
+  "prefer-stable": true,
   "authors": [
     {
       "name": "Sebastian Mordziol",
