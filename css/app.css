@@ -154,3 +154,11 @@ FOOTER.fixed-bottom{
     width: 100%;
     z-index: 1000;
 }
+
+IMG.detail-image{
+    max-width: 100%; /* Avoid upscaling */
+    width: auto;
+    display: block;
+    border: solid 1px #000;
+}
+

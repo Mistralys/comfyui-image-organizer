@@ -44,6 +44,8 @@ class ImageDetails extends BasePage
 
     protected function preRender(): void
     {
+        $this->getUI()->addInternalStylesheet('app.css');
+
         $image = OrganizerApp::create()->createImageCollection()->getFromRequest();
 
         if($image === null) {
@@ -61,7 +63,7 @@ class ImageDetails extends BasePage
         <div id="wrapper-<?php echo $this->image->getID() ?>">
             <p>
                 <a href="<?php echo $this->image->getURL() ?>">
-                    <img src="<?php echo $this->image->getURL() ?>" style="width: 100%" alt="<?php echo t('Full image preview') ?>">
+                    <img class="detail-image" src="<?php echo $this->image->getURL() ?>" alt="<?php echo t('Full image preview') ?>">
                 </a>
             </p>
             <p>
