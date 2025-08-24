@@ -5,11 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d06d220e-a3f0-4d6c-85ff-2fcc28e8e726" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/comfyui-image-organizer.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/comfyui-image-organizer.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/php.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/php.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ComfyUIOrganizer/ImageInfo.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/ComfyUIOrganizer/ImageInfo.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ComfyUIOrganizer/Pages/ImageBrowser.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/ComfyUIOrganizer/Pages/ImageBrowser.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ComfyUIOrganizer/Pages/ImageDetails.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/ComfyUIOrganizer/Pages/ImageDetails.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/index.php" beforeDir="false" afterPath="$PROJECT_DIR$/index.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ComfyUIOrganizer/OrganizerApp.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/ComfyUIOrganizer/OrganizerApp.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ComfyUIOrganizer/Pages/IndexManagerPage.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/ComfyUIOrganizer/Pages/IndexManagerPage.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -25,25 +26,29 @@
   </component>
   <component name="PhpWorkspaceProjectConfiguration" interpreter_name="F:\Webserver\php\php.exe">
     <include_path>
-      <path value="$PROJECT_DIR$/vendor/fortawesome/font-awesome" />
-      <path value="$PROJECT_DIR$/vendor/mistralys/x4-data-extractor" />
-      <path value="$PROJECT_DIR$/vendor/neitanod/forceutf8" />
-      <path value="$PROJECT_DIR$/vendor/parsecsv/php-parsecsv" />
-      <path value="$PROJECT_DIR$/vendor/mistralys/application-utils-image" />
-      <path value="$PROJECT_DIR$/vendor/symfony/css-selector" />
-      <path value="$PROJECT_DIR$/vendor/mistralys/jtokenizer" />
-      <path value="$PROJECT_DIR$/vendor/mistralys/application-utils-result-handling" />
-      <path value="$PROJECT_DIR$/vendor/mistralys/application-utils" />
-      <path value="$PROJECT_DIR$/vendor/mistralys/application-localization" />
-      <path value="$PROJECT_DIR$/vendor/twbs/bootstrap" />
       <path value="$PROJECT_DIR$/vendor/geshi/geshi" />
-      <path value="$PROJECT_DIR$/vendor/mistralys/application-utils-collections" />
-      <path value="$PROJECT_DIR$/vendor/symfony/polyfill-php80" />
-      <path value="$PROJECT_DIR$/vendor/mistralys/x4-core" />
-      <path value="$PROJECT_DIR$/vendor/mistralys/application-utils-core" />
-      <path value="$PROJECT_DIR$/vendor/components/jquery" />
-      <path value="$PROJECT_DIR$/vendor/composer" />
+      <path value="$PROJECT_DIR$/vendor/symfony/css-selector" />
+      <path value="$PROJECT_DIR$/vendor/fortawesome/font-awesome" />
+      <path value="$PROJECT_DIR$/vendor/twbs/bootstrap" />
+      <path value="$PROJECT_DIR$/vendor/mistralys/x4-data-extractor" />
       <path value="$PROJECT_DIR$/vendor/thomaspark/bootswatch" />
+      <path value="$PROJECT_DIR$/vendor/mistralys/application-utils-result-handling" />
+      <path value="$PROJECT_DIR$/vendor/symfony/polyfill-php80" />
+      <path value="$PROJECT_DIR$/vendor/mistralys/application-utils-core" />
+      <path value="$PROJECT_DIR$/vendor/mistralys/application-utils-image" />
+      <path value="$PROJECT_DIR$/vendor/composer" />
+      <path value="$PROJECT_DIR$/vendor/mistralys/application-utils" />
+      <path value="$PROJECT_DIR$/vendor/mistralys/application-utils-collections" />
+      <path value="$PROJECT_DIR$/vendor/parsecsv/php-parsecsv" />
+      <path value="$PROJECT_DIR$/vendor/mistralys/application-localization" />
+      <path value="$PROJECT_DIR$/vendor/neitanod/forceutf8" />
+      <path value="$PROJECT_DIR$/vendor/components/jquery" />
+      <path value="$PROJECT_DIR$/vendor/mistralys/x4-core" />
+      <path value="$PROJECT_DIR$/vendor/mistralys/html_quickform2" />
+      <path value="$PROJECT_DIR$/vendor/mistralys/php-sprintf-parser" />
+      <path value="$PROJECT_DIR$/vendor/mistralys/changelog-parser" />
+      <path value="$PROJECT_DIR$/vendor/mistralys/version-parser" />
+      <path value="$PROJECT_DIR$/vendor/mck89/peast" />
     </include_path>
   </component>
   <component name="ProjectColorInfo">{
@@ -116,7 +121,7 @@
       <workItem from="1754727699204" duration="10817000" />
       <workItem from="1755970299307" duration="181000" />
       <workItem from="1755970503017" duration="8865000" />
-      <workItem from="1756013890407" duration="8962000" />
+      <workItem from="1756013890407" duration="12494000" />
     </task>
     <servers />
   </component>
