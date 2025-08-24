@@ -14,12 +14,14 @@ use AppUtils\FileHelper\JSONFile;
 use AppUtils\ImageHelper;
 use AppUtils\Interfaces\StringPrimaryRecordInterface;
 use AppUtils\Microtime;
+use AppUtils\OutputBuffering;
 use AppUtils\Request;
 use AppUtils\StringHelper;
 use Closure;
 use Mistralys\ComfyUIOrganizer\Pages\ImageDetails;
 use Mistralys\X4\UI\Page\BasePage;
 use Mistralys\X4\UI\UserInterface;
+use function AppLocalize\t;
 use const Mistralys\ComfyUIOrganizer\Config\APP_WEBROOT_URL;
 
 class ImageInfo implements StringPrimaryRecordInterface
@@ -531,5 +533,22 @@ class ImageInfo implements StringPrimaryRecordInterface
     public function isDataChanged() : bool
     {
         return $this->dataChanged;
+    }
+
+    public function getUpscalingBadge() : string
+    {
+        OutputBuffering::start();
+
+        if($this->isUpscaled()) {
+            ?>
+            <span class="badge text-bg-success"><?php echo mb_strtoupper(t('Upscaled')) ?></span>
+            <?php
+        } else {
+            ?>
+            <span class="badge text-bg-secondary"><?php echo mb_strtoupper(t('Regular')) ?></span>
+            <?php
+        }
+
+        return OutputBuffering::get();
     }
 }
