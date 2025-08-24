@@ -156,9 +156,8 @@ FOOTER.fixed-bottom{
 }
 
 IMG.detail-image{
-    max-width: 100%; /* Avoid upscaling */
+    max-width: 24rem; /* Avoid upscaling */
     width: auto;
-    display: block;
+    display: inline-block;
     border: solid 1px #000;
 }
-
