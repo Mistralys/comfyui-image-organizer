@@ -68,6 +68,8 @@ class ImageBrowser extends BaseOrganizerPage
 
     protected function preRender(): void
     {
+        $this->getUI()->addInternalStylesheet('app.css');
+
         $this->collection = OrganizerApp::create()->createImageCollection();
         $this->defaultSize = self::CARD_SIZE_L;
         $this->cardSizes = self::getCardSizes();

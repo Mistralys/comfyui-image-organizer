@@ -89,7 +89,6 @@ class ImageCollection extends BaseStringPrimaryCollection
         $ui->addInternalJS('ImageBrowser.js');
         $ui->addInternalJS('ImageHandler.js');
         $ui->addInternalJS('UI.js');
-        $ui->addInternalStylesheet('app.css');
 
         $ui->addJSHead(sprintf(
             "const %s = new ImageBrowser('%s', %s);",

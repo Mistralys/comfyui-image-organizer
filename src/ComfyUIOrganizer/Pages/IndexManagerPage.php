@@ -47,6 +47,8 @@ class IndexManagerPage extends BaseOrganizerPage
 
     protected function preRender(): void
     {
+        $this->getUI()->addInternalStylesheet('app.css');
+
         if($this->getRequest()->getBool(self::REQUEST_PARAM_REFRESH)) {
             OutputBuffering::start();
             new ImageIndexer(OrganizerApp::create())->indexAll();
