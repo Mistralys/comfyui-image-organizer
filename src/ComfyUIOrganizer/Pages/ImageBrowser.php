@@ -8,12 +8,14 @@ use AppUtils\ConvertHelper;
 use AppUtils\OutputBuffering;
 use Mistralys\ComfyUIOrganizer\BaseOrganizerPage;
 use Mistralys\ComfyUIOrganizer\ImageCollection;
+use Mistralys\ComfyUIOrganizer\ImageIndexer;
 use Mistralys\ComfyUIOrganizer\ImageInfo;
 use Mistralys\ComfyUIOrganizer\OrganizerApp;
 use Mistralys\X4\UI\Icon;
 use function AppLocalize\pt;
 use function AppLocalize\pts;
 use function AppLocalize\t;
+use function AppUtils\sb;
 
 class ImageBrowser extends BaseOrganizerPage
 {
@@ -28,6 +30,7 @@ class ImageBrowser extends BaseOrganizerPage
     const string CARD_SIZE_L = 'l';
     const string CARD_SIZE_XL = 'xl';
     public const string REQUEST_PARAM_REMOVE_MISSING = 'removeMissing';
+    public const int RESULT_REFRESHED = 181001;
 
     private ImageCollection $collection;
     private string $defaultSize;
@@ -66,17 +69,45 @@ class ImageBrowser extends BaseOrganizerPage
     protected function preRender(): void
     {
         $this->collection = OrganizerApp::create()->createImageCollection();
-
         $this->defaultSize = self::CARD_SIZE_L;
-
         $this->cardSizes = self::getCardSizes();
-
         $this->activeCardSize = $this->resolveActiveCardSize();
+        $this->objName = $this->collection->injectJS($this->ui, $this->getURL());
+
+        $this->upscaledOnly = $this->resolveBooleanToggle(self::REQUEST_PARAM_UPSCALED);
+        $this->favoritesOnly = $this->resolveBooleanToggle(self::REQUEST_PARAM_FAVORITES);
+        $this->galleryOnly = $this->resolveBooleanToggle(self::REQUEST_PARAM_GALLERY);
+
+        $this->folders = $this->collection->getFolderNames();
+        $this->activeFolder = $this->resolveActiveFolder();
+
+        if($this->request->getBool('refresh') && !empty($this->activeFolder)) {
+            $this->handleRefreshFolder();
+        }
 
         if($this->request->getBool(self::REQUEST_PARAM_REMOVE_MISSING)) {
             $this->collection->removeMissingImages();
             $this->redirect($this->getURL());
         }
+    }
+
+    private function handleRefreshFolder() : never
+    {
+        $results = new ImageIndexer(OrganizerApp::create())
+            ->indexFolder($this->activeFolder)
+            ->detectUpscaledInFolder($this->activeFolder)
+            ->getAnalysisResults();
+
+        $this->redirectWithSuccessMessage(
+            $this->getURL(),
+            sb()
+                ->t('Index successfully refreshed.')
+                ->t(
+                    'Added %1$s new images, updated %2$s existing ones.',
+                    $results->countSuccesses(), $results->countNotices()
+                ),
+            self::RESULT_REFRESHED
+        );
     }
 
     public static function getCardSizes() : array
@@ -170,15 +201,6 @@ class ImageBrowser extends BaseOrganizerPage
 
     protected function _render(): void
     {
-        $this->objName = $this->collection->injectJS($this->ui, $this->getURL());
-
-        $this->upscaledOnly = $this->resolveBooleanToggle(self::REQUEST_PARAM_UPSCALED);
-        $this->favoritesOnly = $this->resolveBooleanToggle(self::REQUEST_PARAM_FAVORITES);
-        $this->galleryOnly = $this->resolveBooleanToggle(self::REQUEST_PARAM_GALLERY);
-
-        $this->folders = $this->collection->getFolderNames();
-        $this->activeFolder = $this->resolveActiveFolder();
-
         OutputBuffering::start();
 
         $missing = $this->collection->getMissingImages();
@@ -328,6 +350,18 @@ class ImageBrowser extends BaseOrganizerPage
                     <?php pt('Select none') ?>
                 </button>
             </div>
+            <?php
+            if(!empty($this->activeFolder)) {
+                ?>
+                <div class="btn-group">
+                    <a class="btn btn-secondary" href="<?php echo $this->getURL(array('refresh' => 'yes')) ?>">
+                        <?php echo Icon::typeSolid('recycle') ?>
+                        <?php pt('Refresh') ?>
+                    </a>
+                </div>
+                <?php
+            }
+            ?>
         </div>
         <hr>
         <p>
@@ -464,7 +498,7 @@ class ImageBrowser extends BaseOrganizerPage
         ?>
         <div id="wrapper-<?php echo $image->getID() ?>"
              class="image-wrapper <?php echo implode(' ', $classes) ?>"
-             onclick="<?php echo $this->objName ?>.HandleImageClicked('<?php echo $image->getID() ?>', event);return false;"
+             onclick="return <?php echo $this->objName ?>.HandleImageClicked('<?php echo $image->getID() ?>', event);"
         >
             <a href="<?php echo $image->getViewDetailsURL()  ?>" class="image-link" target="_blank">
                 <img src="<?php echo $image->getThumbnailURL() ?>" alt="<?php echo $image->getLabel() ?>" loading="lazy" class="image-thumbnail thumbnail-xl"/>
