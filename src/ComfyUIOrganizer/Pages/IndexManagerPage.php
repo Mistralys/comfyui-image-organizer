@@ -66,8 +66,8 @@ class IndexManagerPage extends BaseOrganizerPage
         if($this->getRequest()->getBool(self::REQUEST_PARAM_CLEAN_FOLDERS)) {
             OutputBuffering::start();
             new ImageIndexer(OrganizerApp::create())->cleanUpFolders();
-            $this->output = OutputBuffering::get();
-            $this->message = t('Empty folders have been successfully cleaned up.');
+            OutputBuffering::stop();
+            $this->redirectWithSuccessMessage($this->getURL(), t('Empty folders have been successfully cleaned up.'));
         }
     }
 
