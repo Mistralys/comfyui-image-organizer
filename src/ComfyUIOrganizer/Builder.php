@@ -14,7 +14,7 @@ class Builder
         self::init();
 
         new ImageIndexer(OrganizerApp::create())
-            ->indexImages()
+            ->indexAll()
             ->detectUpscaledImages()
             ->cleanUpFolders();
     }
@@ -24,7 +24,7 @@ class Builder
         self::init();
 
         new ImageIndexer(OrganizerApp::create())
-            ->indexImages()
+            ->indexAll()
             ->cleanUpFolders();
     }
 
