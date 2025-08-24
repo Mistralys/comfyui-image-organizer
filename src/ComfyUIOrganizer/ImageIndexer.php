@@ -6,13 +6,20 @@ namespace Mistralys\ComfyUIOrganizer;
 
 use AppUtils\ConvertHelper;
 use AppUtils\FileHelper\FileInfo;
+use AppUtils\FileHelper\FolderInfo;
 use AppUtils\FileHelper\JSONFile;
 use AppUtils\ImageHelper;
 use AppUtils\Microtime;
+use AppUtils\OperationResult_Collection;
 use Mistralys\X4\UI\Console;
+use function AppUtils\t;
 
 class ImageIndexer
 {
+    public const int ACTION_UPDATE_PATHS = 180901;
+    public const int ACTION_SKIP_NO_CHECKPOINT = 180902;
+    public const int ACTION_IMAGE_INDEXED = 180903;
+
     private OrganizerApp $app;
     private array $images = array();
     private JSONFile $storageFile;
@@ -21,25 +28,49 @@ class ImageIndexer
     {
         $this->app = $app;
         $this->storageFile = $this->app->getStorageFile();
+        $this->analysisResults = new OperationResult_Collection($this);
     }
 
-    public function indexImages(): self
+    private function loadIndex() : void
     {
-        Console::header('Indexing images');
-
-        if ($this->storageFile->exists()) {
-            Console::line1('Found existing image index file, loading data...');
-            $this->images = $this->storageFile->getData();
-            $this->storageFile->copyTo($this->storageFile->getFolder().'/backup/images-'.Microtime::createNow()->format('Y-m-d-H-i-s').'.json');
+        if (!$this->storageFile->exists()) {
+            return;
         }
 
-        $files = $this->app->getImageFolder()->createFileFinder()
+        Console::line1('Found existing image index file, loading data...');
+        $this->images = $this->storageFile->getData();
+        $this->storageFile->copyTo($this->storageFile->getFolder().'/backup/images-'.Microtime::createNow()->format('Y-m-d-H-i-s').'.json');
+    }
+
+    public function findAllImages() : array
+    {
+        return $this->app->getImageFolder()->createFileFinder()
             ->includeExtension('png')
             ->makeRecursive()
             ->getFiles()
             ->typeANY();
+    }
 
-        Console::line1('Found [%d] image files.', count($files));
+    public function indexAll(): self
+    {
+        Console::header('Indexing images');
+
+        return $this->analyzeImages($this->findAllImages());
+    }
+
+    private OperationResult_Collection $analysisResults;
+
+    /**
+     * @param FileInfo[] $files
+     * @return $this
+     */
+    private function analyzeImages(array $files) : self
+    {
+        $this->loadIndex();
+
+        Console::line1('Processing [%d] image files.', count($files));
+
+        $this->analysisResults = new OperationResult_Collection($this);
 
         foreach($files as $file)
         {
@@ -76,16 +107,50 @@ class ImageIndexer
         $id = hash_file('md5', $imageFile->getPath());
 
         // Do not change any images that have already been indexed and modified.
+        // BUT: Update the image and sidecar file paths in the existing entry, as they
+        // may have been moved or renamed. Since the ID is a file hash, we can
+        // safely update the paths without changing the ID.
+
         if(isset($this->images[$id][ImageInfo::KEY_MODIFIED]) && $this->images[$id][ImageInfo::KEY_MODIFIED] === true)
         {
-            // Update the image and sidecar file paths in the existing entry, as they
-            // may have been moved or renamed. Since the ID is a file hash, we can
-            // safely update the paths without changing the ID.
-            $this->images[$id][ImageInfo::KEY_IMAGE_FILE] = $imageFile->getPath();
-            $this->images[$id][ImageInfo::KEY_SIDECAR_FILE] = $sidecarFile->getPath();
-            $this->images[$id][ImageInfo::KEY_PROPERTIES][ImageProperties::KEY_FOLDER_NAME] = $imageFile->getFolder()->getName();
+            $file = $imageFile->getPath();
+            $sidecar = $sidecarFile->getPath();
+            $folder = $imageFile->getFolder()->getName();
 
-            Console::line2('SKIP | Already indexed and modified.');
+            $updated = false;
+
+            if($this->images[$id][ImageInfo::KEY_IMAGE_FILE] !== $file)
+            {
+                $this->images[$id][ImageInfo::KEY_IMAGE_FILE] = $file;
+                $updated = true;
+            }
+
+            if($this->images[$id][ImageInfo::KEY_SIDECAR_FILE] !== $sidecar)
+            {
+                $this->images[$id][ImageInfo::KEY_SIDECAR_FILE] = $sidecar;
+                $updated = true;
+            }
+
+            if(empty($this->images[$id][ImageInfo::KEY_PROPERTIES][ImageProperties::KEY_FOLDER_NAME]) || $this->images[$id][ImageInfo::KEY_PROPERTIES][ImageProperties::KEY_FOLDER_NAME] !== $folder)
+            {
+                $this->images[$id][ImageInfo::KEY_PROPERTIES][ImageProperties::KEY_FOLDER_NAME] = $folder;
+                $updated = true;
+            }
+
+            if($updated)
+            {
+                Console::line2('UPDATE | Updated file paths in index.');
+
+                $this->analysisResults->makeNotice(
+                    t('Image [%s] | UPDATE | Updated file paths in index.', $imageFile->getName()),
+                    self::ACTION_UPDATE_PATHS
+                );
+            }
+            else
+            {
+                Console::line2('SKIP | Already indexed and modified, no changes.');
+            }
+
             return;
         }
 
@@ -94,8 +159,15 @@ class ImageIndexer
         $checkpoint = $properties['checkpoint'] ?? '';
         $text = $properties['custom_text'] ?? '';
 
-        if(empty($checkpoint)) {
+        if(empty($checkpoint))
+        {
             Console::line2('SKIP | No checkpoint found.');
+
+            $this->analysisResults->makeWarning(
+                t('Image [%s] | SKIP | No checkpoint information found.', $imageFile->getName()),
+                self::ACTION_SKIP_NO_CHECKPOINT
+            );
+
             return;
         }
 
@@ -151,6 +223,16 @@ class ImageIndexer
             ImageInfo::KEY_IMAGE_SIZE => array('width' => $size->getWidth(), 'height' => $size->getHeight()),
             ImageInfo::KEY_PROPERTIES => $props
         );
+
+        $this->analysisResults->makeSuccess(
+            t('Image [%s] | OK | Indexed successfully.', $imageFile->getName()),
+            self::ACTION_IMAGE_INDEXED
+        );
+    }
+
+    public function getAnalysisResults() : OperationResult_Collection
+    {
+        return $this->analysisResults;
     }
 
     private function parseText(string $text) : array
@@ -184,13 +266,18 @@ class ImageIndexer
         return $result;
     }
 
-    public function detectUpscaledImages() : self
+    public function detectUpscaledInFolder(string $folderName) : self
+    {
+        return $this->detectUpscaledImages($folderName);
+    }
+
+    public function detectUpscaledImages(?string $folderName=null) : self
     {
         Console::header('Upscaled images detection');
 
         $collection = new ImageCollection($this->app->getStorageFile());
 
-        foreach($this->detectSettingHashes($collection) as $hash => $images)
+        foreach($this->detectSettingHashes($collection, $folderName) as $hash => $images)
         {
             // We can only handle pairs of images: One regular and one upscaled.
             // Other more complex cases must be handled manually, as the choice
@@ -235,14 +322,19 @@ class ImageIndexer
     }
 
     /**
+     * Groups images by their settings hash.
      * @return array<string,ImageInfo[]>
      */
-    private function detectSettingHashes(ImageCollection $collection) : array
+    private function detectSettingHashes(ImageCollection $collection, ?string $folderName=null) : array
     {
         $hashes = array();
 
         foreach($collection->getAll() as $image)
         {
+            if($folderName !== null && $image->prop()->getFolderName() !== $folderName) {
+                continue;
+            }
+
             // Skip images that are already marked as upscaled or already have an upscaled image assigned.
             if($image->prop()->getUpscaledImage() !== null) {
                 continue;
@@ -277,5 +369,24 @@ class ImageIndexer
         Console::nl();
 
         return $this;
+    }
+
+    public function findFolderImages(string $folderName) : array
+    {
+        $folder = FolderInfo::factory($this->app->getImageFolder().'/'.$folderName);
+
+        if(!$folder->exists()) {
+            return array();
+        }
+
+        return $folder->createFileFinder()
+            ->includeExtension('png')
+            ->getFiles()
+            ->typeANY();
+    }
+
+    public function indexFolder(string $folderName) : self
+    {
+        return $this->analyzeImages($this->findFolderImages($folderName));
     }
 }
