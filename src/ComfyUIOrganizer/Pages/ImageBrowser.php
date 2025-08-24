@@ -97,7 +97,7 @@ class ImageBrowser extends BaseOrganizerPage
     {
         $results = new ImageIndexer(OrganizerApp::create())
             ->indexFolder($this->activeFolder)
-            ->detectUpscaledInFolder($this->activeFolder)
+            //->detectUpscaledInFolder($this->activeFolder)
             ->getAnalysisResults();
 
         $this->redirectWithSuccessMessage(
