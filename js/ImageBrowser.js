@@ -459,7 +459,10 @@ class ImageBrowser
     {
         if(event.ctrlKey) {
             this.ToggleSelection(imageID);
+            return false;
         }
+
+        return true;
     }
 
     MoveSelected()
