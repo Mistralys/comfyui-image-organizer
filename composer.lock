@@ -562,12 +562,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/Mistralys/x4-core.git",
-                "reference": "9ca8a1c1214182a7de04f92097a39eea82b26500"
+                "reference": "77f6dfb55ce5b35c6c864d42e77d6b0fdc7f8be3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Mistralys/x4-core/zipball/9ca8a1c1214182a7de04f92097a39eea82b26500",
-                "reference": "9ca8a1c1214182a7de04f92097a39eea82b26500",
+                "url": "https://api.github.com/repos/Mistralys/x4-core/zipball/77f6dfb55ce5b35c6c864d42e77d6b0fdc7f8be3",
+                "reference": "77f6dfb55ce5b35c6c864d42e77d6b0fdc7f8be3",
                 "shasum": ""
             },
             "require": {
@@ -613,7 +613,7 @@
                 "issues": "https://github.com/Mistralys/x4-core/issues",
                 "source": "https://github.com/Mistralys/x4-core/tree/main"
             },
-            "time": "2025-08-10T16:12:04+00:00"
+            "time": "2025-08-24T08:05:25+00:00"
         },
         {
             "name": "mistralys/x4-data-extractor",
@@ -835,7 +835,7 @@
         },
         {
             "name": "symfony/polyfill-php80",
-            "version": "v1.32.0",
+            "version": "v1.33.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-php80.git",
@@ -895,7 +895,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-php80/tree/v1.32.0"
+                "source": "https://github.com/symfony/polyfill-php80/tree/v1.33.0"
             },
             "funding": [
                 {
@@ -904,6 +904,10 @@
                 },
                 {
                     "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/nicolas-grekas",
                     "type": "github"
                 },
                 {
