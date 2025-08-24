@@ -260,4 +260,22 @@ class ImageIndexer
 
         return $hashes;
     }
+
+    public function cleanUpFolders() : self
+    {
+        Console::header('Cleaning up empty folders');
+
+        foreach($this->app->getImageFolder()->getSubFolders() as $folder)
+        {
+            if($folder->isEmpty()) {
+                Console::line1('Removing empty folder [%s].', $folder->getName());
+                $folder->delete();
+            }
+        }
+
+        Console::line1('ALL DONE!');
+        Console::nl();
+
+        return $this;
+    }
 }
