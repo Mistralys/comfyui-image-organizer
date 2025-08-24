@@ -111,6 +111,20 @@ class ImageCollection extends BaseStringPrimaryCollection
         return $objName;
     }
 
+    /**
+     * Removes all images in the index that were found to be missing on the disk.
+     *
+     * @return $this
+     */
+    public function removeMissingImages() : self
+    {
+        foreach($this->getMissingImages() as $image) {
+            $this->deleteImage($image);
+        }
+
+        return $this;
+    }
+
     protected function registerItems(): void
     {
         $this->missing = array();
@@ -137,6 +151,8 @@ class ImageCollection extends BaseStringPrimaryCollection
      */
     public function getMissingImages(): array
     {
+        $this->initItems();
+
         return $this->missing;
     }
 
