@@ -27,6 +27,7 @@ class ImageBrowser extends BaseOrganizerPage
     const string CARD_SIZE_M = 'm';
     const string CARD_SIZE_L = 'l';
     const string CARD_SIZE_XL = 'xl';
+    public const string REQUEST_PARAM_REMOVE_MISSING = 'removeMissing';
 
     private ImageCollection $collection;
     private string $defaultSize;
@@ -71,6 +72,11 @@ class ImageBrowser extends BaseOrganizerPage
         $this->cardSizes = self::getCardSizes();
 
         $this->activeCardSize = $this->resolveActiveCardSize();
+
+        if($this->request->getBool(self::REQUEST_PARAM_REMOVE_MISSING)) {
+            $this->collection->removeMissingImages();
+            $this->redirect($this->getURL());
+        }
     }
 
     public static function getCardSizes() : array
@@ -185,20 +191,29 @@ class ImageBrowser extends BaseOrganizerPage
         if(!empty($missing)) {
             ?>
             <div class="alert alert-warning">
+                <p>
+                <b><?php pt('Some images are missing on disk:'); ?></b>
                 <?php
-                    pts('The following images are missing.');
                     pts('This can happen if the image files were deleted or moved outside of the organizer.');
-                    pts('It is recommended to refresh the index, then delete the images if they are indeed missing.');
-                ?><br>
+                    pts('They are still present in the index, but cannot be found on disk.');
+                    pts('It is recommended to refresh the index in case they were not deleted, but only moved.');
+                    pts('If they are indeed missing, you can remove them from the index with the button below.');
+                ?>
+                </p>
                 <ul>
                     <?php
                     foreach($missing as $image) {
                         ?>
-                        <li><?php echo $image->getID() ?></li>
+                        <li><?php echo $image->getImageFile()->getName() ?></li>
                         <?php
                     }
                     ?>
                 </ul>
+                <p>
+                    <button class="btn btn-primary" onclick="document.location.href='<?php echo $this->getURL(array(self::REQUEST_PARAM_REMOVE_MISSING => 'yes')) ?>'">
+                        <?php pt('Remove from the index'); ?>
+                    </button>
+                </p>
             </div>
             <?php
         }
