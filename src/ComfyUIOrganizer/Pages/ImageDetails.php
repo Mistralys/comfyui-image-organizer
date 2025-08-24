@@ -9,6 +9,7 @@ use Mistralys\ComfyUIOrganizer\ImageInfo;
 use Mistralys\ComfyUIOrganizer\LoRAs\LoRAsCollection;
 use Mistralys\ComfyUIOrganizer\OrganizerApp;
 use Mistralys\X4\UI\Page\BasePage;
+use function AppLocalize\pts;
 use function AppUtils\t;
 use const Mistralys\ComfyUIOrganizer\Config\APP_WEBROOT_URL;
 
@@ -65,12 +66,17 @@ class ImageDetails extends BasePage
         </p>
         <div id="wrapper-<?php echo $this->image->getID() ?>">
             <p>
-                <a href="<?php echo $this->image->getURL() ?>">
+                <a href="<?php echo $this->image->getURL() ?>" target="_blank">
                     <img class="detail-image" src="<?php echo $this->image->getURL() ?>" alt="<?php echo t('Full image preview') ?>">
                 </a>
             </p>
             <p>
-
+                <i>
+                <?php
+                pts('Hint:');
+                pts('The image can be dragged from here into ComfyUI to load its workflow.');
+                ?>
+                </i>
             </p>
         </div>
         <?php
