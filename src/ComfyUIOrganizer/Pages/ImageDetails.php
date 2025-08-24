@@ -60,6 +60,9 @@ class ImageDetails extends BasePage
         OutputBuffering::start();
 
         ?>
+        <p>
+            <?php echo $this->image->getUpscalingBadge() ?>
+        </p>
         <div id="wrapper-<?php echo $this->image->getID() ?>">
             <p>
                 <a href="<?php echo $this->image->getURL() ?>">
@@ -83,6 +86,7 @@ class ImageDetails extends BasePage
             t('Image file') => $this->image->getImageFile()->getPath(),
             t('Sidecar file') => $this->image->getSidecarFile()->getPath(),
             t('Image size') => $this->image->getImageSize()['width'].' x '.$this->image->getImageSize()['height'],
+            t('Upscaled?') => $this->renderBool($this->image->isUpscaled())
         );
 
         $list = array_merge($list, $this->image->prop()->serialize());
@@ -95,6 +99,10 @@ class ImageDetails extends BasePage
             if(in_array($key, $loraIDs)) {
                 $loras[$key] = $value;
                 continue;
+            }
+
+            if(is_bool($value)) {
+                $value = $this->renderBool($value);
             }
 
             $grid->addRowFromArray(array(
