@@ -50,7 +50,6 @@ class ImageInfo implements StringPrimaryRecordInterface
      * @var array{width:int, height:int}
      */
     private array $imageSize;
-    private bool $forGallery;
     private string $label;
 
     /**
@@ -60,7 +59,6 @@ class ImageInfo implements StringPrimaryRecordInterface
      * @param Microtime $date
      * @param string $checkpoint
      * @param bool $upscaled
-     * @param bool $forGallery
      * @param bool $modified
      * @param string $label
      * @param array{width:int, height:int} $imageSize
@@ -73,7 +71,6 @@ class ImageInfo implements StringPrimaryRecordInterface
         Microtime $date,
         string $checkpoint,
         bool $upscaled,
-        bool $forGallery,
         bool $modified,
         string $label,
         array $imageSize,
@@ -85,7 +82,6 @@ class ImageInfo implements StringPrimaryRecordInterface
         $this->imageSize = $imageSize;
         $this->date = $date;
         $this->upscaled = $upscaled;
-        $this->forGallery = $forGallery;
         $this->label = $label;
         $this->modified = $modified;
         $this->checkpoint = $checkpoint;
@@ -95,23 +91,6 @@ class ImageInfo implements StringPrimaryRecordInterface
     public function prop() : ImageProperties
     {
         return $this->properties;
-    }
-
-    public function isForGallery() : bool
-    {
-        return $this->forGallery;
-    }
-
-    public function setForGallery(bool $forGallery) : self
-    {
-        $this->forGallery = $forGallery;
-        $this->setDataChanged();
-        return $this;
-    }
-
-    public function isFavorite() : bool
-    {
-        return $this->properties->isFavorite();
     }
 
     public function getViewDetailsURL() : string
@@ -324,22 +303,22 @@ class ImageInfo implements StringPrimaryRecordInterface
      */
     private function syncProperties() : void
     {
-        $thisFavorite = $this->isFavorite();
-        $thisForGallery = $this->isForGallery();
+        $thisFavorite = $this->prop()->isFavorite();
+        $thisForGallery = $this->prop()->isForGallery();
         $thisLabel = $this->getLabel();
 
         foreach($this->findLowResVersions() as $lowResImage)
         {
             if ($thisFavorite) {
-                $lowResImage->setFavorite(true);
-            } else if ($lowResImage->isFavorite()) {
-                $this->setFavorite(true);
+                $lowResImage->prop()->setFavorite(true);
+            } else if ($lowResImage->prop()->isFavorite()) {
+                $this->prop()->setFavorite(true);
             }
 
             if ($thisForGallery) {
-                $lowResImage->setForGallery(true);
-            } else if ($lowResImage->isForGallery()) {
-                $this->setForGallery(true);
+                $lowResImage->prop()->setForGallery(true);
+            } else if ($lowResImage->prop()->isForGallery()) {
+                $this->prop()->setForGallery(true);
             }
 
             if(!empty($thisLabel)) {
@@ -355,8 +334,7 @@ class ImageInfo implements StringPrimaryRecordInterface
         $this->setDataChanged();
     }
 
-    const array KEY_DEFAULTS = array(
-        self::KEY_FOR_GALLERY => false,
+    private const array KEY_DEFAULTS = array(
         self::KEY_UPSCALED => false,
         self::KEY_MODIFIED => false
     );
@@ -378,7 +356,6 @@ class ImageInfo implements StringPrimaryRecordInterface
             Microtime::createFromString($data->getString(self::KEY_DATE)),
             $data->getString(self::KEY_CHECKPOINT),
             $data->getBool(self::KEY_UPSCALED),
-            $data->getBool(self::KEY_FOR_GALLERY),
             $data->getBool(self::KEY_MODIFIED),
             $data->getString(self::KEY_LABEL),
             $data->getArray(self::KEY_IMAGE_SIZE),
@@ -395,7 +372,6 @@ class ImageInfo implements StringPrimaryRecordInterface
             self::KEY_DATE => $this->date->getISODate(),
             self::KEY_CHECKPOINT => $this->checkpoint,
             self::KEY_UPSCALED => $this->upscaled,
-            self::KEY_FOR_GALLERY => $this->forGallery,
             self::KEY_IMAGE_SIZE => $this->imageSize,
             self::KEY_MODIFIED => $this->modified,
             self::KEY_LABEL => $this->label,
@@ -501,12 +477,6 @@ class ImageInfo implements StringPrimaryRecordInterface
         ImageHelper::displayImage($this->imageFile->getPath());
 
         exit;
-    }
-
-    public function setFavorite(bool $favorite): self
-    {
-        $this->properties->setFavorite($favorite);
-        return $this;
     }
 
     public function setLabel(string $label) : self

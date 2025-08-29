@@ -396,11 +396,11 @@ class ImageBrowser extends BaseOrganizerPage
             return false;
         }
 
-        if($this->favoritesOnly && !$image->isFavorite()) {
+        if($this->favoritesOnly && !$image->prop()->isFavorite()) {
             return false;
         }
 
-        if($this->galleryOnly && !$image->isForGallery()) {
+        if($this->galleryOnly && !$image->prop()->isForGallery()) {
             return false;
         }
 
@@ -493,9 +493,9 @@ class ImageBrowser extends BaseOrganizerPage
 
         $classes = array();
         $classes[] = 'size-'.$this->activeCardSize;
-        if($image->isFavorite()) { $classes[] = 'favorite'; }
+        if($image->prop()->isFavorite()) { $classes[] = 'favorite'; }
         if($image->isUpscaled()) { $classes[] = 'upscaled'; }
-        if($image->isForGallery()) { $classes[] = 'forGallery'; }
+        if($image->prop()->isForGallery()) { $classes[] = 'forGallery'; }
 
         ?>
         <div id="wrapper-<?php echo $image->getID() ?>"
@@ -551,7 +551,7 @@ class ImageBrowser extends BaseOrganizerPage
         <?php
             $this->renderToggleButton(
                 $image,
-                $image->isFavorite(),
+                $image->prop()->isFavorite(),
                 'favorite',
                 'ToggleFavorite',
                 Icon::typeSolid('heart').' '.t('Favorite'),
@@ -602,11 +602,11 @@ class ImageBrowser extends BaseOrganizerPage
                    onclick="<?php echo $this->objName ?>.ToggleForGallery('<?php echo $image->getID() ?>');return false;"
                    class="dropdown-item"
                 >
-                    <span class="toggle-enabled" <?php if(!$image->isForGallery()) { ?>hidden="hidden"<?php } ?>>
+                    <span class="toggle-enabled" <?php if(!$image->prop()->isForGallery()) { ?>hidden="hidden"<?php } ?>>
                         <?php echo Icon::typeSolid('images') ?>
                         <?php pt('Remove from gallery'); ?>
                     </span>
-                    <span class="toggle-disabled" <?php if($image->isForGallery()) { ?>hidden="hidden"<?php } ?>>
+                    <span class="toggle-disabled" <?php if($image->prop()->isForGallery()) { ?>hidden="hidden"<?php } ?>>
                         <?php echo Icon::typeRegular('images') ?>
                         <?php pt('Set for gallery'); ?>
                     </span>

@@ -42,8 +42,8 @@ class SetUpscaledImageMethod extends BaseImageMethod
             'Successfully set upscaled image to ['.$upscaledID.'].',
             array(
                 self::RESPONSE_UPSCALED_ID => $upscaledID,
-                self::RESPONSE_UPSCALED_FAVORITE => $upscaledImage->isFavorite(),
-                self::RESPONSE_UPSCALED_FOR_GALLERY => $upscaledImage->isForGallery()
+                self::RESPONSE_UPSCALED_FAVORITE => $upscaledImage->prop()->isFavorite(),
+                self::RESPONSE_UPSCALED_FOR_GALLERY => $upscaledImage->prop()->isForGallery()
             )
         );
     }

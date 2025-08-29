@@ -15,6 +15,8 @@ class ImageProperties
     public const string KEY_FOLDER_NAME = 'folder';
     public const string KEY_IMG_BATCH_NR = 'imgBatchNr';
     public const string KEY_FAVORITE = 'favorite';
+    public const string KEY_FOR_WEBSITE = 'forWebsite';
+    public const string KEY_FOR_GALLERY = 'forGallery';
     public const string KEY_UPSCALED_IMAGE = 'upscaledImage';
     public const string KEY_CFG = 'imgCFG';
     public const string KEY_PROMPT_NEGATIVE = 'promptNegative';
@@ -126,9 +128,19 @@ class ImageProperties
         return $data;
     }
 
-    public function setFavorite(bool $favorite) : self
+    public function setFavorite(bool $enabled) : self
     {
-        return $this->setKey(self::KEY_FAVORITE, $favorite);
+        return $this->setKey(self::KEY_FAVORITE, $enabled);
+    }
+
+    public function setForWebsite(bool $enabled) : self
+    {
+        return $this->setKey(self::KEY_FOR_WEBSITE, $enabled);
+    }
+
+    public function setForGallery(bool $enabled) : self
+    {
+        return $this->setKey(self::KEY_FOR_GALLERY, $enabled);
     }
 
     private ?ImageInfo $upscaledImage = null;
@@ -189,6 +201,16 @@ class ImageProperties
     public function isFavorite() : bool
     {
         return $this->data->getBool(self::KEY_FAVORITE);
+    }
+
+    public function isForGallery() : bool
+    {
+        return $this->data->getBool(self::KEY_FOR_GALLERY);
+    }
+
+    public function isForWebsite() : bool
+    {
+        return $this->data->getBool(self::KEY_FOR_WEBSITE);
     }
 
     public function isFacefix() : bool

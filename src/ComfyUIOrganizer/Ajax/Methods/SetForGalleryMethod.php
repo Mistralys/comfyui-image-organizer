@@ -26,7 +26,7 @@ class SetForGalleryMethod extends BaseImageMethod
     {
         $forGallery = $this->request->getBool(self::REQUEST_PARAM_FOR_GALLERY);
 
-        $image->setForGallery($forGallery);
+        $image->prop()->setForGallery($forGallery);
 
         $this->collection->save();
 

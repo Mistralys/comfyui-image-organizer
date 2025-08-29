@@ -26,7 +26,7 @@ class FavoriteImageMethod extends BaseImageMethod
     {
         $favorite = $this->request->getBool(self::REQUEST_PARAM_FAVORITE);
 
-        $image->setFavorite($favorite);
+        $image->prop()->setFavorite($favorite);
 
         $this->collection->save();
 
