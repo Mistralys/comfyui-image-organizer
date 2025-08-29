@@ -16,6 +16,7 @@ use Mistralys\ComfyUIOrganizer\Ajax\Methods\FavoriteImageMethod;
 use Mistralys\ComfyUIOrganizer\Ajax\Methods\MoveImageMethod;
 use Mistralys\ComfyUIOrganizer\Ajax\Methods\SetCardSizeMethod;
 use Mistralys\ComfyUIOrganizer\Ajax\Methods\SetForGalleryMethod;
+use Mistralys\ComfyUIOrganizer\Ajax\Methods\SetForWebsiteMethod;
 use Mistralys\ComfyUIOrganizer\Ajax\Methods\SetLabelMethod;
 use Mistralys\ComfyUIOrganizer\Ajax\Methods\SetUpscaledImageMethod;
 use Mistralys\X4\UI\UserInterface;
@@ -101,6 +102,7 @@ class ImageCollection extends BaseStringPrimaryCollection
                 'moveImage' => MoveImageMethod::METHOD_NAME,
                 'setCardSize' => SetCardSizeMethod::METHOD_NAME,
                 'setForGallery' => SetForGalleryMethod::METHOD_NAME,
+                'setForWebsite' => SetForWebsiteMethod::METHOD_NAME,
                 'setLabel' => SetLabelMethod::METHOD_NAME,
                 'copyToOutput' => CopyToOutputMethod::METHOD_NAME,
                 'imageID' => self::REQUEST_PARAM_IMAGE_ID

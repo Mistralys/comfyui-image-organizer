@@ -11,6 +11,7 @@ class ImageBrowser
      * @param {String} ajaxMethodInfo.moveImage
      * @param {String} ajaxMethodInfo.setCardSize
      * @param {String} ajaxMethodInfo.setForGallery
+     * @param {String} ajaxMethodInfo.setForWebsite
      * @param {String} ajaxMethodInfo.setLabel
      * @param {String} ajaxMethodInfo.copyToOutput
      * @param {String} ajaxMethodInfo.imageID
@@ -611,5 +612,34 @@ class ImageBrowser
         image.SetLabel(response.label);
 
         UserInterface.ShowStatus('The label has been set to: ' + response.label);
+    }
+
+    /**
+     * @param {String} imageID
+     */
+    ToggleForWebsite(imageID)
+    {
+        const image = this.RequireImage(imageID);
+
+        this.SendRequest(
+            image,
+            this.ajaxMethodInfo.setForWebsite,
+            this.HandleSetForWebsiteResponse.bind(this),
+            {
+                'forWebsite': !image.IsForWebsite()
+            }
+        );
+    }
+
+    /**
+     * @param {ImageHandler} image
+     * @param {Object} response
+     * @param {Boolean} response.forWebsite
+     */
+    HandleSetForWebsiteResponse(image, response)
+    {
+        image.SetForWebsite(response.forWebsite);
+
+        UserInterface.ShowStatus('The image has been ' + (response.forWebsite ? 'added to' : 'removed from') + ' the website.');
     }
 }

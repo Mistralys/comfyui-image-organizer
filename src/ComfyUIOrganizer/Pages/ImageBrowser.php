@@ -496,6 +496,7 @@ class ImageBrowser extends BaseOrganizerPage
         if($image->prop()->isFavorite()) { $classes[] = 'favorite'; }
         if($image->isUpscaled()) { $classes[] = 'upscaled'; }
         if($image->prop()->isForGallery()) { $classes[] = 'forGallery'; }
+        if($image->prop()->isForWebsite()) { $classes[] = 'forWebsite'; }
 
         ?>
         <div id="wrapper-<?php echo $image->getID() ?>"
@@ -512,6 +513,12 @@ class ImageBrowser extends BaseOrganizerPage
                 <div class="image-badges">
                     <?php
                     echo $image->getUpscalingBadge();
+
+                    ?>
+                    <span class="badge bg-success badge-toggle badge-for-website toggle-<?php if($image->prop()->isForWebsite()) { echo 'enabled'; } else { echo 'disabled'; } ?>" title="<?php pt('This image is marked to be used on the website.') ?>">
+                        <?php echo mb_strtoupper(t('Website')) ?>
+                    </span>
+                    <?php
                     ?>
                 </div>
                 ID: <?php echo $image->getID() ?><br>
@@ -609,6 +616,21 @@ class ImageBrowser extends BaseOrganizerPage
                     <span class="toggle-disabled" <?php if($image->prop()->isForGallery()) { ?>hidden="hidden"<?php } ?>>
                         <?php echo Icon::typeRegular('images') ?>
                         <?php pt('Set for gallery'); ?>
+                    </span>
+                </a>
+            </li>
+            <li class="toggle-for-website">
+                <a href="#"
+                   onclick="<?php echo $this->objName ?>.ToggleForWebsite('<?php echo $image->getID() ?>');return false;"
+                   class="dropdown-item"
+                >
+                    <span class="toggle-enabled" <?php if(!$image->prop()->isForWebsite()) { ?>hidden="hidden"<?php } ?>>
+                        <?php echo Icon::typeSolid('images') ?>
+                        <?php pt('Remove from website'); ?>
+                    </span>
+                    <span class="toggle-disabled" <?php if($image->prop()->isForWebsite()) { ?>hidden="hidden"<?php } ?>>
+                        <?php echo Icon::typeRegular('images') ?>
+                        <?php pt('Set for website'); ?>
                     </span>
                 </a>
             </li>

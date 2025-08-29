@@ -37,7 +37,7 @@
 }
 
 .image-wrapper.upscaled{
-    background: #204c41
+    background: #204c41;
 }
 .image-wrapper.favorite{
     border-color: #df6919;
@@ -93,7 +93,19 @@ FOOTER.fixed-bottom{
 
 .image-wrapper .image-details{
     padding: 0.4rem;
+    border: solid 1px transparent;
+    border-top: none;
 }
+
+.image-wrapper.upscaled .image-details{
+    border-color: #204c41;
+}
+
+.image-wrapper.upscaled.selected .image-details,
+.image-wrapper.selected .image-details {
+    border-color: #83e1ff;
+}
+
 
 .image-wrapper.size-s{
     font-size: 50%;
@@ -161,3 +173,12 @@ IMG.detail-image{
     display: inline-block;
     border: solid 1px #000;
 }
+
+.badge-toggle.toggle-enabled{
+    display: inline-block;
+}
+
+.badge-toggle.toggle-disabled{
+    display:none;
+}
+

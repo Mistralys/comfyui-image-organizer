@@ -182,6 +182,44 @@ class ImageHandler
         }
     }
 
+    /**
+     * @param {Boolean} enabled
+     */
+    SetForWebsite(enabled)
+    {
+        if(enabled === this.IsForWebsite()) {
+            return; // No change needed
+        }
+
+        console.log('Image ['+this.imageID+'] | Set forWebsite: ' + enabled);
+
+        const elBadge = this.getDOMElement(this.wrapperID + ' .badge-for-website');
+        const elEnabled = this.getDOMElement(this.wrapperID + ' .toggle-for-website .toggle-enabled');
+        const elDisabled = this.getDOMElement(this.wrapperID + ' .toggle-for-website .toggle-disabled');
+
+        if(enabled) {
+            this.GetDOMElement().classList.add('forWebsite');
+            elBadge.classList.add('toggle-enabled');
+            elBadge.classList.remove('toggle-disabled');
+            elEnabled.hidden = false;
+            elDisabled.hidden = true;
+        } else {
+            this.GetDOMElement().classList.remove('forWebsite');
+            elBadge.classList.remove('toggle-enabled');
+            elBadge.classList.add('toggle-disabled');
+            elEnabled.hidden = true;
+            elDisabled.hidden = false;
+        }
+    }
+
+    /**
+     * @returns {Boolean}
+     */
+    IsForWebsite()
+    {
+        return this.GetDOMElement().classList.contains('forWebsite');
+    }
+
     SetLabel(label)
     {
         this.getDOMElement(this.wrapperID + ' .image-label').innerHTML = label;
