@@ -14,8 +14,6 @@ use Mistralys\ComfyUIOrganizer\OrganizerApp;
 class SetLabelMethod extends BaseImageMethod
 {
     public const string METHOD_NAME = 'SetLabel';
-    const string REQUEST_PARAM_LABEL = 'label';
-    public const int ERROR_EMPTY_LABEL = 180701;
 
     public function getID(): string
     {
@@ -24,7 +22,7 @@ class SetLabelMethod extends BaseImageMethod
 
     protected function processImage(ImageInfo $image): never
     {
-        $label = $this->request->registerParam(self::REQUEST_PARAM_LABEL)->setLabel()->getString();
+        $label = $this->request->registerParam(BaseImageMethod::REQUEST_PARAM_LABEL)->setLabel()->getString();
 
         $image->setLabel($label);
 

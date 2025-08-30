@@ -18,6 +18,7 @@ class ImageBrowser
      * @param {Boolean} ajaxMethodInfo.payloadFavorite
      * @param {Boolean} ajaxMethodInfo.payloadForGallery
      * @param {Boolean} ajaxMethodInfo.payloadForWebsite
+     * @param {String} ajaxMethodInfo.payloadLabel
      *
      * @property {Object.<string, ImageHandler>} images
      * @property {String} pageURL
@@ -638,6 +639,7 @@ class ImageBrowser
         image.SetForGallery(response[this.ajaxMethodInfo.payloadForGallery]);
         image.SetFavorite(response[this.ajaxMethodInfo.payloadFavorite]);
         image.SetForWebsite(response[this.ajaxMethodInfo.payloadForWebsite]);
+        image.SetLabel(response[this.ajaxMethodInfo.payloadLabel]);
     }
 
     /**
@@ -682,13 +684,12 @@ class ImageBrowser
     /**
      * @param {ImageHandler} image
      * @param {Object} response
-     * @param {String} response.label
      */
     HandleSetLabelResponse(image, response)
     {
-        image.SetLabel(response.label);
+        this.updateImageFromResponse(image, response);
 
-        UserInterface.ShowStatus('The label has been set to: ' + response.label);
+        UserInterface.ShowStatus('The label has been set to "' + response[this.ajaxMethodInfo.payloadLabel]+'".');
     }
 
     /**

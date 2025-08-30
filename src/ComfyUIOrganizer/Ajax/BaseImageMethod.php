@@ -18,6 +18,7 @@ abstract class BaseImageMethod extends BaseAjaxMethod
     public const string REQUEST_PARAM_FOR_GALLERY = 'forGallery';
     public const string REQUEST_PARAM_FOR_WEBSITE = 'forWebsite';
     public const string REQUEST_PARAM_FAVORITE = 'favorite';
+    public const string REQUEST_PARAM_LABEL = 'label';
 
     protected ImageCollection $collection;
 
@@ -59,6 +60,7 @@ abstract class BaseImageMethod extends BaseAjaxMethod
         $payload[BaseImageMethod::REQUEST_PARAM_FOR_GALLERY] = $image->prop()->isForGallery();
         $payload[BaseImageMethod::REQUEST_PARAM_FOR_WEBSITE] = $image->prop()->isForWebsite();
         $payload[BaseImageMethod::REQUEST_PARAM_FAVORITE] = $image->prop()->isFavorite();
+        $payload[BaseImageMethod::REQUEST_PARAM_LABEL] = $image->getLabel();
 
         parent::sendSuccess($message, $payload);
     }

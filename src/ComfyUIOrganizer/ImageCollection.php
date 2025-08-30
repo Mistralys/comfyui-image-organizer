@@ -110,6 +110,7 @@ class ImageCollection extends BaseStringPrimaryCollection
                 'payloadFavorite' => BaseImageMethod::REQUEST_PARAM_FAVORITE,
                 'payloadForGallery' => BaseImageMethod::REQUEST_PARAM_FOR_GALLERY,
                 'payloadForWebsite' => BaseImageMethod::REQUEST_PARAM_FOR_WEBSITE,
+                'payloadLabel' => BaseImageMethod::REQUEST_PARAM_LABEL,
             ))
         ));
 
