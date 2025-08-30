@@ -15,7 +15,6 @@ use Mistralys\ComfyUIOrganizer\OrganizerApp;
 class SetForWebsiteMethod extends BaseImageMethod
 {
     public const string METHOD_NAME = 'SetForWebsite';
-    const string REQUEST_PARAM_FOR_WEBSITE = 'forWebsite';
 
     public function getID(): string
     {
@@ -24,17 +23,14 @@ class SetForWebsiteMethod extends BaseImageMethod
 
     protected function processImage(ImageInfo $image): never
     {
-        $enabled = $this->request->getBool(self::REQUEST_PARAM_FOR_WEBSITE);
+        $enabled = $this->request->getBool(BaseImageMethod::REQUEST_PARAM_FOR_WEBSITE);
 
         $image->prop()->setForWebsite($enabled);
 
         $this->collection->save();
 
         $this->sendSuccess(
-            'ForWebsite successfully set to ['.ConvertHelper::bool2string($enabled, true).'].',
-            array(
-                self::REQUEST_PARAM_FOR_WEBSITE => $enabled
-            )
+            'ForWebsite successfully set to ['.ConvertHelper::bool2string($enabled, true).'].'
         );
     }
 }

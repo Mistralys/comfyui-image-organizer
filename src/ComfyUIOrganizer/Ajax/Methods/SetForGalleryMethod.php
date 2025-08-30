@@ -15,7 +15,6 @@ use Mistralys\ComfyUIOrganizer\OrganizerApp;
 class SetForGalleryMethod extends BaseImageMethod
 {
     public const string METHOD_NAME = 'SetForGallery';
-    const string REQUEST_PARAM_FOR_GALLERY = 'forGallery';
 
     public function getID(): string
     {
@@ -24,17 +23,14 @@ class SetForGalleryMethod extends BaseImageMethod
 
     protected function processImage(ImageInfo $image): never
     {
-        $forGallery = $this->request->getBool(self::REQUEST_PARAM_FOR_GALLERY);
+        $forGallery = $this->request->getBool(BaseImageMethod::REQUEST_PARAM_FOR_GALLERY);
 
         $image->prop()->setForGallery($forGallery);
 
         $this->collection->save();
 
         $this->sendSuccess(
-            'Gallery successfully set to ['.ConvertHelper::bool2string($forGallery, true).'].',
-            array(
-                self::REQUEST_PARAM_FOR_GALLERY => $forGallery
-            )
+            'Gallery successfully set to ['.ConvertHelper::bool2string($forGallery, true).'].'
         );
     }
 }

@@ -15,6 +15,9 @@ class ImageBrowser
      * @param {String} ajaxMethodInfo.setLabel
      * @param {String} ajaxMethodInfo.copyToOutput
      * @param {String} ajaxMethodInfo.imageID
+     * @param {Boolean} ajaxMethodInfo.payloadFavorite
+     * @param {Boolean} ajaxMethodInfo.payloadForGallery
+     * @param {Boolean} ajaxMethodInfo.payloadForWebsite
      *
      * @property {Object.<string, ImageHandler>} images
      * @property {String} pageURL
@@ -102,7 +105,7 @@ class ImageBrowser
      */
     HandleFavoriteResponse(image, response)
     {
-        image.SetFavorite(response.favorite);
+        this.updateImageFromResponse(image, response);
     }
 
     /**
@@ -600,9 +603,26 @@ class ImageBrowser
      */
     HandleSetForGalleryResponse(image, response)
     {
-        image.SetForGallery(response.forGallery);
+        this.updateImageFromResponse(image, response);
 
         UserInterface.ShowStatus('The image has been ' + (response.forGallery ? 'added to' : 'removed from') + ' the gallery.');
+    }
+
+    /**
+     * The image AJAX methods all return the same payload structure for
+     * favorite, forGallery and forWebsite, so we can use a single method to update
+     * the image properties from the response. Especially since some of
+     * these properties are interdependent. For example, setting an image
+     * as for gallery will also set it as favorite.
+     *
+     * @param {ImageHandler} image
+     * @param {Object} response
+     */
+    updateImageFromResponse(image, response)
+    {
+        image.SetForGallery(response[this.ajaxMethodInfo.payloadForGallery]);
+        image.SetFavorite(response[this.ajaxMethodInfo.payloadFavorite]);
+        image.SetForWebsite(response[this.ajaxMethodInfo.payloadForWebsite]);
     }
 
     /**
@@ -676,11 +696,10 @@ class ImageBrowser
     /**
      * @param {ImageHandler} image
      * @param {Object} response
-     * @param {Boolean} response.forWebsite
      */
     HandleSetForWebsiteResponse(image, response)
     {
-        image.SetForWebsite(response.forWebsite);
+        this.updateImageFromResponse(image, response);
 
         UserInterface.ShowStatus('The image has been ' + (response.forWebsite ? 'added to' : 'removed from') + ' the website.');
     }

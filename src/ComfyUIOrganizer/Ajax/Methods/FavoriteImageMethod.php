@@ -15,7 +15,6 @@ use Mistralys\ComfyUIOrganizer\OrganizerApp;
 class FavoriteImageMethod extends BaseImageMethod
 {
     public const string METHOD_NAME = 'FavoriteImage';
-    const string REQUEST_PARAM_FAVORITE = 'favorite';
 
     public function getID(): string
     {
@@ -24,17 +23,14 @@ class FavoriteImageMethod extends BaseImageMethod
 
     protected function processImage(ImageInfo $image): never
     {
-        $favorite = $this->request->getBool(self::REQUEST_PARAM_FAVORITE);
+        $favorite = $this->request->getBool(BaseImageMethod::REQUEST_PARAM_FAVORITE);
 
         $image->prop()->setFavorite($favorite);
 
         $this->collection->save();
 
         $this->sendSuccess(
-            'Favorite successfully set to ['.ConvertHelper::bool2string($favorite, true).'].',
-            array(
-                self::REQUEST_PARAM_FAVORITE => $favorite
-            )
+            'Favorite successfully set to ['.ConvertHelper::bool2string($favorite, true).'].'
         );
     }
 }
