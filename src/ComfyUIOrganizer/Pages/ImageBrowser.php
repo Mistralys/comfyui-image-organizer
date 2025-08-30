@@ -318,7 +318,10 @@ class ImageBrowser extends BaseOrganizerPage
                 <span class="reset-filters" onclick="<?php echo $this->objName ?>.ResetFilter()" title="<?php pt('Reset the filter terms') ?>"><?php echo Icon::delete() ?></span>
             </div>
         </div>
-        <p><?php pt('Found %1$s images.', $imageCount); ?></p>
+        <p>
+            <?php pt('Found %1$s images.', $imageCount); ?><br>
+            <span id="label-filtered-count" hidden="hidden"><?php pt('Showing %1$s filtered images.', '<span id="filtered-count"></span>'); ?></span>
+        </p>
         <?php
     }
 

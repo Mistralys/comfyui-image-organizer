@@ -15,6 +15,16 @@ class ImageBrowser
      * @param {String} ajaxMethodInfo.setLabel
      * @param {String} ajaxMethodInfo.copyToOutput
      * @param {String} ajaxMethodInfo.imageID
+     *
+     * @property {Object.<string, ImageHandler>} images
+     * @property {String} pageURL
+     * @property {Object} ajaxMethodInfo
+     * @property {Number|null} filterTimeout
+     * @property {Object.<string, ImageHandler>} imageSelection
+     * @property {Array<String>} moveStack
+     * @property {String} moveTarget
+     * @property {Object.<string, ImageHandler>} filteredImages
+     * @property {Boolean} isFiltered
      */
     constructor(pageURL, ajaxMethodInfo)
     {
@@ -25,6 +35,8 @@ class ImageBrowser
         this.imageSelection = {};
         this.moveStack = [];
         this.moveTarget = '';
+        this.filteredImages = {};
+        this.isFiltered = false;
     }
 
     /**
@@ -171,6 +183,11 @@ class ImageBrowser
             this.filterTimeout = null;
         }
 
+        this.isFiltered = false;
+        this.filteredImages = [];
+
+        document.querySelector('#label-filtered-count').hidden = true;
+
         const search = filter.toLowerCase().trim();
 
         if(search.length < 2) {
@@ -188,9 +205,25 @@ class ImageBrowser
     {
         console.log('Filtering images with search string: ' + search);
 
+        this.isFiltered = true;
+
+        let totalMatches = 0;
         for(const imageID in this.images) {
             const image = this.images[imageID];
-            image.GetDOMElement().hidden = !image.MatchesSearch(search);
+            const isMatch = image.MatchesSearch(search);
+            image.GetDOMElement().hidden = !isMatch;
+
+            if(isMatch) {
+                this.filteredImages[imageID] = image;
+                totalMatches++;
+            }
+        }
+
+        if(search.length > 0) {
+            document.querySelector('#label-filtered-count').hidden = false;
+            document.querySelector('#filtered-count').innerHTML = totalMatches.toString();
+        } else {
+            document.querySelector('#count-filtered').hidden = true;
         }
     }
 
@@ -358,7 +391,16 @@ class ImageBrowser
 
     SelectAll()
     {
-        for(const imageID in this.images) {
+        console.log('Select all images...');
+
+        let targetImages = this.images;
+
+        if(this.isFiltered) {
+            console.log('Filters are active, selecting all filtered images.');
+            targetImages = this.filteredImages;
+        }
+
+        for(const imageID in targetImages) {
             const image = this.images[imageID];
             if(!image.IsSelected()) {
                 image.ToggleSelection();
