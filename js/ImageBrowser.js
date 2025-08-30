@@ -140,10 +140,15 @@ class ImageBrowser
      * @param {String} response.upscaledID
      * @param {Boolean} response.upscaledFavorite
      * @param {Boolean} response.upscaledForGallery
+     * @param {Boolean} response.upscaledForWebsite
+     * @param {String} response.upscaledLabel
      */
     HandleSetUpscaledResponse(image, response)
     {
         image.RemoveFromDOM();
+
+        // Clear any text selection (the selected upscaled image ID)
+        window.getSelection().removeAllRanges();
 
         const upscaledImage = this.RequireImage(response.upscaledID);
 
@@ -157,6 +162,14 @@ class ImageBrowser
         if(response.upscaledForGallery) {
             upscaledImage.SetForGallery(true);
         }
+
+        if(response.upscaledForWebsite) {
+            upscaledImage.SetForWebsite(true);
+        }
+
+        upscaledImage.SetLabel(response.upscaledLabel);
+
+        UserInterface.ShowStatus('The upscaled image has been set to <strong>' + upscaledImage.GetID() + '</strong>.');
     }
 
     CopyToOutput(imageID)
@@ -281,6 +294,8 @@ class ImageBrowser
         delete this.images[image.GetID()];
 
         image.RemoveFromDOM();
+
+        UserInterface.ShowStatus('The image has been deleted successfully.');
     }
 
     /**

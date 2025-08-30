@@ -15,6 +15,8 @@ class SetUpscaledImageMethod extends BaseImageMethod
     public const string RESPONSE_UPSCALED_FOR_GALLERY = 'upscaledForGallery';
     public const string RESPONSE_UPSCALED_FAVORITE = 'upscaledFavorite';
     public const string RESPONSE_UPSCALED_ID = 'upscaledID';
+    public const string RESPONSE_UPSCALED_FOR_WEBSITE = 'upscaledForWebsite';
+    public const string RESPONSE_UPSCALED_LABEL = 'upscaledLabel';
 
     public function getID(): string
     {
@@ -43,7 +45,9 @@ class SetUpscaledImageMethod extends BaseImageMethod
             array(
                 self::RESPONSE_UPSCALED_ID => $upscaledID,
                 self::RESPONSE_UPSCALED_FAVORITE => $upscaledImage->prop()->isFavorite(),
-                self::RESPONSE_UPSCALED_FOR_GALLERY => $upscaledImage->prop()->isForGallery()
+                self::RESPONSE_UPSCALED_FOR_GALLERY => $upscaledImage->prop()->isForGallery(),
+                self::RESPONSE_UPSCALED_FOR_WEBSITE => $upscaledImage->prop()->isForWebsite(),
+                self::RESPONSE_UPSCALED_LABEL => $upscaledImage->getLabel()
             )
         );
     }
