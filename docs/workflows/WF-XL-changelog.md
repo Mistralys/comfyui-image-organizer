@@ -1,5 +1,15 @@
 # SDXL Workflow
 
+## v26 - LoRA additions
+
+- Added NeoFutureTech LoRA.
+- Added Pulp Scifi LoRA.
+- Added Chris Balaskas LoRA.
+- Added Scifi Style LoRA.
+- Upgraded Face Detailer to v5.
+- Added image comparisons for face detailers.
+- Added changelog in the workflow.
+
 ## v25 - Upscalers 
 - Added seamfix upscalers for all three images.
 
