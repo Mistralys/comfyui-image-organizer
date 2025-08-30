@@ -1,5 +1,15 @@
 # SDXL Workflow
 
+## v27 - LoRA additions
+
+- Added Ink Style LoRA
+- Added Parchment LoRA
+- Added Painted World LoRA
+- Added Chinese Illustration LoRA
+- Added Ink Punk Style LoRA
+- Added SciFi Environments LoRA
+- Added Organic Macabre LoRA
+
 ## v26 - LoRA additions
 
 - Added NeoFutureTech LoRA.
