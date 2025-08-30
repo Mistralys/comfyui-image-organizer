@@ -305,6 +305,7 @@ class ImageInfo implements StringPrimaryRecordInterface
     {
         $thisFavorite = $this->prop()->isFavorite();
         $thisForGallery = $this->prop()->isForGallery();
+        $thisForWebsite = $this->prop()->isForWebsite();
         $thisLabel = $this->getLabel();
 
         foreach($this->findLowResVersions() as $lowResImage)
@@ -325,6 +326,12 @@ class ImageInfo implements StringPrimaryRecordInterface
                 $lowResImage->setLabel($thisLabel);
             } else if(!empty($lowResImage->getLabel())) {
                 $this->setLabel($lowResImage->getLabel());
+            }
+
+            if($thisForWebsite) {
+                $lowResImage->prop()->setForWebsite(true);
+            } else if ($lowResImage->prop()->isForWebsite()) {
+                $this->prop()->setForWebsite(true);
             }
         }
     }
