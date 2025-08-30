@@ -8,6 +8,7 @@
     margin: 8px;
     background: #20374c;
     border: solid 2px transparent;
+    box-shadow: 3px 3px 7px -4px #000000;
 }
 
 .image-wrapper .image-badges{
@@ -188,5 +189,9 @@ IMG.detail-image{
 
 .spacing-left{
     margin-left: var(--element-spacing-l);
+}
+
+.mono{
+    font-family: monospace;
 }
 
