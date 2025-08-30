@@ -135,11 +135,19 @@ class ImageProperties
 
     public function setForWebsite(bool $enabled) : self
     {
+        if($enabled) {
+            $this->setForGallery(true);
+        }
+
         return $this->setKey(self::KEY_FOR_WEBSITE, $enabled);
     }
 
     public function setForGallery(bool $enabled) : self
     {
+        if($enabled) {
+            $this->setFavorite(true);
+        }
+
         return $this->setKey(self::KEY_FOR_GALLERY, $enabled);
     }
 
