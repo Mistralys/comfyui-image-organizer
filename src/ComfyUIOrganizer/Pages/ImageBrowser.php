@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mistralys\ComfyUIOrganizer\Pages;
 
 use AppUtils\ConvertHelper;
+use AppUtils\JSHelper;
 use AppUtils\OutputBuffering;
 use Mistralys\ComfyUIOrganizer\BaseOrganizerPage;
 use Mistralys\ComfyUIOrganizer\ImageCollection;
@@ -541,17 +542,33 @@ class ImageBrowser extends BaseOrganizerPage
                     <?php
                     ?>
                 </div>
-                ID: <?php echo $image->getID() ?><br>
-                Label: <span class="image-label">
-                        <?php
-                            $label = $image->getLabel();
-                            if(empty($label)) {
-                                ?><a href="#" onclick="<?php echo $this->objName ?>.SetLabel('<?php echo $image->getID() ?>');return false;"><?php pt('Set...') ?></a><?php
-                            } else {
-                                echo htmlspecialchars($label);
-                            }
-                        ?>
-                    </span><br>
+                <?php
+                $copyID = JSHelper::nextElementID();
+                ?>
+                <div>
+                ID: <span id="<?php echo $copyID ?>" class="mono"><?php echo $image->getID() ?></span>
+                <a href="#"
+                   onclick="navigator.clipboard.writeText(document.querySelector('#<?php echo $copyID ?>').textContent);UserInterface.ShowStatus('<?php echo htmlspecialchars(t('Image ID copied to clipboard.', ENT_QUOTES)); ?>');return false;"
+                   title="<?php pt('Copy the image ID to clipboard') ?>"
+                >
+                    <?php echo Icon::typeRegular('copy') ?>
+                </a>
+                </div>
+                Label:
+                <span class="image-label">
+                    <?php
+                    $label = $image->getLabel();
+                    ?>
+                    <a href="#"
+                       onclick="<?php echo $this->objName ?>.SetLabel('<?php echo $image->getID() ?>');return false;"
+                       <?php if(!empty($label)) { echo 'hidden="hidden"'; } ?>
+                    >
+                        (<?php pt('Set...') ?>)
+                    </a>
+                    <span>
+                        <?php echo htmlspecialchars($label); ?>
+                    </span>
+                </span><br>
                 Size: <?php echo $image->getImageSize()['width'] ?> x <?php echo $image->getImageSize()['height'] ?><br>
                 Checkpoint: <?php echo $image->getCheckpoint() ?><br>
                 Test: <?php echo $props->getTestName() ?> #<?php echo $props->getTestNumber() ?>-<?php echo $props->getBatchNumber() ?><br>
