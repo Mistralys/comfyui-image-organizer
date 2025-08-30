@@ -217,6 +217,9 @@ class ImageHandler
 
     SetLabel(label)
     {
-        this.getDOMElement(this.wrapperID + ' .image-label').innerHTML = label;
+        this.getDOMElement(this.wrapperID + ' .image-label > SPAN').innerHTML = label;
+
+        // Hide the set label link if the label is not empty
+        this.getDOMElement(this.wrapperID + ' .image-label > A').hidden = label !== '';
     }
 }
