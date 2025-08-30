@@ -24,6 +24,8 @@ class DeleteImageMethod extends BaseImageMethod
     {
         $this->collection->deleteImage($image);
 
-        $this->sendSuccess('Image deleted successfully.');
+        // Using this method as the image method sendSuccess() will try
+        // to get data of the deleted image.
+        $this->methods->sendSuccess('Image deleted successfully.');
     }
 }
