@@ -5,12 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d06d220e-a3f0-4d6c-85ff-2fcc28e8e726" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/comfyui-image-organizer.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/comfyui-image-organizer.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/php.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/php.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/index.php" beforeDir="false" afterPath="$PROJECT_DIR$/index.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ComfyUIOrganizer/OrganizerApp.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/ComfyUIOrganizer/OrganizerApp.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ComfyUIOrganizer/Pages/IndexManagerPage.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/ComfyUIOrganizer/Pages/IndexManagerPage.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/css/app.css" beforeDir="false" afterPath="$PROJECT_DIR$/css/app.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ComfyUIOrganizer/LoRAs/LoRAsCollection.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/ComfyUIOrganizer/LoRAs/LoRAsCollection.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ComfyUIOrganizer/Pages/ImageBrowser.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/ComfyUIOrganizer/Pages/ImageBrowser.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -80,6 +79,7 @@
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
     &quot;php.override.implement.member.chooser.php.doc&quot;: &quot;NONE&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.github.copilot.settings.chat.ChatConfigurable&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
@@ -95,8 +95,8 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-d6986cc7102b-09060db00ec0-JavaScript-PS-251.26927.60" />
-        <option value="bundled-php-predefined-a98d8de5180a-e5747d4f5a45-com.jetbrains.php.sharedIndexes-PS-251.26927.60" />
+        <option value="bundled-js-predefined-d6986cc7102b-09060db00ec0-JavaScript-PS-251.28293.24" />
+        <option value="bundled-php-predefined-a98d8de5180a-e5747d4f5a45-com.jetbrains.php.sharedIndexes-PS-251.28293.24" />
       </set>
     </attachedChunks>
   </component>
@@ -121,11 +121,18 @@
       <workItem from="1754727699204" duration="10817000" />
       <workItem from="1755970299307" duration="181000" />
       <workItem from="1755970503017" duration="8865000" />
-      <workItem from="1756013890407" duration="12494000" />
+      <workItem from="1756013890407" duration="15990000" />
+      <workItem from="1756482941486" duration="113000" />
+      <workItem from="1756483115464" duration="3094000" />
+      <workItem from="1756535450542" duration="217000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
   </component>
 </project>
