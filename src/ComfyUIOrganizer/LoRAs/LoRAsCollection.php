@@ -47,6 +47,13 @@ class LoRAsCollection extends BaseStringPrimaryCollection
     public const string LORA_NEON_NOIR = 'neonNoir';
     public const string LORA_OPALESCENCE = 'opalescence';
     public const string LORA_CYBERPUNK_CINEMATIC = 'cyberpunkCinematic';
+    public const string LORA_ORGANIC_MACABRE = 'organicMacabre';
+    public const string LORA_BONES = 'bones';
+    public const string LORA_PAINTED_WORLD = 'paintedWorld';
+    public const string LORA_CHINESE_ILLUSTRATION = 'chineseIllustration';
+    public const string LORA_INK_PUNK = 'inkPunk';
+    public const string LORA_PARCHMENT = 'parchment';
+    public const string LORA_SCIFI_ENVIRONMENTS = 'scifiEnvironments';
 
     /**
      * @var string[]
@@ -91,6 +98,13 @@ class LoRAsCollection extends BaseStringPrimaryCollection
         self::LORA_NEON_NOIR,
         self::LORA_OPALESCENCE,
         self::LORA_CYBERPUNK_CINEMATIC,
+        self::LORA_ORGANIC_MACABRE,
+        self::LORA_BONES,
+        self::LORA_PAINTED_WORLD,
+        self::LORA_CHINESE_ILLUSTRATION,
+        self::LORA_INK_PUNK,
+        self::LORA_PARCHMENT,
+        self::LORA_SCIFI_ENVIRONMENTS,
     );
 
     private static ?self $instance = null;
