@@ -49,12 +49,12 @@ class ImageBrowser extends BaseOrganizerPage
 
     public function getTitle(): string
     {
-        return t('Folder selection');
+        return t('Browser');
     }
 
     public function getSubtitle(): string
     {
-        return t('Select an image folder to organize');
+        return t('Browse all generated image folders.');
     }
 
     public function getAbstract(): string
@@ -319,7 +319,7 @@ class ImageBrowser extends BaseOrganizerPage
             </div>
         </div>
         <p>
-            <?php pt('Found %1$s images.', $imageCount); ?><br>
+            <?php pt('Found %1$s total images.', $imageCount); ?><br>
             <span id="label-filtered-count" hidden="hidden"><?php pt('Showing %1$s filtered images.', '<span id="filtered-count"></span>'); ?></span>
         </p>
         <?php
