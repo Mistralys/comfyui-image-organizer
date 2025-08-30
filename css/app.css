@@ -185,3 +185,8 @@ IMG.detail-image{
 #filter-toggles{
     margin-bottom: var(--element-spacing-l);
 }
+
+.spacing-left{
+    margin-left: var(--element-spacing-l);
+}
+
