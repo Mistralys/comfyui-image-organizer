@@ -358,8 +358,8 @@ class ImageBrowser extends BaseOrganizerPage
                     <?php echo Icon::save().' '; pt('Apply'); ?>
                 </button>
             </div>
-            <div class="btn-group">
-                <button class="btn btn-info" onclick="<?php echo $this->objName ?>.SelectAll()" style="margin-left: var(--element-spacing-l);">
+            <div class="btn-group spacing-left">
+                <button class="btn btn-info" onclick="<?php echo $this->objName ?>.SelectAll()">
                     <?php echo Icon::typeSolid('toggle-on') ?>
                     <?php pt('Select all') ?>
                 </button>
@@ -371,10 +371,10 @@ class ImageBrowser extends BaseOrganizerPage
             <?php
             if(!empty($this->activeFolder)) {
                 ?>
-                <div class="btn-group">
-                    <a class="btn btn-secondary" href="<?php echo $this->getURL(array('refresh' => 'yes')) ?>">
+                <div class="btn-group spacing-left">
+                    <a class="btn btn-secondary" href="<?php echo $this->getURL(array('refresh' => 'yes')) ?>" title="<?php pt('Refresh only this folder to discover image changes.'); ?>">
                         <?php echo Icon::typeSolid('recycle') ?>
-                        <?php pt('Refresh') ?>
+                        <?php pt('Refresh folder') ?>
                     </a>
                 </div>
                 <?php
