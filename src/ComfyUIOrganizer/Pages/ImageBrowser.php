@@ -23,6 +23,7 @@ class ImageBrowser extends BaseOrganizerPage
     public const string REQUEST_PARAM_UPSCALED = 'upscaled';
     public const string REQUEST_PARAM_FAVORITES = 'favorites';
     public const string REQUEST_PARAM_GALLERY = 'gallery';
+    public const string REQUEST_PARAM_WEBSITE = 'website';
     public const string REQUEST_PARAM_FOLDER_NAME = 'folderName';
     const string REQUEST_VAR_CARD_SIZE = 'cardSize';
     const string CARD_SIZE_S = 's';
@@ -79,6 +80,7 @@ class ImageBrowser extends BaseOrganizerPage
         $this->upscaledOnly = $this->resolveBooleanToggle(self::REQUEST_PARAM_UPSCALED);
         $this->favoritesOnly = $this->resolveBooleanToggle(self::REQUEST_PARAM_FAVORITES);
         $this->galleryOnly = $this->resolveBooleanToggle(self::REQUEST_PARAM_GALLERY);
+        $this->websiteOnly = $this->resolveBooleanToggle(self::REQUEST_PARAM_WEBSITE);
 
         $this->folders = $this->collection->getFolderNames();
         $this->activeFolder = $this->resolveActiveFolder();
@@ -194,6 +196,7 @@ class ImageBrowser extends BaseOrganizerPage
     private bool $upscaledOnly = false;
     private bool $favoritesOnly = false;
     private bool $galleryOnly = false;
+    private bool $websiteOnly = false;
     private string $activeFolder = '';
 
     /**
@@ -268,6 +271,7 @@ class ImageBrowser extends BaseOrganizerPage
         ?>
         <h3><?php pt('Filtering') ?></h3>
         <div class="filter-toolbar">
+            <div id="filter-toggles">
             <?php
             $this->renderFilterToggle(
                 t('Upscaling'),
@@ -290,6 +294,15 @@ class ImageBrowser extends BaseOrganizerPage
                 $this->getURL(array(self::REQUEST_PARAM_GALLERY => 'no'))
             );
 
+            $this->renderFilterToggle(
+                t('Website'),
+                $this->websiteOnly,
+                $this->getURL(array(self::REQUEST_PARAM_WEBSITE => 'yes')),
+                $this->getURL(array(self::REQUEST_PARAM_WEBSITE => 'no'))
+            );
+            ?>
+            </div>
+            <?php
             $this->renderFolderFilter();
             ?>
 
@@ -401,6 +414,10 @@ class ImageBrowser extends BaseOrganizerPage
         }
 
         if($this->galleryOnly && !$image->prop()->isForGallery()) {
+            return false;
+        }
+
+        if($this->websiteOnly && !$image->prop()->isForWebsite()) {
             return false;
         }
 
