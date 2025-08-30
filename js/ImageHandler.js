@@ -161,11 +161,6 @@ class ImageHandler
             return; // No change needed
         }
 
-        // Automatically set as favorite if forGallery is true
-        if(forGallery === true) {
-            this.SetFavorite(true);
-        }
-
         console.log('Image ['+this.imageID+'] | Set forGallery: ' + forGallery);
 
         const elEnabled = this.getDOMElement(this.wrapperID + ' .toggle-for-gallery .toggle-enabled');
