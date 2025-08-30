@@ -1,5 +1,9 @@
 # SDXL Workflow
 
+## v28 - Version property
+
+- Now saving the workflow version in the image properties.
+
 ## v27 - LoRA additions
 
 - Added Ink Style LoRA
