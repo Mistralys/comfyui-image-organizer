@@ -5,3 +5,4 @@ composer.phar
 /data/images.json
 /data/backup/
 /output-images/*.png
+data/file_index.json
