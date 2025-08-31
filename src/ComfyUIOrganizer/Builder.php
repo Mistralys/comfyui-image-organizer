@@ -44,6 +44,13 @@ class Builder
             ->cleanUpFolders();
     }
 
+    public static function updateFileIndex(): void
+    {
+        self::init();
+
+        ImageIndexer::updateFileIndex();
+    }
+
     public static function postAutoload(): void
     {
         self::init();

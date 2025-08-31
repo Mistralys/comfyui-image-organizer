@@ -6,6 +6,8 @@ namespace Mistralys\ComfyUIOrganizer;
 
 require_once __DIR__.'/prepend.php';
 
+use AppUtils\FileHelper\FileInfo;
+use AppUtils\ImageHelper;
 use AppUtils\Request;
 
 $request = Request::getInstance();
@@ -16,17 +18,21 @@ if(empty($imageID)) {
     exit;
 }
 
-$collection = OrganizerApp::create()->createImageCollection();
+$files = OrganizerApp::create()->getFileIndexFile()->getData();
 
-if(!$collection->idExists($imageID)) {
+if(!isset($files[$imageID])) {
     header('HTTP/1.0 404 Not Found');
     exit;
 }
 
-$image = $collection->getByID($imageID);
-
-if($request->getBool('thumbnail')) {
-    $image->displayThumbnail();
+if($request->getBool('thumbnail'))
+{
+    $imageFile = FileInfo::factory($files[$imageID][ImageIndexer::INDEX_THUMBNAIL_FILE]);
+    if(!$imageFile->exists()) {
+        $this->createThumbnail($imageFile);
+    }
 } else {
-    $image->displayFullSize();
+    $imageFile = FileInfo::factory($files[$imageID][ImageIndexer::INDEX_IMAGE_FILE]);
 }
+
+ImageHelper::displayImage($imageFile->getPath());

@@ -19,6 +19,8 @@ class ImageIndexer
     public const int ACTION_UPDATE_PATHS = 180901;
     public const int ACTION_SKIP_NO_CHECKPOINT = 180902;
     public const int ACTION_IMAGE_INDEXED = 180903;
+    public const string INDEX_THUMBNAIL_FILE = 'thumbnailFile';
+    public const string INDEX_IMAGE_FILE = 'imageFile';
 
     private OrganizerApp $app;
     private array $images = array();
@@ -29,6 +31,28 @@ class ImageIndexer
         $this->app = $app;
         $this->storageFile = $this->app->getStorageFile();
         $this->analysisResults = new OperationResult_Collection($this);
+    }
+
+    public static function updateFileIndex(): void
+    {
+        Console::header('Updating image index file');
+
+        $app = OrganizerApp::create();
+        $index = array();
+
+        foreach ($app->createImageCollection()->getAll() as $image) {
+            $index[$image->getID()] = array(
+                self::INDEX_IMAGE_FILE => $image->getImageFile()->getPath(),
+                self::INDEX_THUMBNAIL_FILE => $image->getThumbnailFile()->getPath(),
+            );
+        }
+
+        Console::line1('Writing index file with [%d] entries.', count($index));
+
+        $app->getFileIndexFile()->putData($index);
+
+        Console::line1('ALL DONE!');
+        Console::nl();
     }
 
     private function loadIndex() : void
@@ -88,6 +112,9 @@ class ImageIndexer
         Console::line1('Writing image index file...');
 
         $this->app->getStorageFile()->putData($this->images);
+        $this->app->resetImageCollection();
+
+        self::updateFileIndex();
 
         Console::line1('ALL DONE!');
         Console::nl();
@@ -275,7 +302,10 @@ class ImageIndexer
     {
         Console::header('Upscaled images detection');
 
-        $collection = new ImageCollection($this->app->getStorageFile());
+        $collection = new ImageCollection(
+            $this->app->getStorageFile(),
+            $this->app->getFileIndexFile()
+        );
 
         foreach($this->detectSettingHashes($collection, $folderName) as $hash => $images)
         {
