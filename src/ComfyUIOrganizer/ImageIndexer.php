@@ -302,10 +302,7 @@ class ImageIndexer
     {
         Console::header('Upscaled images detection');
 
-        $collection = new ImageCollection(
-            $this->app->getStorageFile(),
-            $this->app->getFileIndexFile()
-        );
+        $collection = new ImageCollection($this->app->getStorageFile());
 
         foreach($this->detectSettingHashes($collection, $folderName) as $hash => $images)
         {
