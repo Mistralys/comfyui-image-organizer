@@ -27,11 +27,19 @@ if(!isset($files[$imageID])) {
 
 if($request->getBool('thumbnail'))
 {
-    $imageFile = FileInfo::factory($files[$imageID][ImageIndexer::INDEX_THUMBNAIL_FILE]);
-    if(!$imageFile->exists()) {
-        $this->createThumbnail($imageFile);
+    $thumbnailImage = FileInfo::factory($files[$imageID][ImageIndexer::INDEX_THUMBNAIL_FILE]);
+
+    if(!$thumbnailImage->exists()) {
+        ImageInfo::createThumbnail(
+            FileInfo::factory($files[$imageID][ImageIndexer::INDEX_IMAGE_FILE]),
+            $thumbnailImage
+        );
     }
-} else {
+
+    $imageFile = $thumbnailImage;
+}
+else
+{
     $imageFile = FileInfo::factory($files[$imageID][ImageIndexer::INDEX_IMAGE_FILE]);
 }
 
