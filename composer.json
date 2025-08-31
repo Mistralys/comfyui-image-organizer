@@ -27,6 +27,7 @@
     "index": "Mistralys\\ComfyUIOrganizer\\Builder::index",
     "detect-upscaled": "Mistralys\\ComfyUIOrganizer\\Builder::detectUpscaled",
     "clean-folders": "Mistralys\\ComfyUIOrganizer\\Builder::cleanFolders",
+    "update-file-index": "Mistralys\\ComfyUIOrganizer\\Builder::updateFileIndex",
     "post-autoload-dump": "Mistralys\\ComfyUIOrganizer\\Builder::postAutoload"
   }
 }

@@ -769,12 +769,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/Mistralys/x4-core.git",
-                "reference": "405e44a200fbe2665ab4d58c8dc36b960cb33fa2"
+                "reference": "ff06e3f74cb35c056b5e940f1ad924dc53d62f72"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Mistralys/x4-core/zipball/405e44a200fbe2665ab4d58c8dc36b960cb33fa2",
-                "reference": "405e44a200fbe2665ab4d58c8dc36b960cb33fa2",
+                "url": "https://api.github.com/repos/Mistralys/x4-core/zipball/ff06e3f74cb35c056b5e940f1ad924dc53d62f72",
+                "reference": "ff06e3f74cb35c056b5e940f1ad924dc53d62f72",
                 "shasum": ""
             },
             "require": {
@@ -820,7 +820,7 @@
                 "issues": "https://github.com/Mistralys/x4-core/issues",
                 "source": "https://github.com/Mistralys/x4-core/tree/main"
             },
-            "time": "2025-08-24T10:36:20+00:00"
+            "time": "2025-08-31T10:14:22+00:00"
         },
         {
             "name": "mistralys/x4-data-extractor",
@@ -1171,16 +1171,16 @@
         },
         {
             "name": "twbs/bootstrap",
-            "version": "v5.3.7",
+            "version": "v5.3.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/twbs/bootstrap.git",
-                "reference": "e0032ae6a5a628a51a8552091816cec09b6434df"
+                "reference": "25aa8cc0b32f0d1a54be575347e6d84b70b1acd7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/twbs/bootstrap/zipball/e0032ae6a5a628a51a8552091816cec09b6434df",
-                "reference": "e0032ae6a5a628a51a8552091816cec09b6434df",
+                "url": "https://api.github.com/repos/twbs/bootstrap/zipball/25aa8cc0b32f0d1a54be575347e6d84b70b1acd7",
+                "reference": "25aa8cc0b32f0d1a54be575347e6d84b70b1acd7",
                 "shasum": ""
             },
             "replace": {
@@ -1215,9 +1215,9 @@
             ],
             "support": {
                 "issues": "https://github.com/twbs/bootstrap/issues",
-                "source": "https://github.com/twbs/bootstrap/tree/v5.3.7"
+                "source": "https://github.com/twbs/bootstrap/tree/v5.3.8"
             },
-            "time": "2025-06-10T15:44:49+00:00"
+            "time": "2025-08-26T02:01:02+00:00"
         }
     ],
     "packages-dev": [],
