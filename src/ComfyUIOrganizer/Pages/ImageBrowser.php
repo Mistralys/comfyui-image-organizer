@@ -534,6 +534,7 @@ class ImageBrowser extends BaseOrganizerPage
                 <div class="image-badges">
                     <?php
                     echo $image->getUpscalingBadge();
+                    echo $image->getEditedBadge();
 
                     ?>
                     <span class="badge bg-primary badge-toggle badge-for-website toggle-<?php if($image->prop()->isForWebsite()) { echo 'enabled'; } else { echo 'disabled'; } ?>" title="<?php pt('This image is marked to be used on the website.') ?>">
