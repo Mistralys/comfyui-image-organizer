@@ -25,13 +25,25 @@ if(!isset($files[$imageID])) {
     exit;
 }
 
+$sourcePath = $files[$imageID][ImageIndexer::INDEX_IMAGE_FILE];
+
+// If a JPG variant of a PNG image exists, use that instead,
+// because this will be the edited version.
+$jpg = str_replace('.png', '.jpg', $sourcePath);
+if(file_exists($jpg)) {
+    $sourcePath = $jpg;
+}
+
+$sourceImage = FileInfo::factory($sourcePath);
+
 if($request->getBool('thumbnail'))
 {
     $thumbnailImage = FileInfo::factory($files[$imageID][ImageIndexer::INDEX_THUMBNAIL_FILE]);
 
-    if(!$thumbnailImage->exists()) {
+    // Create thumbnail if it doesn't exist or if the source image is newer than the thumbnail.
+    if(!$thumbnailImage->exists() || $thumbnailImage->getModifiedDate() < $sourceImage->getModifiedDate()) {
         ImageInfo::createThumbnail(
-            FileInfo::factory($files[$imageID][ImageIndexer::INDEX_IMAGE_FILE]),
+            $sourceImage,
             $thumbnailImage
         );
     }
@@ -40,7 +52,7 @@ if($request->getBool('thumbnail'))
 }
 else
 {
-    $imageFile = FileInfo::factory($files[$imageID][ImageIndexer::INDEX_IMAGE_FILE]);
+    $imageFile = $sourceImage;
 }
 
 ImageHelper::displayImage($imageFile->getPath());
