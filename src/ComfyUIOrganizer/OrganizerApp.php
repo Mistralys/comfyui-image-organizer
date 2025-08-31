@@ -46,6 +46,12 @@ class OrganizerApp extends X4Application
         return self::$instance;
     }
 
+    public function resetImageCollection() : self
+    {
+        $this->imageCollection = null;
+        return $this;
+    }
+
     public function getCacheFolder() : FolderInfo
     {
         return $this->cacheFolder;
@@ -65,6 +71,13 @@ class OrganizerApp extends X4Application
     {
         return JSONFile::factory($this->getStorageFolder().'/images.json')
             ->setPrettyPrint(true)
+            ->setTrailingNewline(true);
+    }
+
+    public function getFileIndexFile() : JSONFile
+    {
+        return JSONFile::factory($this->getStorageFolder().'/file_index.json')
+            ->setPrettyPrint(false)
             ->setTrailingNewline(true);
     }
 
