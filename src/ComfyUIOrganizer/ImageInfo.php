@@ -401,6 +401,21 @@ class ImageInfo implements StringPrimaryRecordInterface
         return $this->imageFile;
     }
 
+    public function getPSDFile() : FileInfo
+    {
+        return FileInfo::factory(str_replace('.png', '.psd', $this->imageFile->getPath()));
+    }
+
+    public function getJPGFile() : FileInfo
+    {
+        return FileInfo::factory(str_replace('.png', '.jpg', $this->imageFile->getPath()));
+    }
+
+    public function getWebsiteImage() : FileInfo
+    {
+        return FileInfo::factory(str_replace('.png', '_websiteImage.jpg', $this->imageFile->getPath()));
+    }
+
     /**
      * @return array{width: int, height: int}
      */
@@ -504,6 +519,19 @@ class ImageInfo implements StringPrimaryRecordInterface
         } else {
             ?>
             <span class="badge text-bg-secondary"><?php echo mb_strtoupper(t('Regular')) ?></span>
+            <?php
+        }
+
+        return OutputBuffering::get();
+    }
+
+    public function getEditedBadge() : string
+    {
+        OutputBuffering::start();
+
+        if($this->getPSDFile()->exists()) {
+            ?>
+            <span class="badge text-bg-success"><?php echo mb_strtoupper(t('Edited')) ?></span>
             <?php
         }
 
