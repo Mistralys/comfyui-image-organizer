@@ -444,18 +444,6 @@ class ImageInfo implements StringPrimaryRecordInterface
         return APP_WEBROOT_URL.'/image.php?imageID='.$this->getID();
     }
 
-    public function displayThumbnail() : never
-    {
-        $thumbnailFile = $this->getThumbnailFile();
-        if(!$thumbnailFile->exists()) {
-            $this->createThumbnail($thumbnailFile);
-        }
-
-        ImageHelper::displayImage($thumbnailFile->getPath());
-
-        exit;
-    }
-
     public const int THUMBNAIL_WIDTH = 540;
 
     public function getThumbnailFile() : FileInfo
@@ -468,22 +456,15 @@ class ImageInfo implements StringPrimaryRecordInterface
         ));
     }
 
-    private function createThumbnail(FileInfo $thumbnailFile): void
+    public static function createThumbnail(FileInfo $sourceImage, FileInfo $thumbnailFile): void
     {
         $thumbnailFile->getFolder()->create();
 
-        $helper = ImageHelper::createFromFile($this->imageFile);
+        $helper = ImageHelper::createFromFile($sourceImage);
         $helper->resampleByWidth(self::THUMBNAIL_WIDTH);
         $helper->setQuality(82);
         $helper->sharpen(18);
         $helper->save($thumbnailFile->getPath());
-    }
-
-    public function displayFullSize() : never
-    {
-        ImageHelper::displayImage($this->imageFile->getPath());
-
-        exit;
     }
 
     public function setLabel(string $label) : self
