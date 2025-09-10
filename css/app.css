@@ -3,6 +3,11 @@
     --element-spacing-l: 0.6rem;
 }
 
+.container{
+    width: 100%;
+    max-width: 100%;
+}
+
 .image-wrapper{
     display: inline-block;
     margin: 8px;
@@ -195,3 +200,6 @@ IMG.detail-image{
     font-family: monospace;
 }
 
+TD.property-column{
+    width: 12rem;
+}
