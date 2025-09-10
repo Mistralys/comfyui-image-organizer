@@ -368,6 +368,10 @@ class ImageBrowser extends BaseOrganizerPage
                     <?php echo Icon::typeSolid('toggle-off') ?>
                     <?php pt('Select none') ?>
                 </button>
+                <button class="btn btn-info" onclick="<?php echo $this->objName ?>.SelectRange()">
+                    <?php echo Icon::typeSolid('toggle-on') ?>
+                    <?php pt('Select range...') ?>
+                </button>
             </div>
             <?php
             if(!empty($this->activeFolder)) {
