@@ -3,18 +3,27 @@
 class ImageHandler
 {
     /**
-     *
      * @param {String} imageID
+     * @param {Number} testNumber
      * @param {Array<String>} searchWords
      * @param {Function} selectedCallback
      */
-    constructor(imageID, searchWords, selectedCallback)
+    constructor(imageID, testNumber, searchWords, selectedCallback)
     {
         this.imageID = imageID;
+        this.testNumber = testNumber;
         this.searchWords = searchWords;
         this.selected = false;
         this.wrapperID = '#wrapper-' + this.imageID;
         this.selectedCallback = selectedCallback;
+    }
+
+    /**
+     * @returns {Number}
+     */
+    GetTestNumber()
+    {
+        return this.testNumber;
     }
 
     /**

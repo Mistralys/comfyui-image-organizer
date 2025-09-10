@@ -45,11 +45,12 @@ class ImageBrowser
 
     /**
      * @param {String} imageID
+     * @param {Number} testNumber
      * @param {Array<String>} searchWords
      */
-    RegisterImage(imageID, searchWords)
+    RegisterImage(imageID, testNumber, searchWords)
     {
-        this.images[imageID] = new ImageHandler(imageID, searchWords, this.HandleImageSelected.bind(this));
+        this.images[imageID] = new ImageHandler(imageID, testNumber, searchWords, this.HandleImageSelected.bind(this));
     }
 
     /**
@@ -718,5 +719,50 @@ class ImageBrowser
         this.updateImageFromResponse(image, response);
 
         UserInterface.ShowStatus('The image has been ' + (response.forWebsite ? 'added to' : 'removed from') + ' the website.');
+    }
+
+    /**
+     * Prompts for a test number range (e.g. "45-78") and selects
+     * all images whose test number is in this range.
+     */
+    SelectRange()
+    {
+        let input = prompt('Enter test number range (e.g. 45-78):');
+        if (!input) return;
+
+        input = input.trim();
+
+        const match = input.match(/^(\d+)-(\d+)$/);
+        if (!match) {
+            alert('Invalid range format. Please use the format: start-end (e.g. 45-78)');
+            return;
+        }
+
+        const start = parseInt(match[1], 10);
+        const end = parseInt(match[2], 10);
+
+        if (isNaN(start) || isNaN(end) || start > end) {
+            alert('Invalid range. Start must be less than or equal to end.');
+            return;
+        }
+
+        let count = 0;
+
+        for (const imageID in this.images)
+        {
+            const image = this.images[imageID];
+            const testNumber = image.GetTestNumber();
+
+            if (testNumber >= start && testNumber <= end && !image.IsSelected()) {
+                image.ToggleSelection();
+                count++;
+            }
+        }
+
+        if (count === 0) {
+            UI.ShowStatus('No images found in the specified range.');
+        } else {
+            UI.ShowStatus(count + ' images selected in the range ' + start + '-' + end + '.');
+        }
     }
 }
