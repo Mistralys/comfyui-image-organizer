@@ -106,9 +106,10 @@ class ImageInfo implements StringPrimaryRecordInterface
     public function injectJS(UserInterface $ui,  string $objName) : void
     {
         $ui->addJSHead(sprintf(
-            "%s.RegisterImage('%s', %s);",
+            "%s.RegisterImage('%s', %s, %s);",
             $objName,
             $this->getID(),
+            $this->prop()->getTestNumber(),
             JSONConverter::var2json($this->getSearchWords())
         ));
     }
