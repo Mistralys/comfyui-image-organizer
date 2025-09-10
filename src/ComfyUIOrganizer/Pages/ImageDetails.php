@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace Mistralys\ComfyUIOrganizer\Pages;
 
+use AppUtils\ArrayDataCollection;
+use AppUtils\FileHelper\FileInfo;
 use AppUtils\OutputBuffering;
 use Mistralys\ComfyUIOrganizer\ImageInfo;
+use Mistralys\ComfyUIOrganizer\ImageProperties;
 use Mistralys\ComfyUIOrganizer\LoRAs\LoRAsCollection;
 use Mistralys\ComfyUIOrganizer\OrganizerApp;
 use Mistralys\X4\UI\Page\BasePage;
 use function AppLocalize\pts;
+use function AppUtils\sb;
 use function AppUtils\t;
 use const Mistralys\ComfyUIOrganizer\Config\APP_WEBROOT_URL;
 
@@ -81,32 +85,80 @@ class ImageDetails extends BasePage
         </div>
         <?php
 
-        $grid = $this->ui->createDataGrid();
-        $grid->addColumn('key', t('Property'));
-        $grid->addColumn('value', t('Value'));
+        $loraIDs = LoRAsCollection::getInstance()->getIDs();
+        $serialized = ArrayDataCollection::create($this->image->prop()->serialize());
 
-        $list = array(
-            t('ID') => $this->image->getID(),
-            t('Checkpoint') => $this->image->getCheckpoint(),
-            t('Date') => $this->image->getDate()->format('Y-m-d H:i:s'),
-            t('Image file') => $this->image->getImageFile()->getPath(),
-            t('Sidecar file') => $this->image->getSidecarFile()->getPath(),
-            t('Image size') => $this->image->getImageSize()['width'].' x '.$this->image->getImageSize()['height'],
-            t('Upscaled?') => $this->renderBool($this->image->isUpscaled())
+        $knownProps = array(
+            ImageProperties::KEY_FAVORITE => t('Favorite?'),
+            ImageProperties::KEY_FOR_GALLERY => t('For gallery?'),
         );
 
-        $list = array_merge($list, $this->image->prop()->serialize());
-
-        $loraIDs = LoRAsCollection::getInstance()->getIDs();
-
         $loras = array();
-        foreach($list as $key => $value)
+        $props = array();
+        foreach($serialized->getData() as $key => $value)
         {
             if(in_array($key, $loraIDs)) {
-                $loras[$key] = $value;
+                $loras[t('LoRA: ').$key] = $value;
                 continue;
             }
 
+            $props[$key] = $value;
+        }
+
+        ksort($loras);
+
+        $this->renderProperties(
+            t('Image Properties'),
+            array(
+                t('ID') => sb()->spanned($this->image->getID(), 'mono'),
+                t('Date') => $this->image->getDate()->format('Y-m-d H:i:s'),
+                t('Batch number') => $this->image->prop()->getBatchNumber(),
+                t('Upscaled?') => $this->renderBool($this->image->isUpscaled()),
+                t('Favorite?') => $this->renderBool($this->image->prop()->isFavorite()),
+                t('For gallery?') => $this->renderBool($this->image->prop()->isForGallery()),
+                t('For website?') => $this->renderBool($this->image->prop()->isForWebsite()),
+                t('Test name') => $this->image->prop()->getTestName().' #'.$this->image->prop()->getTestNumber()
+            )
+        );
+
+        $this->renderProperties(
+            t('Generation Properties'),
+            array(
+                t('Checkpoint') => $this->image->getCheckpoint(),
+                t('Image size') => $this->image->getImageSize()['width'].' x '.$this->image->getImageSize()['height'],
+                t('LoRA summary') => $this->image->prop()->getLoRASummary(),
+                t('Sampler') => $this->image->prop()->getSampler().' / '.$this->image->prop()->getScheduler(),
+                t('Steps') => $this->image->prop()->getSamplerSteps(),
+                t('Guidance Scale') => $this->image->prop()->getCFG(),
+                t('Seed') => $this->image->prop()->getSeed(),
+            )
+        );
+
+        $this->renderProperties('LoRAs', $loras);
+
+        $this->renderProperties(
+            t('Files'),
+            array(
+                t('Folder') => $serialized->getString(ImageProperties::KEY_FOLDER_NAME),
+                t('Image file') => $this->adjustPath($this->image->getImageFile()),
+                t('Sidecar file') => $this->adjustPath($this->image->getSidecarFile()),
+                t('PSD File') => $this->renderOptionalFile($this->image->getPSDFile()),
+                t('JPG File') => $this->renderOptionalFile($this->image->getJPGFile()),
+                t('Website Image') => $this->renderOptionalFile($this->image->getWebsiteImage())
+            )
+        );
+
+        OutputBuffering::flush();
+    }
+
+    private function renderProperties(string $title, array $properties) : void
+    {
+        $grid = $this->ui->createDataGrid();
+        $grid->addColumn('key', t('Property'))->addClass('property-column');
+        $grid->addColumn('value', t('Value'));
+
+        foreach($properties as $key => $value)
+        {
             if(is_bool($value)) {
                 $value = $this->renderBool($value);
             }
@@ -117,24 +169,26 @@ class ImageDetails extends BasePage
             ));
         }
 
-        ksort($loras);
+        echo '<h3>'.$title.'</h3>'.$grid;
+    }
 
-        foreach ($loras as $key => $value)
-        {
-            $grid->addRowFromArray(array(
-                'key' => t('LoRA: ').$key,
-                'value' => $value
-            ));
+    private function renderOptionalFile(FileInfo $file) : string
+    {
+        if($file->exists()) {
+            return $this->adjustPath($file);
         }
 
-        $grid->addRowFromArray(array(
-            'key' => t('LoRA summary'),
-            'value' => $this->image->prop()->getLoRASummary()
-        ));
+        return '<span class="text-secondary">('.t('File not present').')</span>';
 
-        echo $grid;
+    }
 
-        OutputBuffering::flush();
+    private function adjustPath(FileInfo $file) : string
+    {
+        if(PHP_OS_FAMILY === 'Windows') {
+            return str_replace('/', '\\', $file->getPath());
+        }
+
+        return $file->getPath();
     }
 
     public function getNavItems(): array
