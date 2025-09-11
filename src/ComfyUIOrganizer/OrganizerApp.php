@@ -17,6 +17,7 @@ use Mistralys\X4\UI\UserInterface;
 use Mistralys\X4\X4Application;
 use SplFileInfo;
 use function AppLocalize\t;
+use const Mistralys\ComfyUIOrganizer\Config\APP_COMFYUI_FOLDER;
 use const Mistralys\ComfyUIOrganizer\Config\APP_IMAGE_FOLDER;
 
 class OrganizerApp extends X4Application
@@ -25,9 +26,11 @@ class OrganizerApp extends X4Application
     private FolderInfo $storageFolder;
     private FolderInfo $cacheFolder;
     private UserInterface $ui;
+    private FolderInfo $comfyFolder;
 
-    public function __construct(SplFileInfo|string|PathInfoInterface $imageFolder)
+    public function __construct(SplFileInfo|string|PathInfoInterface $comfyFolder, SplFileInfo|string|PathInfoInterface $imageFolder)
     {
+        $this->comfyFolder = FolderInfo::factory($comfyFolder);
         $this->imageFolder = FolderInfo::factory($imageFolder);
         $this->storageFolder = FolderInfo::factory(__DIR__.'/../../data');
         $this->cacheFolder = FolderInfo::factory(__DIR__.'/../../cache');
@@ -40,10 +43,19 @@ class OrganizerApp extends X4Application
     public static function create() : OrganizerApp
     {
         if(!isset(self::$instance)) {
-            self::$instance = new OrganizerApp(APP_IMAGE_FOLDER);
+            self::$instance = new OrganizerApp(APP_COMFYUI_FOLDER, APP_IMAGE_FOLDER);
         }
 
         return self::$instance;
+    }
+
+    /**
+     * The ComfyUI installation folder.
+     * @return FolderInfo
+     */
+    public function getComfyFolder(): FolderInfo
+    {
+        return $this->comfyFolder;
     }
 
     public function resetImageCollection() : self
