@@ -11,6 +11,7 @@ use AppUtils\FileHelper\PathInfoInterface;
 use Mistralys\ComfyUIOrganizer\Pages\ImageBrowser;
 use Mistralys\ComfyUIOrganizer\Pages\ImageDetails;
 use Mistralys\ComfyUIOrganizer\Pages\IndexManagerPage;
+use Mistralys\ComfyUIOrganizer\Pages\WorkflowsPage;
 use Mistralys\X4\UI\Ajax\AjaxMethodInterface;
 use Mistralys\X4\UI\Ajax\AjaxMethods;
 use Mistralys\X4\UI\UserInterface;
@@ -114,6 +115,7 @@ class OrganizerApp extends X4Application
         $ui->registerPage(ImageBrowser::URL_NAME, ImageBrowser::class);
         $ui->registerPage(ImageDetails::URL_NAME, ImageDetails::class);
         $ui->registerPage(IndexManagerPage::URL_NAME, IndexManagerPage::class);
+        $ui->registerPage(WorkflowsPage::URL_NAME, WorkflowsPage::class);
     }
 
     public function registerAjaxMethods(AjaxMethods $methods): void
