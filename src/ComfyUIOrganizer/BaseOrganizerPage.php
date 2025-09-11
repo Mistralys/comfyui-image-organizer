@@ -16,6 +16,7 @@ abstract class BaseOrganizerPage extends BasePage
         return array(
             new NavItem(Icon::typeSolid('bars').' '.t('Browser'), OrganizerApp::create()->url()->browser()),
             new NavItem(Icon::typeSolid('database').' '.t('Index manager'), OrganizerApp::create()->url()->indexManager()),
+            new NavItem(Icon::typeSolid('code-branch').' '.t('Workflows'), OrganizerApp::create()->url()->workflows()),
         );
     }
 }
