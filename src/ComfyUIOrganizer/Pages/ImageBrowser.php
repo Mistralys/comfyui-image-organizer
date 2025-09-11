@@ -359,19 +359,32 @@ class ImageBrowser extends BaseOrganizerPage
                     <?php echo Icon::save().' '; pt('Apply'); ?>
                 </button>
             </div>
-            <div class="btn-group spacing-left">
-                <button class="btn btn-info" onclick="<?php echo $this->objName ?>.SelectAll()">
-                    <?php echo Icon::typeSolid('toggle-on') ?>
-                    <?php pt('Select all') ?>
+            <div class="btn-group spacing-left" role="group">
+                <button type="button" class="btn btn-info dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    <?php pt('Select'); ?>
                 </button>
-                <button class="btn btn-info" onclick="<?php echo $this->objName ?>.DeselectAll()">
-                    <?php echo Icon::typeSolid('toggle-off') ?>
-                    <?php pt('Select none') ?>
-                </button>
-                <button class="btn btn-info" onclick="<?php echo $this->objName ?>.SelectRange()">
-                    <?php echo Icon::typeSolid('toggle-on') ?>
-                    <?php pt('Select range...') ?>
-                </button>
+                <ul class="dropdown-menu">
+                    <li>
+                        <a class="dropdown-item" href="#" onclick="<?php echo $this->objName ?>.SelectAll();return false;">
+                            <?php pt('Select all') ?>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="#" onclick="<?php echo $this->objName ?>.DeselectAll();return false;">
+                            <?php pt('Select none') ?>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="#" onclick="<?php echo $this->objName ?>.SelectRange();return false;">
+                            <?php pt('Select range...') ?>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="#" onclick="<?php echo $this->objName ?>.SelectNonFavorites();return false;">
+                            <?php pt('Select non favorites') ?>
+                        </a>
+                    </li>
+                </ul>
             </div>
             <?php
             if(!empty($this->activeFolder)) {
