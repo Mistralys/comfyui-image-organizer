@@ -765,4 +765,24 @@ class ImageBrowser
             UI.ShowStatus(count + ' images selected in the range ' + start + '-' + end + '.');
         }
     }
+
+    /**
+     * Selects all images that do not have the favorite flag set.
+     */
+    SelectNonFavorites()
+    {
+        let count = 0;
+        for (const imageID in this.images) {
+            const image = this.images[imageID];
+            if (!image.IsFavorite() && !image.IsSelected()) {
+                image.ToggleSelection();
+                count++;
+            }
+        }
+        if (count === 0) {
+            UserInterface.ShowStatus('No non-favorite images found.');
+        } else {
+            UserInterface.ShowStatus(count + ' non-favorite images selected.');
+        }
+    }
 }
