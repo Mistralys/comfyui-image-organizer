@@ -93,14 +93,14 @@ class ImageInfo implements StringPrimaryRecordInterface
         return $this->properties;
     }
 
-    public function getViewDetailsURL() : string
+    public function getViewDetailsURL(array $params=array()) : string
     {
+        $params[BasePage::REQUEST_PARAM_PAGE] = ImageDetails::URL_NAME;
+        $params[ImageCollection::REQUEST_PARAM_IMAGE_ID] = $this->getID();
+
         return Request::getInstance()
             ->setBaseURL(APP_WEBROOT_URL)
-            ->buildURL(array(
-                BasePage::REQUEST_PARAM_PAGE => ImageDetails::URL_NAME,
-                ImageCollection::REQUEST_PARAM_IMAGE_ID => $this->getID()
-            ));
+            ->buildURL($params);
     }
 
     public function injectJS(UserInterface $ui,  string $objName) : void
@@ -271,17 +271,10 @@ class ImageInfo implements StringPrimaryRecordInterface
 
     public function copyToOutput() : void
     {
-        $label = $this->getLabel();
-        if(empty($label)) {
-            $label = $this->getID();
-        }
-
         $outputFile = FileInfo::factory(sprintf(
-            '%s/%s-%s-%s.png',
+            '%s/%s',
             OUTPUT_FOLDER,
-            ConvertHelper::transliterate($label),
-            $this->prop()->getTestNumber(),
-            $this->prop()->getBatchNumber()
+            $this->getOutputFileName()
         ));
 
         if($outputFile->exists()) {
@@ -289,6 +282,21 @@ class ImageInfo implements StringPrimaryRecordInterface
         }
 
         $this->imageFile->copyTo($outputFile);
+    }
+
+    public function getOutputFileName() : string
+    {
+        $label = $this->getLabel();
+        if(empty($label)) {
+            $label = $this->getID();
+        }
+
+        return sprintf(
+            '%s-%s-%s.png',
+            ConvertHelper::transliterate($label),
+            $this->prop()->getTestNumber(),
+            $this->prop()->getBatchNumber()
+        );
     }
 
     public function registerLowResImage(ImageInfo $image) : void
@@ -335,6 +343,15 @@ class ImageInfo implements StringPrimaryRecordInterface
                 $this->prop()->setForWebsite(true);
             }
         }
+    }
+
+    /**
+     * @return $this
+     */
+    public function save() : self
+    {
+        OrganizerApp::create()->createImageCollection()->save();
+        return $this;
     }
 
     private function onPropertiesModified() : void
@@ -414,7 +431,7 @@ class ImageInfo implements StringPrimaryRecordInterface
 
     public function getWebsiteImage() : FileInfo
     {
-        return FileInfo::factory(str_replace('.png', '_websiteImage.jpg', $this->imageFile->getPath()));
+        return FileInfo::factory(str_replace('.png', '_websiteImage.png', $this->imageFile->getPath()));
     }
 
     /**
