@@ -6,3 +6,5 @@ composer.phar
 /data/backup/
 /output-images/*.png
 data/file_index.json
+.idea/copilot.data.migration.agent.xml
+.idea/copilot.data.migration.edit.xml
