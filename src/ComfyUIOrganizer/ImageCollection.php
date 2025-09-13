@@ -12,6 +12,7 @@ use AppUtils\JSHelper;
 use AppUtils\Request;
 use Mistralys\ComfyUIOrganizer\Ajax\BaseImageMethod;
 use Mistralys\ComfyUIOrganizer\Ajax\Methods\CopyToOutputMethod;
+use Mistralys\ComfyUIOrganizer\Ajax\Methods\SendToWebsiteMethod;
 use Mistralys\ComfyUIOrganizer\Ajax\Methods\DeleteImageMethod;
 use Mistralys\ComfyUIOrganizer\Ajax\Methods\FavoriteImageMethod;
 use Mistralys\ComfyUIOrganizer\Ajax\Methods\MoveImageMethod;
@@ -106,6 +107,7 @@ class ImageCollection extends BaseStringPrimaryCollection
                 'setForWebsite' => SetForWebsiteMethod::METHOD_NAME,
                 'setLabel' => SetLabelMethod::METHOD_NAME,
                 'copyToOutput' => CopyToOutputMethod::METHOD_NAME,
+                'sendToWebsite' => SendToWebsiteMethod::METHOD_NAME,
                 'imageID' => self::REQUEST_PARAM_IMAGE_ID,
                 'payloadFavorite' => BaseImageMethod::REQUEST_PARAM_FAVORITE,
                 'payloadForGallery' => BaseImageMethod::REQUEST_PARAM_FOR_GALLERY,
