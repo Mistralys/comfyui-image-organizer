@@ -14,6 +14,7 @@ class ImageBrowser
      * @param {String} ajaxMethodInfo.setForWebsite
      * @param {String} ajaxMethodInfo.setLabel
      * @param {String} ajaxMethodInfo.copyToOutput
+     * @param {String} ajaxMethodInfo.sendToWebsite
      * @param {String} ajaxMethodInfo.imageID
      * @param {Boolean} ajaxMethodInfo.payloadFavorite
      * @param {Boolean} ajaxMethodInfo.payloadForGallery
@@ -189,6 +190,23 @@ class ImageBrowser
     HandleCopyToOutputResponse(image, response)
     {
         UserInterface.ShowStatus('Image [' + image.GetID() + '] has been copied to the output folder.');
+    }
+
+    SendToWebsite(imageID)
+    {
+        const image = this.RequireImage(imageID);
+
+        this.SendRequest(
+            image,
+            this.ajaxMethodInfo.sendToWebsite,
+            this.HandleSendToWebsiteResponse.bind(this),
+            {}
+        );
+    }
+
+    HandleSendToWebsiteResponse(image, response)
+    {
+        UserInterface.ShowStatus('Image [' + image.GetID() + '] has been sent to the website.');
     }
 
     /**
@@ -397,6 +415,14 @@ class ImageBrowser
         for(const imageID in this.imageSelection) {
             const image = this.imageSelection[imageID];
             this.CopyToOutput(image.GetID());
+        }
+    }
+
+    SendSelectedToWebsite()
+    {
+        for(const imageID in this.imageSelection) {
+            const image = this.imageSelection[imageID];
+            this.SendToWebsite(image.GetID());
         }
     }
 
