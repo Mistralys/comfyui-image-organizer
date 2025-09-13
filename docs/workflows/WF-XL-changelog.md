@@ -1,11 +1,14 @@
 # SDXL Workflow
 
-## v28 - Version property
+## v29 - LoRA adjustments
+- Moved LoRAs to subfolders
+- Added High Fantasy LoRA
+- Added Galaxy Scene LoRA
 
+## v28 - Version property
 - Now saving the workflow version in the image properties.
 
 ## v27 - LoRA additions
-
 - Added Ink Style LoRA
 - Added Parchment LoRA
 - Added Painted World LoRA
@@ -15,7 +18,6 @@
 - Added Organic Macabre LoRA
 
 ## v26 - LoRA additions
-
 - Added NeoFutureTech LoRA.
 - Added Pulp Scifi LoRA.
 - Added Chris Balaskas LoRA.
