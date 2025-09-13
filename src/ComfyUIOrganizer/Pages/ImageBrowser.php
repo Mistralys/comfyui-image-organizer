@@ -517,6 +517,11 @@ class ImageBrowser extends BaseOrganizerPage
                 <?php echo Icon::typeSolid('copy') ?>
                 <?php pt('Copy to output') ?>
             </button>
+            <button class="btn btn-secondary btn-sm" onclick="<?php echo $this->objName ?>.SendSelectedToWebsite()">
+                <?php echo Icon::typeSolid('cloud-upload-alt') ?>
+                <?php pt('Send to website') ?>
+            </button>
+
         </div>
         <?php
 
@@ -674,6 +679,7 @@ class ImageBrowser extends BaseOrganizerPage
                     </span>
                 </a>
             </li>
+            <li><hr class="dropdown-divider"></li>
             <li class="toggle-for-website">
                 <a href="#"
                    onclick="<?php echo $this->objName ?>.ToggleForWebsite('<?php echo $image->getID() ?>');return false;"
@@ -692,13 +698,22 @@ class ImageBrowser extends BaseOrganizerPage
             <li>
                 <a class="dropdown-item"
                    href="#"
+                   onclick="<?php echo $this->objName ?>.SendToWebsite('<?php echo $image->getID() ?>');return false;"
+                >
+                    <?php echo Icon::typeSolid('cloud-upload-alt') ?>
+                    <?php pt('Send to website'); ?>
+                </a
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+                <a class="dropdown-item"
+                   href="#"
                    onclick="<?php echo $this->objName ?>.MoveImage('<?php echo $image->getID() ?>');return false;"
                 >
                     <?php echo Icon::typeSolid('folder-open') ?>
                     <?php pt('Move to folder...'); ?>
                 </a
             </li>
-
             <li>
                 <a class="dropdown-item"
                    href="#"
