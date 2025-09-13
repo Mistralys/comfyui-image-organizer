@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Mistralys\ComfyUIOrganizer\Ajax;
 
+use AppUtils\ArrayDataCollection;
+use AppUtils\ConvertHelper\JSONConverter;
 use Mistralys\ComfyUIOrganizer\ImageCollection;
 use Mistralys\ComfyUIOrganizer\ImageInfo;
 use Mistralys\ComfyUIOrganizer\OrganizerApp;
+use Mistralys\ComfyUIOrganizer\OrganizerException;
 use Mistralys\X4\UI\Ajax\BaseAjaxMethod;
 
 /**
@@ -19,6 +22,7 @@ abstract class BaseImageMethod extends BaseAjaxMethod
     public const string REQUEST_PARAM_FOR_WEBSITE = 'forWebsite';
     public const string REQUEST_PARAM_FAVORITE = 'favorite';
     public const string REQUEST_PARAM_LABEL = 'label';
+    public const string RESPONSE_STATUS = 'status';
 
     protected ImageCollection $collection;
 
@@ -33,7 +37,13 @@ abstract class BaseImageMethod extends BaseAjaxMethod
             $this->sendError('Image not found or not specified.', self::ERROR_IMAGE_NOT_FOUND);
         }
 
+        $this->preProcessImage($image);
         $this->processImage($image);
+    }
+
+    protected function preProcessImage(ImageInfo $image) : void
+    {
+
     }
 
     protected function getImage() : ImageInfo
