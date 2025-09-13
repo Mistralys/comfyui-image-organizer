@@ -7,11 +7,15 @@ namespace Mistralys\ComfyUIOrganizer\Pages;
 use AppUtils\ArrayDataCollection;
 use AppUtils\FileHelper\FileInfo;
 use AppUtils\OutputBuffering;
+use Mistralys\ComfyUIOrganizer\Ajax\Methods\SendToWebsiteMethod;
 use Mistralys\ComfyUIOrganizer\ImageInfo;
 use Mistralys\ComfyUIOrganizer\ImageProperties;
 use Mistralys\ComfyUIOrganizer\LoRAs\LoRAsCollection;
 use Mistralys\ComfyUIOrganizer\OrganizerApp;
+use Mistralys\X4\UI\Ajax\AjaxMethods;
+use Mistralys\X4\UI\Icon;
 use Mistralys\X4\UI\Page\BasePage;
+use function AppLocalize\pt;
 use function AppLocalize\pts;
 use function AppUtils\sb;
 use function AppUtils\t;
@@ -20,6 +24,10 @@ use const Mistralys\ComfyUIOrganizer\Config\APP_WEBROOT_URL;
 class ImageDetails extends BasePage
 {
     public const string URL_NAME = 'image-details';
+
+    public const string REQUEST_PARAM_RESET_WSIMGID = 'reset-website-image';
+    public const string REQUEST_PARAM_SEND_TO_WEBSITE = 'send-to-website';
+
     private ?ImageInfo $image;
 
     public function getID(): string
@@ -58,6 +66,36 @@ class ImageDetails extends BasePage
         }
 
         $this->image = $image;
+
+        if($this->request->getBool(self::REQUEST_PARAM_RESET_WSIMGID)) {
+            $this->handleResetWebsiteImageID();
+        }
+
+        if($this->request->getBool(self::REQUEST_PARAM_SEND_TO_WEBSITE)) {
+            $this->handleSendToWebsite();
+        }
+    }
+
+    private function handleResetWebsiteImageID() : never
+    {
+        $this->image->prop()->setWebsiteImageID('');
+        $this->image->save();
+
+        $this->redirectWithSuccessMessage(
+            $this->image->getViewDetailsURL(),
+            t('The website image ID has been reset.')
+        );
+    }
+
+    private function handleSendToWebsite() : never
+    {
+        $method = new SendToWebsiteMethod(new AjaxMethods(OrganizerApp::create()->getUI()));
+        $method->sendRequest($this->image);
+
+        $this->redirectWithSuccessMessage(
+            $this->image->getViewDetailsURL(),
+            t('The image has been successfully sent to the website.')
+        );
     }
 
     protected function _render(): void
@@ -87,11 +125,6 @@ class ImageDetails extends BasePage
 
         $loraIDs = LoRAsCollection::getInstance()->getIDs();
         $serialized = ArrayDataCollection::create($this->image->prop()->serialize());
-
-        $knownProps = array(
-            ImageProperties::KEY_FAVORITE => t('Favorite?'),
-            ImageProperties::KEY_FOR_GALLERY => t('For gallery?'),
-        );
 
         $loras = array();
         $props = array();
@@ -144,9 +177,32 @@ class ImageDetails extends BasePage
                 t('Sidecar file') => $this->adjustPath($this->image->getSidecarFile()),
                 t('PSD File') => $this->renderOptionalFile($this->image->getPSDFile()),
                 t('JPG File') => $this->renderOptionalFile($this->image->getJPGFile()),
-                t('Website Image') => $this->renderOptionalFile($this->image->getWebsiteImage())
             )
         );
+
+        $imageID = $this->image->prop()->getWebsiteImageID();
+        if(!empty($imageID)) {
+            $imageID = '<span class="mono">#'.$imageID.'</span> &#160; <a href="'.$this->image->getViewDetailsURL(array(self::REQUEST_PARAM_RESET_WSIMGID => 'yes')).'" target="_blank">('.t('Reset').')</a>';
+        } else {
+            $imageID = '<span class="text-secondary">('.t('Empty').')</span>';
+        }
+
+        $this->renderProperties(
+            t('Website Gallery connection'),
+            array(
+                t('Website Image') => $this->renderOptionalFile($this->image->getWebsiteImage()),
+                t('Website image ID') => $imageID
+            )
+        );
+
+        if($this->image->getWebsiteImage()->exists() && empty($this->image->prop()->getWebsiteImageID()) ) {
+            ?>
+            <a href="<?php echo $this->image->getViewDetailsURL(array(self::REQUEST_PARAM_SEND_TO_WEBSITE => 'yes')) ?>" class="btn btn-primary">
+                <?php echo Icon::typeSolid('cloud-upload-alt') ?>
+                <?php pt('Send to website') ?>
+            </a>
+            <?php
+        }
 
         OutputBuffering::flush();
     }
@@ -178,7 +234,7 @@ class ImageDetails extends BasePage
             return $this->adjustPath($file);
         }
 
-        return '<span class="text-secondary">('.t('File not present').')</span>';
+        return '<span class="text-secondary">('.t('File not present:').' '.$file->getName().')</span>';
 
     }
 
