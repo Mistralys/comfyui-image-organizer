@@ -25,6 +25,7 @@ class ImageProperties
     public const string KEY_SAMPLER_STEPS = 'samplerSteps';
     public const string KEY_SCHEDULER = 'scheduler';
     public const string KEY_FACEFIX = 'isFacefix';
+    public const string KEY_WEBSITE_IMAGE_ID = 'websiteImageID';
 
     private ArrayDataCollection $data;
 
@@ -201,6 +202,10 @@ class ImageProperties
         return $this;
     }
 
+    /**
+     * @return void
+     * @see ImageInfo::onPropertiesModified()
+     */
     private function handleModified() : void
     {
         call_user_func($this->modifiedCallback);
@@ -229,5 +234,15 @@ class ImageProperties
     public function setFolderName(string $folderName) : self
     {
         return $this->setKey(self::KEY_FOLDER_NAME, $folderName);
+    }
+
+    public function setWebsiteImageID(string $imageID) : self
+    {
+        return $this->setKey(self::KEY_WEBSITE_IMAGE_ID, $imageID);
+    }
+
+    public function getWebsiteImageID() : ?string
+    {
+        return $this->data->getStringN(self::KEY_WEBSITE_IMAGE_ID);
     }
 }
