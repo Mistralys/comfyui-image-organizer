@@ -9,10 +9,6 @@
       <change beforePath="$PROJECT_DIR$/composer.json" beforeDir="false" afterPath="$PROJECT_DIR$/composer.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/composer.lock" beforeDir="false" afterPath="$PROJECT_DIR$/composer.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/config.dist.php" beforeDir="false" afterPath="$PROJECT_DIR$/config.dist.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/workflows/WF-XL-changelog.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/workflows/WF-XL-changelog.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/workflows/WF-XL.json" beforeDir="false" afterPath="$PROJECT_DIR$/docs/workflows/WF-XL.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/js/ImageBrowser.js" beforeDir="false" afterPath="$PROJECT_DIR$/js/ImageBrowser.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ComfyUIOrganizer/Ajax/BaseImageMethod.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/ComfyUIOrganizer/Ajax/BaseImageMethod.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/ComfyUIOrganizer/Builder.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/ComfyUIOrganizer/Builder.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/ComfyUIOrganizer/ImageCollection.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/ComfyUIOrganizer/ImageCollection.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/ComfyUIOrganizer/ImageInfo.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/ComfyUIOrganizer/ImageInfo.php" afterDir="false" />
@@ -151,7 +147,7 @@
       <workItem from="1757612050754" duration="735000" />
       <workItem from="1757655069334" duration="13085000" />
       <workItem from="1757756055847" duration="2521000" />
-      <workItem from="1757794004371" duration="109000" />
+      <workItem from="1757794004371" duration="266000" />
     </task>
     <servers />
   </component>
