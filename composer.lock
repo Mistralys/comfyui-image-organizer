@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "004a53c37c71014021f6515c6853c5fb",
+    "content-hash": "775b45527d93ea4a248362fc70dbe027",
     "packages": [
         {
             "name": "components/jquery",
@@ -765,20 +765,21 @@
         },
         {
             "name": "mistralys/x4-core",
-            "version": "1.1.0",
+            "version": "1.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Mistralys/x4-core.git",
-                "reference": "ff06e3f74cb35c056b5e940f1ad924dc53d62f72"
+                "reference": "30824b4c9be4503f67ac1b6c1afcc3480ba3d902"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Mistralys/x4-core/zipball/ff06e3f74cb35c056b5e940f1ad924dc53d62f72",
-                "reference": "ff06e3f74cb35c056b5e940f1ad924dc53d62f72",
+                "url": "https://api.github.com/repos/Mistralys/x4-core/zipball/30824b4c9be4503f67ac1b6c1afcc3480ba3d902",
+                "reference": "30824b4c9be4503f67ac1b6c1afcc3480ba3d902",
                 "shasum": ""
             },
             "require": {
                 "components/jquery": ">=3.5.1",
+                "ext-curl": "*",
                 "ext-dom": "*",
                 "ext-json": "*",
                 "ext-mbstring": "*",
@@ -817,9 +818,9 @@
             "description": "Database and utility classes used to access X4: Foundations game data in an OOP way.",
             "support": {
                 "issues": "https://github.com/Mistralys/x4-core/issues",
-                "source": "https://github.com/Mistralys/x4-core/tree/1.1.0"
+                "source": "https://github.com/Mistralys/x4-core/tree/1.1.1"
             },
-            "time": "2025-08-31T10:14:22+00:00"
+            "time": "2025-09-12T17:33:17+00:00"
         },
         {
             "name": "mistralys/x4-data-extractor",
@@ -1125,16 +1126,16 @@
         },
         {
             "name": "thomaspark/bootswatch",
-            "version": "v5.3.7",
+            "version": "v5.3.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thomaspark/bootswatch.git",
-                "reference": "6c4ea3bbde9815576d8088436ea6e0032d112740"
+                "reference": "bcf464aa10ff5914c2d61608022e9c017328c313"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thomaspark/bootswatch/zipball/6c4ea3bbde9815576d8088436ea6e0032d112740",
-                "reference": "6c4ea3bbde9815576d8088436ea6e0032d112740",
+                "url": "https://api.github.com/repos/thomaspark/bootswatch/zipball/bcf464aa10ff5914c2d61608022e9c017328c313",
+                "reference": "bcf464aa10ff5914c2d61608022e9c017328c313",
                 "shasum": ""
             },
             "suggest": {
@@ -1164,9 +1165,9 @@
             "description": "Themes for Bootstrap",
             "support": {
                 "issues": "https://github.com/thomaspark/bootswatch/issues",
-                "source": "https://github.com/thomaspark/bootswatch/tree/v5.3.7"
+                "source": "https://github.com/thomaspark/bootswatch/tree/v5.3.8"
             },
-            "time": "2025-06-25T02:36:22+00:00"
+            "time": "2025-09-11T00:25:54+00:00"
         },
         {
             "name": "twbs/bootstrap",
@@ -1226,7 +1227,8 @@
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
-        "ext-mbstring": "*"
+        "ext-mbstring": "*",
+        "ext-curl": "*"
     },
     "platform-dev": {},
     "plugin-api-version": "2.6.0"

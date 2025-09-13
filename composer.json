@@ -19,8 +19,9 @@
   "require": {
     "mistralys/application-utils-core": ">=2.3",
     "mistralys/application-utils-collections": ">=1.2",
-    "mistralys/x4-core": ">=1.1.0",
-    "ext-mbstring": "*"
+    "mistralys/x4-core": ">=1.1.1",
+    "ext-mbstring": "*",
+    "ext-curl": "*"
   },
   "scripts": {
     "build": "Mistralys\\ComfyUIOrganizer\\Builder::build",
