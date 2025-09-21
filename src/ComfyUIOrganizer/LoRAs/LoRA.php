@@ -6,6 +6,7 @@ namespace Mistralys\ComfyUIOrganizer\LoRAs;
 
 use AppUtils\ArrayDataCollection;
 use AppUtils\Interfaces\StringPrimaryRecordInterface;
+use function AppUtils\sb;
 
 class LoRA implements StringPrimaryRecordInterface
 {
@@ -35,6 +36,11 @@ class LoRA implements StringPrimaryRecordInterface
     public function getLabel() : string
     {
         return $this->data->getString(self::KEY_LABEL);
+    }
+
+    public function getLabelLinkedSource() : string
+    {
+        return (string)sb()->link($this->getLabel(), $this->getSource(), true);
     }
 
     public function getFile() : string
@@ -70,5 +76,10 @@ class LoRA implements StringPrimaryRecordInterface
     public function getModel() : string
     {
         return $this->data->getString(self::KEY_MODEL);
+    }
+
+    public function getTriggerWordsFlattened() : string
+    {
+        return implode(', ', $this->getTriggerWords());
     }
 }
