@@ -32,6 +32,22 @@ class LoRAsCollection extends BaseStringPrimaryCollection
     }
 
     /**
+     * @return string[]
+     */
+    public function getCategories() : array
+    {
+        $categories = [];
+        foreach($this->getAll() as $lora) {
+            $category = $lora->getCategory();
+            if($category !== '' && !in_array($category, $categories, true)) {
+                $categories[] = $category;
+            }
+        }
+        sort($categories);
+        return $categories;
+    }
+
+    /**
      * @return JSONFile[]
      */
     public function getDataFiles() : array
