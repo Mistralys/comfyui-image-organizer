@@ -14,6 +14,7 @@ use Mistralys\ComfyUIOrganizer\Pages\IndexManagerPage;
 use Mistralys\ComfyUIOrganizer\Pages\WorkflowsPage;
 use Mistralys\X4\UI\Ajax\AjaxMethodInterface;
 use Mistralys\X4\UI\Ajax\AjaxMethods;
+use Mistralys\X4\UI\Page\BasePage;
 use Mistralys\X4\UI\UserInterface;
 use Mistralys\X4\X4Application;
 use SplFileInfo;
@@ -112,10 +113,14 @@ class OrganizerApp extends X4Application
 
     public function registerPages(UserInterface $ui): void
     {
-        $ui->registerPage(ImageBrowser::URL_NAME, ImageBrowser::class);
-        $ui->registerPage(ImageDetails::URL_NAME, ImageDetails::class);
-        $ui->registerPage(IndexManagerPage::URL_NAME, IndexManagerPage::class);
-        $ui->registerPage(WorkflowsPage::URL_NAME, WorkflowsPage::class);
+        foreach(ClassHelper::findClassesInRepository(FolderInfo::factory(__DIR__.'/Pages'))->getClasses() as $class)
+        {
+            $page = ClassHelper::requireObjectInstanceOf(
+                BasePage::class,
+                new $class($ui)
+            );
+            $ui->registerPage($page->getID(), $class);
+        }
     }
 
     public function registerAjaxMethods(AjaxMethods $methods): void
