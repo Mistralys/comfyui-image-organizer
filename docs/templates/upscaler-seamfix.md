@@ -9,5 +9,11 @@ be used in the same way as the standard upscaler module.
 
 # Changelog
 
+## v3
+- Switched sampler to `dpm_2` + `karras` after tests.
+
+## v2
+- Added more connectors.
+
 ## v1
 - Initial GIT version.
