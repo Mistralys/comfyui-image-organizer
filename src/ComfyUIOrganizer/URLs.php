@@ -6,6 +6,7 @@ namespace Mistralys\ComfyUIOrganizer;
 
 use Mistralys\ComfyUIOrganizer\Pages\ImageBrowser;
 use Mistralys\ComfyUIOrganizer\Pages\IndexManagerPage;
+use Mistralys\ComfyUIOrganizer\Pages\LoRAOverviewPage;
 use Mistralys\ComfyUIOrganizer\Pages\WorkflowsPage;
 use Mistralys\X4\UI\Page\BasePage;
 use Mistralys\X4\UI\UserInterface;
@@ -33,6 +34,11 @@ class URLs
     public function workflows(array $params=array()) : string
     {
         return $this->build(WorkflowsPage::URL_NAME, $params);
+    }
+
+    public function loras(array $params=array()) : string
+    {
+        return $this->build(LoRAOverviewPage::URL_NAME, $params);
     }
 
     private function build(string $pageName, array $params=array()) : string
