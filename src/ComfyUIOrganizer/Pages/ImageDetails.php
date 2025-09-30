@@ -164,6 +164,8 @@ class ImageDetails extends BasePage
                 t('Steps') => $this->image->prop()->getSamplerSteps(),
                 t('Guidance Scale') => $this->image->prop()->getCFG(),
                 t('Seed') => $this->image->prop()->getSeed(),
+                t('Prompt') => $this->image->prop()->getPromptPositive(),
+                t('Negative Prompt') => $this->image->prop()->getPromptNegative()
             )
         );
 
