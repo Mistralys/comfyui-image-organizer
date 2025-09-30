@@ -14,6 +14,11 @@ for the rest of the workflow.
 
 # Changelog
 
+## v8 
+- Removed the checkpoint loader, now a separate module (to switch SDXL/FLUX).
+- Added `Model`, `Clip` and `VAE` inputs.
+- More compact layout.
+
 ## v7 
 - Reordered the outgoing connectors to the LoRAs for the new v5 LoRA module.
 
