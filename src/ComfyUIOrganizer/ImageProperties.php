@@ -26,6 +26,9 @@ class ImageProperties
     public const string KEY_SCHEDULER = 'scheduler';
     public const string KEY_FACEFIX = 'isFacefix';
     public const string KEY_WEBSITE_IMAGE_ID = 'websiteImageID';
+    public const string KEY_MODEL_NAME = 'modelName';
+    public const string KEY_VAE_NAME = 'vaeName';
+    public const string KEY_CLIP_NAMES = 'clipNames';
 
     private ArrayDataCollection $data;
 
