@@ -2,303 +2,520 @@
   "aztecStyle": {
     "category": "Styles",
     "label": "Aztec Style",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/539479/style-of-aztec-sdxl-264",
-    "file": "tbh264-sdxl.safetensors",
-    "triggerWords": ["style of aztec"]
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/539479/style-of-aztec-sdxl-264",
+        "file": "tbh264-sdxl.safetensors",
+        "triggerWords": ["style of aztec"]
+      }
+    }
   },
   "fairyDust": {
     "category": "Styles",
     "label": "Fairy Dust",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/1617897/fairy-dust-sdxl",
-    "file": "ral-frydst-sdxl.safetensors",
-    "triggerWords": ["ral-frydst"]
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/1617897/fairy-dust-sdxl",
+        "file": "ral-frydst-sdxl.safetensors",
+        "triggerWords": ["ral-frydst"]
+      }
+    }
   },
   "chineseInk": {
     "category": "Styles",
     "label": "Ink Style",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/73305/zyd232s-ink-style?modelVersionId=649294",
-    "file": "zyd232_ChineseInkStyle_SDXL_v1_0.safetensors",
-    "triggerWords": ["zydink", "ink sketch"]
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/73305/zyd232s-ink-style?modelVersionId=649294",
+        "file": "zyd232_ChineseInkStyle_SDXL_v1_0.safetensors",
+        "triggerWords": ["zydink", "ink sketch"]
+      }
+    }
   },
   "inkPunk": {
     "category": "Styles",
     "label": "Ink Punk Style",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/135366?modelVersionId=153253",
-    "file": "IPXL_v2.safetensors",
-    "triggerWords": ["inkpunk"]
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/135366?modelVersionId=153253",
+        "file": "IPXL_v2.safetensors",
+        "triggerWords": ["inkpunk"]
+      }
+    }
   },
   "bones": {
     "category": "Styles",
     "label": "Bones",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/618705/bones-by-dever-flux-sdxl",
-    "file": "dvr-bnz.safetensors",
-    "triggerWords": ["dvr-bnz", "made of bones"]
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/618705/bones-by-dever-flux-sdxl",
+        "file": "dvr-bnz.safetensors",
+        "triggerWords": ["dvr-bnz", "made of bones"]
+      }
+    }
   },
   "watercolorSketch": {
     "category": "Styles",
     "label": "Watercolor Sketch",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/612370/watercolor-sketch-style-xlpony?modelVersionId=684551",
-    "file": "novuschroma43 style.safetensors",
-    "triggerWords": ["novuschroma43 style"]
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/612370/watercolor-sketch-style-xlpony?modelVersionId=684551",
+        "file": "novuschroma43 style.safetensors",
+        "triggerWords": ["novuschroma43 style"]
+      }
+    }
   },
   "tapestries": {
     "category": "Styles",
     "label": "Tapestries",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/909622/tapestries-style-sdxl",
-    "file": "ral-tpstrs.safetensors",
-    "triggerWords": ["ral-tpstrs"]
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/909622/tapestries-style-sdxl",
+        "file": "ral-tpstrs.safetensors",
+        "triggerWords": ["ral-tpstrs"]
+      }
+    }
   },
   "electrolyticEtching": {
     "category": "Styles",
     "label": "Electrolytic Etching",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/909314?modelVersionId=1017591",
-    "file": "ral-elctretch.safetensors",
-    "triggerWords": ["ral-elctretch"],
-    "notes": "Use sparingly, creates a lot of artefacts even in thin air at higher values."
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/909314?modelVersionId=1017591",
+        "file": "ral-elctretch.safetensors",
+        "triggerWords": ["ral-elctretch"],
+        "notes": "Use sparingly, creates a lot of artefacts even in thin air at higher values."
+      }
+    }
   },
   "nudify": {
     "category": "NSFW",
     "label": "Nudify",
     "description": "Intended to push a model into undressing the model if it does not naturally want to.",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/9025?modelVersionId=177674",
-    "file": "nudify_xl_lite.safetensors",
-    "triggerWords": ["naked", "topless"],
-    "weight": "0.5 recommended"
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/9025?modelVersionId=177674",
+        "file": "nudify_xl_lite.safetensors",
+        "triggerWords": ["naked", "topless"],
+        "weight": "0.5 recommended"
+      }
+    }
   },
   "bodyWeight": {
     "category": "NSFW",
     "label": "Voluptuous Slider",
     "description": "Allows tweaking the body weight of generated characters.",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/318990/skinny-voluptous-slider-sdxl?modelVersionId=357704",
-    "file": "SkinnyVoluptousSliderXL.pt",
-    "weight": "-2 (skinny) to +2 (voluptuous)"
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/318990/skinny-voluptous-slider-sdxl?modelVersionId=357704",
+        "file": "SkinnyVoluptousSliderXL.pt",
+        "weight": "-2 (skinny) to +2 (voluptuous)"
+      }
+    }
   },
   "realisticFitGirlsHarper": {
     "category": "NSFW",
     "label": "Realistic Fit Girls, Harper",
     "description": "Helper for girls with a fit shape.",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/426502?modelVersionId=487582",
-    "triggerWords": ["harper_fit_girl"],
-    "file": "harper_fit_girl_SDXL.safetensors",
-    "notes": "Very practical, and has a lesser effect on the face than most."
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/426502?modelVersionId=487582",
+        "triggerWords": ["harper_fit_girl"],
+        "file": "harper_fit_girl_SDXL.safetensors",
+        "notes": "Very practical, and has a lesser effect on the face than most."
+      }
+    }
   },
   "detailer": {
     "category": "Details",
     "label": "Detail Tweaker",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/122359/detail-tweaker-xl",
-    "file": "add-detail-xl.safetensors",
-    "weight": "-3 (less details) to 3 (more details)",
-    "notes": "Good weight depends on your prompt and number of sampling steps, I recommend starting at 1.5 and then adjusting it."
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/122359/detail-tweaker-xl",
+        "file": "add-detail-xl.safetensors",
+        "weight": "-3 (less details) to 3 (more details)",
+        "notes": "Good weight depends on your prompt and number of sampling steps, I recommend starting at 1.5 and then adjusting it."
+      }
+    }
   },
   "betterPicture": {
     "category": "Details",
     "label": "Better Picture, More Details",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/126343/better-picture-more-details-lora?modelVersionId=1324100",
-    "file": "SDXLHighDetail_v6-000005.safetensors"
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/126343/better-picture-more-details-lora?modelVersionId=1324100",
+        "file": "SDXLHighDetail_v6-000005.safetensors"
+      }
+    }
   },
   "eyeDetailer": {
     "category": "Details",
     "label": "Detailed Eyes",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/120723/detailedeyesxl",
-    "file": "DetailedEyes_V3.safetensors",
-    "artStyles": "Realistic + Anime"
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/120723/detailedeyesxl",
+        "file": "DetailedEyes_V3.safetensors",
+        "artStyles": "Realistic + Anime"
+      }
+    }
   },
   "handsV55": {
     "category": "Details",
     "label": "Hands v5.5",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/200255?modelVersionId=1356581",
-    "type": "SDXL 1.0",
-    "file": "hand 5.5.safetensors"
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/200255?modelVersionId=1356581",
+        "type": "SDXL 1.0",
+        "file": "hand 5.5.safetensors"
+      }
+    }
   },
   "skinTexture": {
     "category": "Details",
     "label": "Realistic Skin Texture",
-    "source": "https://civitai.com/models/580857?modelVersionId=707763",
-    "file": "skin texture style v4.safetensors",
-    "triggerWords": ["skin texture style", "detailed skin pore", "detailed skin", "realistic skin"]
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/580857?modelVersionId=707763",
+        "file": "skin texture style v4.safetensors",
+        "triggerWords": ["skin texture style", "detailed skin pore", "detailed skin", "realistic skin"]
+      }
+    }
+  },
+  "spaceNebula": {
+    "category": "Scifi",
+    "label": "Space Nebula",
+    "models": {
+      "FLUX": {
+        "source": "https://civitai.com/models/295144/space-nebula-flxlilpd?modelVersionId=789693",
+        "file": "Space Nebula FLUX.safetensors",
+        "triggerWords": ["mad-nbla"]
+      }
+    }
+  },
+  "steampunk": {
+    "category": "Styles",
+    "label": "Steampunk",
+    "models": {
+      "FLUX": {
+        "source": "https://civitai.com/models/734196/flux-steampunk-magic?modelVersionId=821032",
+        "file": "boFLUX Steampunk Style.safetensors",
+        "triggerWords": ["bo-steampunk", "steampunk style"]
+      }
+    }
   },
   "tattoControl": {
     "category": "Details",
     "label": "Tatto control",
-    "source": "https://civitai.com/models/466766/tattoo-slider-sdxl?modelVersionId=519390",
-    "file": "Body Tattoo_alpha1.0_rank4_noxattn_last.safetensors",
-    "weight": "1-2"
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/466766/tattoo-slider-sdxl?modelVersionId=519390",
+        "file": "Body Tattoo_alpha1.0_rank4_noxattn_last.safetensors",
+        "weight": "1-2"
+      }
+    }
   },
   "alienZkin": {
     "category": "Styles",
     "label": "Alien Zkin",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/182987/alien-style-fluxsdxl15?modelVersionId=205374",
-    "file": "alienZkin-sdxl.safetensors",
-    "triggerWords": ["alienzkin"],
-    "notes": "Changes eyes quite a bit to alien, so use sparingly (0.2 - 0.3)"
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/182987/alien-style-fluxsdxl15?modelVersionId=205374",
+        "file": "alienZkin-sdxl.safetensors",
+        "triggerWords": ["alienzkin"],
+        "notes": "Changes eyes quite a bit to alien, so use sparingly (0.2 - 0.3)"
+      },
+      "FLUX": {
+        "source": "https://civitai.com/models/182987/alien-style-fluxsdxl15?modelVersionId=205374",
+        "file": "alienZkin-flux.safetensors",
+        "triggerWords": ["alienzkin"]
+      }
+    }
+  },
+  "artDecoVintageFuture": {
+    "category": "Scifi",
+    "label": "Art Deco Vintage Future",
+    "models": {
+      "FLUX": {
+        "source": "https://civitai.com/models/598188/art-deco-vintage-future-sdxl-pony-flux?modelVersionId=819406",
+        "file": "ArtDecoVintageFutureFlux.safetensors",
+        "triggerWords": ["ArsMJStyle", "ArtDecoVintageFuture"]
+      }
+    }
   },
   "voodoo": {
     "category": "Styles",
     "label": "Voodoo",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/615407/voodoo-style-sdxl?modelVersionId=687949",
-    "file": "ral-vudu-sdxl.safetensors",
-    "triggerWords": ["ral-vudu"]
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/615407/voodoo-style-sdxl?modelVersionId=687949",
+        "file": "ral-vudu-sdxl.safetensors",
+        "triggerWords": ["ral-vudu"]
+      }
+    }
   },
   "highFantasy": {
     "category": "Fantasy",
     "label": "High Fantasy",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/418166/high-fantasy-by-dever-sdxl",
-    "file": "dvr-hgh-fnt.safetensors",
-    "triggerWords": ["dvr-hgh-fnt"]
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/418166/high-fantasy-by-dever-sdxl",
+        "file": "dvr-hgh-fnt.safetensors",
+        "triggerWords": ["dvr-hgh-fnt"]
+      }
+    }
   },
   "galaxyScene": {
     "category": "Scifi",
     "label": "Galaxy Scene",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/1392269/galaxy-scene",
-    "file": "Galaxy_Scene.safetensors",
-    "triggerWords": ["3D G4l4xy Sc3n3", "nnebulae", "stars", "planets", "asteroids", "comets"]
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/1392269/galaxy-scene",
+        "file": "Galaxy_Scene.safetensors",
+        "triggerWords": ["3D G4l4xy Sc3n3", "nnebulae", "stars", "planets", "asteroids", "comets"]
+      }
+    }
   },
   "chineseIllustration": {
     "category": "Styles",
     "label": "Chinese Illustration Style",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/120206/sdxlchinese-style-illustration?modelVersionId=130709",
-    "file": "国风插画SDXL.safetensors",
-    "triggerWords": ["guofeng", "chinese style"]
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/120206/sdxlchinese-style-illustration?modelVersionId=130709",
+        "file": "国风插画SDXL.safetensors",
+        "triggerWords": ["guofeng", "chinese style"]
+      }
+    }
   },
   "crystalGlass": {
     "category": "Styles",
     "label": "Crystal Glass",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/296489?modelVersionId=333156",
-    "file": "ral-crztlgls-sdxl.safetensors",
-    "triggerWords": ["ral-crztlgls"]
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/296489?modelVersionId=333156",
+        "file": "ral-crztlgls-sdxl.safetensors",
+        "triggerWords": ["ral-crztlgls"]
+      }
+    }
   },
   "fractalGeometry": {
     "category": "Styles",
     "label": "Fractal Geometry",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/269592?modelVersionId=806653",
-    "file": "ral-frctlgmtry-sdxl.safetensors",
-    "triggerWords": ["ral-frctlgmtry"]
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/269592?modelVersionId=806653",
+        "file": "ral-frctlgmtry-sdxl.safetensors",
+        "triggerWords": ["ral-frctlgmtry"]
+      }
+    }
+  },
+  "lava": {
+    "category": "Styles",
+    "label": "Lava",
+    "models": {
+      "FLUX": {
+        "source": "https://civitai.com/models/203169/lava-style-fluxsdxl15?modelVersionId=890810",
+        "file": "ral-lva-flux.safetensors",
+        "triggerWords": ["ral-lva"]
+      },
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/203169?modelVersionId=386119",
+        "file": "ral-lava-sdxl-v2.safetensors",
+        "triggerWords": ["ral-lava"]
+      }
+    }
   },
   "longExposure": {
     "category": "Styles",
     "label": "Long Exposure",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/210952/long-exposure-style-fluxsdxl?modelVersionId=237604",
-    "file": "ral-exposure-sdxl.safetensors",
-    "triggerWords": ["ral-exposure"]
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/210952/long-exposure-style-fluxsdxl?modelVersionId=237604",
+        "file": "ral-exposure-sdxl.safetensors",
+        "triggerWords": ["ral-exposure"]
+      }
+    }
   },
   "organicMacabre": {
     "category": "Styles",
     "label": "Organic Macabre",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/574228?modelVersionId=640160",
-    "file": "Organic_Macabre.safetensors",
-    "triggerWords": []
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/574228?modelVersionId=640160",
+        "file": "Organic_Macabre.safetensors",
+        "triggerWords": []
+      }
+    }
   },
   "tronCyberspace": {
     "category": "Styles",
     "label": "Neon Cyberpunk Cyberspace",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/289472/neon-cyberpunk-cyberspace-flxlilpd15?modelVersionId=672229",
-    "file": "Neon_Cyberpunk_Cyberspace_SDXL_v2.safetensors",
-    "triggerWords": ["mad-cyberspace"]
+    "models": {
+      "FLUX": {
+        "source": "https://civitai.com/models/289472/neon-cyberpunk-cyberspace-flxlilpd15?modelVersionId=766171",
+        "file": "Neon_Cyberpunk_Cyberspace_FLUX.safetensors",
+        "triggerWords": ["mad-cyberspace"]
+      },
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/289472/neon-cyberpunk-cyberspace-flxlilpd15?modelVersionId=672229",
+        "file": "Neon_Cyberpunk_Cyberspace_SDXL_v2.safetensors",
+        "triggerWords": ["mad-cyberspace"]
+      }
+    }
   },
   "neonNoir": {
     "category": "Styles",
     "label": "Neon Noir",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/300898/neon-noir-flxlil?modelVersionId=337944",
-    "file": "Neon_Noir_SDXL.safetensors",
-    "triggerWords": ["mad-neon-noir", "cyberpunk", "noir"]
+    "models": {
+      "FLUX": {
+        "source": "https://civitai.com/models/300898?modelVersionId=730820",
+        "file": "Neon_Noir_FLUX.safetensors",
+        "triggerWords": ["mad-neon-noir"]
+      },
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/300898/neon-noir-flxlil?modelVersionId=337944",
+        "file": "Neon_Noir_SDXL.safetensors",
+        "triggerWords": ["mad-neon-noir", "cyberpunk", "noir"]
+      }
+    }
+  },
+  "newFantasyCore": {
+    "category": "Fantasy",
+    "label": "New Fantasy Core",
+    "models": {
+      "FLUX": {
+        "source": "https://civitai.com/models/810000/new-fantasy-core-ill-flux-pony-sdxl-detailer?modelVersionId=1264088",
+        "file": "New_Fantasy_CoreV4_FLUX.safetensors",
+        "triggerWords": [],
+        "weight": "0.7"
+      }
+    }
   },
   "paintedWorld": {
     "category": "Styles",
     "label": "Painted World",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/242763/painted-world-or-pony-sdxl-flux?modelVersionId=273924",
-    "file": "Painted World-000006.safetensors",
-    "triggerWords": ["painted world", "colorful splashes"]
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/242763/painted-world-or-pony-sdxl-flux?modelVersionId=273924",
+        "file": "Painted World-000006.safetensors",
+        "triggerWords": ["painted world", "colorful splashes"]
+      }
+    }
   },
   "scifiEnvironments": {
     "category": "Styles",
     "label": "SciFi Environments",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/105945/sci-fi-environments?modelVersionId=461993",
-    "file": "Sci-fi_Environments_V2-SDXL.safetensors",
-    "triggerWords": ["sci-fi environments"]
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/105945/sci-fi-environments?modelVersionId=461993",
+        "file": "Sci-fi_Environments_V2-SDXL.safetensors",
+        "triggerWords": [
+          "sci-fi environments"
+        ]
+      },
+      "FLUX": {
+        "source": "https://civitai.com/models/403131/scifi-environment-concept-art-flux-sdxl-pony-sd15?modelVersionId=748155",
+        "file": "Sci-fi_env_flux.safetensors",
+        "triggerWords": ["scifi", "citronLegacy"]
+      }
+    }
   },
   "shinySurface": {
     "category": "Styles",
     "label": "Shiny Surface",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/907745/shiny-surface-style-sdxl",
-    "file": "ral-shnysrfz.safetensors",
-    "triggerWords": ["ral-shnysrfz"]
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/907745/shiny-surface-style-sdxl",
+        "file": "ral-shnysrfz.safetensors",
+        "triggerWords": ["ral-shnysrfz"]
+      }
+    }
+  },
+  "shipCockpit": {
+    "category": "Scifi",
+    "label": "Ship Cockpit",
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/1558794/ship-cockpit",
+        "file": "ship_c0ckp1t.safetensors",
+        "triggerWords": ["ship c0ckp1t"]
+      },
+      "FLUX": {
+        "source": "https://civitai.com/models/955690/sci-fi-interior-space?modelVersionId=1069992",
+        "file": "Scifi_Interior_Space_flux_lora.safetensors",
+        "triggerWords": ["Scifi_Interior_Space"]
+      }
+    }
   },
   "sand": {
     "category": "Styles",
     "label": "Sand",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/208699?modelVersionId=2350431",
-    "file": "ral-sand-sdxl.safetensors",
-    "triggerWords": ["ral-sand"]
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/208699?modelVersionId=2350431",
+        "file": "ral-sand-sdxl.safetensors",
+        "triggerWords": ["ral-sand"]
+      }
+    }
   },
   "glowingHotMetal": {
     "category": "Styles",
     "label": "Glowing Hot Metal",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/909522/glowing-hot-metal-style-sdxl",
-    "file": "ral-glhtmtl.safetensors",
-    "triggerWords": ["ral-glhtmtl"]
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/909522/glowing-hot-metal-style-sdxl",
+        "file": "ral-glhtmtl.safetensors",
+        "triggerWords": ["ral-glhtmtl"]
+      }
+    }
   },
   "expressionism": {
     "category": "Styles",
     "label": "Expressionism",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/1617951/expressionism-painting-sdxl",
-    "file": "ral-expptng-sdxl.safetensors",
-    "triggerWords": ["ral-expptng"]
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/1617951/expressionism-painting-sdxl",
+        "file": "ral-expptng-sdxl.safetensors",
+        "triggerWords": ["ral-expptng"]
+      }
+    }
   },
   "opalescence": {
     "category": "Styles",
     "label": "Opal Style",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/225003/opal-style-fluxsdxlsd15",
-    "file": "ral-opal-sdxl-v2.safetensors",
-    "triggerWords": ["ral-opal", "opal"]
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/225003/opal-style-fluxsdxlsd15",
+        "file": "ral-opal-sdxl-v2.safetensors",
+        "triggerWords": ["ral-opal", "opal"]
+      }
+    }
   },
   "retroFuturism": {
     "category": "Styles",
     "label": "Retro Futurism",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/387708/retro-futurism-sdxl",
-    "file": "RetroFuturism.safetensors",
-    "triggerWords": []
+    "models": {
+      "FLUX": {
+        "source": "https://civitai.com/models/1215602/yfg-asak-flux?modelVersionId=1369314",
+        "file": "YFG-Asak-v1e4.safetensors",
+        "triggerWords": ["YFG-Asak"]
+      },
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/387708/retro-futurism-sdxl",
+        "file": "RetroFuturism.safetensors",
+        "triggerWords": []
+      }
+    }
   },
   "scienceFictionStyle": {
     "category": "Styles",
     "label": "Science Fiction Style",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/122837/sdxl-science-fiction-style",
-    "file": "SDXL Science Fiction.safetensors",
-    "triggerWords": ["science fiction style"]
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/122837/sdxl-science-fiction-style",
+        "file": "SDXL Science Fiction.safetensors",
+        "triggerWords": ["science fiction style"]
+      }
+    }
   },
   "vampireFangs": {
     "category": "Fantasy",
@@ -307,189 +524,299 @@
     "file": "fang v4.safetensors",
     "triggerWords": ["fang"]
   },
+  "vintageSciFi": {
+    "category": "Scifi",
+    "label": "Vintage SciFi",
+    "models": {
+      "FLUX": {
+        "source": "https://civitai.com/models/785760/vintage-sci-fi-movie?modelVersionId=878702",
+        "file": "Vintage_Sci-fi_Movie.safetensors",
+        "triggerWords": ["Vintage Sci-fi"]
+      }
+    }
+  },
   "faetastic": {
     "category": "Styles",
     "label": "FaeTastic",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/134338/sdxl-faetastic-details?modelVersionId=293991",
-    "file": "SDXLFaeTastic2400.safetensors"
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/134338/sdxl-faetastic-details?modelVersionId=293991",
+        "file": "SDXLFaeTastic2400.safetensors"
+      }
+    }
   },
   "glass": {
     "category": "Styles",
     "label": "Glass Sculptures",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/11203/glass-sculptures?modelVersionId=177888",
-    "file": "sdxl_glass.safetensors",
-    "triggerWords": ["translucent", "transparent"],
-    "weight": "0.6"
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/11203/glass-sculptures?modelVersionId=177888",
+        "file": "sdxl_glass.safetensors",
+        "triggerWords": ["translucent", "transparent"],
+        "weight": "0.6"
+      }
+    }
   },
   "holographic": {
     "category": "Styles",
     "label": "Holographic",
-    "model": "SDXL 1.0",
-    "file": "ral-hlgrphc-sdxl.safetensors",
-    "source": "https://civitai.com/models/1618100/holographic-sdxl",
-    "triggerWords": ["ral-hlgrphc"]
+    "models": {
+      "SDXL 1.0": {
+        "file": "ral-hlgrphc-sdxl.safetensors",
+        "source": "https://civitai.com/models/1618100/holographic-sdxl",
+        "triggerWords": ["ral-hlgrphc"]
+      }
+    }
   },
   "iridescence": {
     "category": "Styles",
     "label": "Iridescence",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/1617996/iridescence-sdxl",
-    "file": "ral-iricnt-sdxl.safetensors",
-    "triggerWords": ["ral-iricnt"]
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/1617996/iridescence-sdxl",
+        "file": "ral-iricnt-sdxl.safetensors",
+        "triggerWords": ["ral-iricnt"]
+      }
+    }
   },
   "bioLuminescence": {
     "category": "Styles",
     "label": "Bio-Luminescence",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/245943/bio-luminescence?modelVersionId=277457",
-    "file": "Bio-Luminescence.safetensors",
-    "triggerWords": ["bioluminescent", "glowing"]
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/245943/bio-luminescence?modelVersionId=277457",
+        "file": "Bio-Luminescence.safetensors",
+        "triggerWords": ["bioluminescent", "glowing"]
+      }
+    }
   },
   "epicFantasy": {
     "category": "Styles",
     "label": "Epic Fantasy",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/470073/popyays-epic-fantasy-style-or-pony-and-sdxl?modelVersionId=560995",
-    "file": "EpicF4nta5yXL.safetensors",
-    "weight": "0.6-1"
+    "models": {
+      "FLUX": {
+        "source": "https://civitai.com/models/751420/artifys-fantasy-and-sci-fi-art-flux-lora",
+        "file": "artisketchyfs-v02.safetensors",
+        "weight": "1"
+      },
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/470073/popyays-epic-fantasy-style-or-pony-and-sdxl?modelVersionId=560995",
+        "file": "EpicF4nta5yXL.safetensors",
+        "weight": "0.6-1"
+      }
+    }
   },
   "cyberGraphic": {
     "category": "Styles",
     "label": "Cyber Graphic",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/104855/cyber-graphic?modelVersionId=139162",
-    "file": "cybergraphic_sdxl.safetensors"
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/104855/cyber-graphic?modelVersionId=139162",
+        "file": "cybergraphic_sdxl.safetensors"
+      }
+    }
   },
   "cyberpunkCinematic": {
     "category": "Styles",
     "label": "Cyberpunk Cinematic Style",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/296303?modelVersionId=712301",
-    "file": "cyberpunk style v3.safetensors",
-    "triggerWords": ["cyberpunk style"]
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/296303?modelVersionId=712301",
+        "file": "cyberpunk style v3.safetensors",
+        "triggerWords": ["cyberpunk style"]
+      }
+    }
   },
   "cinematicKodakMotionPicture": {
     "category": "Styles",
     "label": "Cinematic Kodak Motion Picture",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/235495/cinematic-kodak-motion-picture-film-still-style-xl-f1d-illu-pony?modelVersionId=691212",
-    "file": "Kodak Motion Picture Film Style v5_2.safetensors",
-    "triggerWords": ["Kodak Motion Picture Film Style"]
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/235495/cinematic-kodak-motion-picture-film-still-style-xl-f1d-illu-pony?modelVersionId=691212",
+        "file": "Kodak Motion Picture Film Style v5_2.safetensors",
+        "triggerWords": ["Kodak Motion Picture Film Style"]
+      }
+    }
   },
   "oilPainting": {
     "category": "Styles",
     "label": "Classipeint XL Oil Painting",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/127139/classipeintxl-oil-paint-oil-painting-style?modelVersionId=356771",
-    "file": "ClassipeintXL2.1.safetensors",
-    "triggerWords": ["oil painting"]
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/127139/classipeintxl-oil-paint-oil-painting-style?modelVersionId=356771",
+        "file": "ClassipeintXL2.1.safetensors",
+        "triggerWords": ["oil painting"]
+      }
+    }
   },
   "watercolor": {
     "category": "Styles",
     "label": "Watercolor Style",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/484723?modelVersionId=539071",
-    "file": "ral-wtrclr-sdxl.safetensors",
-    "triggerWords": ["ral-wtrclr"]
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/484723?modelVersionId=539071",
+        "file": "ral-wtrclr-sdxl.safetensors",
+        "triggerWords": ["ral-wtrclr"]
+      }
+    }
   },
   "oilPaint": {
     "category": "Styles",
     "label": "Oil Painting",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/137963/oilpaint-sdxl?modelVersionId=152368",
-    "file": "model_SDXL.safetensors",
-    "triggerWords": ["style by nty"]
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/137963/oilpaint-sdxl?modelVersionId=152368",
+        "file": "model_SDXL.safetensors",
+        "triggerWords": ["style by nty"]
+      }
+    }
   },
   "neoFuturisticTech": {
     "category": "Styles",
     "label": "Neo-Futuristic Tech",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/91775/neofuturistic-tech-world-morph",
-    "file": "NeoFuturisticTechXL.safetensors",
-    "triggerWords": ["neotech", "glowing", "scifi"]
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/91775/neofuturistic-tech-world-morph",
+        "file": "NeoFuturisticTechXL.safetensors",
+        "triggerWords": ["neotech", "glowing", "scifi"]
+      }
+    }
   },
   "envyPulpScifi": {
-    "category": "Styles",
+    "category": "Scifi",
     "label": "Envy Pulp Scifi",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/147657/envy-pulp-scifi-xl-01",
-    "file": "EnvyPulpScifiXL.safetensors",
-    "triggerWords": []
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/147657/envy-pulp-scifi-xl-01",
+        "file": "EnvyPulpScifiXL.safetensors",
+        "triggerWords": []
+      }
+    }
   },
   "neonCyberpunk": {
-    "category": "Styles",
+    "category": "Scifi",
     "label": "Neon Cyberpunk Splash Art",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/351631/neon-cyberpunk-splash-art-flxlilpd15?modelVersionId=393280",
-    "file": "Splash_Art_SDXL.safetensors",
-    "triggerWords": ["mad-cbrpnksplshrt"]
+    "models": {
+      "FLUX": {
+        "source": "https://civitai.com/models/351631/neon-cyberpunk-splash-art-flxlilpd15?modelVersionId=740927",
+        "file": "Neon_Cyberpunk_Splash_Art_FLUX.safetensors",
+        "triggerWords": ["mad-cbrpnksplshrt", "outrun"]
+      },
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/351631/neon-cyberpunk-splash-art-flxlilpd15?modelVersionId=393280",
+        "file": "Splash_Art_SDXL.safetensors",
+        "triggerWords": ["mad-cbrpnksplshrt"]
+      }
+    }
+  },
+  "neonCyberpunkImpressionism":{
+    "category": "Scifi",
+    "label": "Neon Cyberpunk Impressionism",
+    "models": {
+      "FLUX": {
+        "source": "https://civitai.com/models/361379/neon-cyberpunk-impressionism-flxlilpd15?modelVersionId=761641",
+        "file": "Impressionism_SDXL.safetensors",
+        "triggerWords": [
+          "mad-cbrpnkimp"
+        ]
+      }
+    }
   },
   "parchment": {
     "category": "Styles",
     "label": "Parchment",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/141471/parchartxl?modelVersionId=440425",
-    "file": "ParchartXL_CODA.safetensors",
-    "triggerWords": ["on parchment"]
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/141471/parchartxl?modelVersionId=440425",
+        "file": "ParchartXL_CODA.safetensors",
+        "triggerWords": ["on parchment"]
+      }
+    }
   },
   "retroRocket": {
     "category": "Styles",
     "label": "Retro Rocket",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/132665/retro-rocket",
-    "file": "Retro_rocket_sdxl.safetensors",
-    "triggerWords": ["retro_rocket"]
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/132665/retro-rocket",
+        "file": "Retro_rocket_sdxl.safetensors",
+        "triggerWords": ["retro_rocket"]
+      }
+    }
   },
   "frazetta": {
     "category": "Styles",
     "label": "Artist / Franz Frazetta (Fantasy)",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/119461/frank-frazetta-sdxl-10-art-style-lora?modelVersionId=129786",
-    "file": "fr4z3tt4.safetensors",
-    "weight": "<= 0.75",
-    "clip_skip": 1
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/119461/frank-frazetta-sdxl-10-art-style-lora?modelVersionId=129786",
+        "file": "fr4z3tt4.safetensors",
+        "weight": "<= 0.75",
+        "clip_skip": 1
+      }
+    }
   },
   "borisVallejo": {
     "category": "Styles",
     "label": "Artist / Boris Vallejo",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/384077/boris-vallejo-style-for-sdxl?modelVersionId=428658",
-    "file": "borisvallejo1.safetensors",
-    "triggerWords": ["borisvallejo", "realistic", "retro artstyle"]
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/384077/boris-vallejo-style-for-sdxl?modelVersionId=428658",
+        "file": "borisvallejo1.safetensors",
+        "triggerWords": ["borisvallejo", "realistic", "retro artstyle"]
+      }
+    }
   },
   "greg": {
     "category": "Styles",
     "label": "Artist / Greg Rutkowski (Fantasy)",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/117635/greg-rutkowski-inspired-style-lora-sdxl?modelVersionId=127510",
-    "file": "greg_rutkowski_xl_2.safetensors",
-    "triggerWords": ["greg rutkowski"]
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/117635/greg-rutkowski-inspired-style-lora-sdxl?modelVersionId=127510",
+        "file": "greg_rutkowski_xl_2.safetensors",
+        "triggerWords": ["greg rutkowski"]
+      },
+      "FLUX": {
+        "source": "https://civitai.com/models/974790/greg-rutkowski?modelVersionId=1433936",
+        "file": "Greg Rutkowski.safetensors",
+        "triggerWords": []
+      }
+    }
   },
   "christopherBalaskas": {
     "category": "Styles",
     "label": "Artist / Christopher Balaskas (Scifi)",
-    "model": "SDXL 1.0",
-    "source": "https://civitai.com/models/553374/science-fiction-digital-art-sdxl-10",
-    "file": "christopher-balaskas-sdxl-v1-000092.safetensors",
-    "triggerWords": ["in the style of christopher-balaskas"]
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/553374/science-fiction-digital-art-sdxl-10",
+        "file": "christopher-balaskas-sdxl-v1-000092.safetensors",
+        "triggerWords": ["in the style of christopher-balaskas"]
+      }
+    }
   },
   "ciri": {
     "category": "Characters",
     "label": "Ciri",
-    "source": "https://civitai.com/models/121562/ciri-witcher-3-game-fluxponysdxl?modelVersionId=243043",
-    "file": "ciri_prodigy_21.safetensors",
-    "triggerWords": ["ciri_w3", "ciri_w3_outfit"],
-    "weight": "0.8-0.9",
-    "notes": "Negative tag the outfit at ~0.1-0.2 if it is bleeding through when not desired"
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/121562/ciri-witcher-3-game-fluxponysdxl?modelVersionId=243043",
+        "file": "ciri_prodigy_21.safetensors",
+        "triggerWords": ["ciri_w3", "ciri_w3_outfit"],
+        "weight": "0.8-0.9",
+        "notes": "Negative tag the outfit at ~0.1-0.2 if it is bleeding through when not desired"
+      }
+    }
   },
   "yennefer": {
     "category": "Characters",
     "label": "Yennefer",
-    "source": "https://civitai.com/models/120703/yennefer-witcher-3-game-fluxsdxl?modelVersionId=131289",
-    "file": "yen_w3_sdxl_3000.safetensors",
-    "weight": "~0.6",
-    "triggerWords": ["yen_w3"]
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/120703/yennefer-witcher-3-game-fluxsdxl?modelVersionId=131289",
+        "file": "yen_w3_sdxl_3000.safetensors",
+        "weight": "~0.6",
+        "triggerWords": ["yen_w3"]
+      }
+    }
   }
 }
