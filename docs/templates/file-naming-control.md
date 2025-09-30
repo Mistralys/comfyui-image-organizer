@@ -10,6 +10,12 @@ renderers next.
 
 # Changelog
 
+## v7 - Model names
+- Added inputs for the model, vae and clip names.
+- Added the `modelName` property.
+- Added the `VAEName` propery.
+- Added the `clipNames` property.
+
 ## v6 - Workflow version
 - Added the workflow version input (integer).
 - Now adding the `workflowVersion` property to the text.
