@@ -183,8 +183,10 @@ class ImageIndexer
 
         $properties = $data[$date] ?? array();
 
-        $checkpoint = $properties['checkpoint'] ?? '';
         $text = $properties['custom_text'] ?? '';
+        $props = $this->parseText($text);
+
+        $checkpoint = $properties['checkpoint'] ?? $props[ImageProperties::KEY_MODEL_NAME] ?? '';
 
         if(empty($checkpoint))
         {
