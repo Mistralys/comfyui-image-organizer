@@ -65,6 +65,17 @@
       }
     }
   },
+  "cyberSteamPunk": {
+    "category": "Styles",
+    "label": "Cyber SteamPunk",
+    "models": {
+      "FLUX": {
+        "source": "https://civitai.com/models/686015/flux-in-the-sky-cyberandsteampunk",
+        "file": "",
+        "triggerWords": ["bo-cityscape", "bo-exposure", "bo-cyberpunk", "bo-steampunk"]
+      }
+    }
+  },
   "tapestries": {
     "category": "Styles",
     "label": "Tapestries",
@@ -324,6 +335,17 @@
       }
     }
   },
+  "steamPunkMagic": {
+    "category": "Fantasy",
+    "label": "Steampunk Magic",
+    "models": {
+      "FLUX": {
+        "source": "https://civitai.com/models/734196/flux-steampunk-magic",
+        "file": "",
+        "triggerWords": ["bo-steampunk", "steampunk style"]
+      }
+    }
+  },
   "longExposure": {
     "category": "Styles",
     "label": "Long Exposure",
@@ -359,6 +381,19 @@
         "source": "https://civitai.com/models/289472/neon-cyberpunk-cyberspace-flxlilpd15?modelVersionId=672229",
         "file": "Neon_Cyberpunk_Cyberspace_SDXL_v2.safetensors",
         "triggerWords": ["mad-cyberspace"]
+      }
+    }
+  },
+  "snowyLandscapes": {
+    "category": "Styles",
+    "label": "Snowy Landscapes",
+    "models": {
+      "FLUX": {
+        "source": "https://civitai.com/models/1040536/snowy-landscapes-lora-ponyfluxillustriousxl",
+        "file": "",
+        "triggerWords": [
+          "snowy_landscapes"
+        ]
       }
     }
   },
@@ -520,9 +555,18 @@
   "vampireFangs": {
     "category": "Fantasy",
     "label": "Vampire Fangs",
-    "source": "",
-    "file": "fang v4.safetensors",
-    "triggerWords": ["fang"]
+    "models": {
+      "SDXL 1.0": {
+        "source": "",
+        "file": "fang v4.safetensors",
+        "triggerWords": ["fangs"]
+      },
+      "FLUX": {
+        "source": "",
+        "file": "",
+        "triggerWords": ["fangs"]
+      }
+    }
   },
   "vintageSciFi": {
     "category": "Scifi",
@@ -542,6 +586,10 @@
       "SDXL 1.0": {
         "source": "https://civitai.com/models/134338/sdxl-faetastic-details?modelVersionId=293991",
         "file": "SDXLFaeTastic2400.safetensors"
+      },
+      "FLUX": {
+        "source": "",
+        "file": ""
       }
     }
   },
