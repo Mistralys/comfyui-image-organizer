@@ -21,6 +21,28 @@
       }
     }
   },
+  "feralGrace": {
+    "category": "Styles",
+    "label": "Feralgrace - Nordic, Shamanic and Tribal",
+    "models": {
+      "FLUX": {
+        "source": "https://civitai.com/models/2072214/clothing-feralgrace-nordic-shamanic-and-tribal?modelVersionId=3357902",
+        "file": "clothing_feralgrace_v2.safetensors",
+        "triggerWords": []
+      }
+    }
+  },
+  "nordicFantasy": {
+    "category": "Styles",
+    "label": "Nordic Fantasy",
+    "models": {
+      "FLUX": {
+        "source": "https://civitai.com/models/872359/nordic-fantasy?modelVersionId=976485",
+        "file": "Nordic_fantasy-000008.safetensors",
+        "triggerWords": ["nordicfantasy"]
+      }
+    }
+  },
   "chineseInk": {
     "category": "Styles",
     "label": "Ink Style",
