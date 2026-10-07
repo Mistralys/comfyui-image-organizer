@@ -99,20 +99,19 @@ class ImageProperties
     {
         $loraIDs = LoRAsCollection::getInstance()->getIDs();
 
-        $loras = array_filter(
-            $this->serialize(),
+        $loraKeys = array_filter(
+            array_keys($this->serialize()),
             function ($key) use ($loraIDs) {
-                return in_array($key, $loraIDs);
-            },
-            ARRAY_FILTER_USE_KEY
+                return is_string($key) && in_array($key, $loraIDs);
+            }
         );
 
-        ksort($loras);
+        sort($loraKeys);
 
         $loraSummary = array();
-        foreach ($loras as $key => $value)
+        foreach ($loraKeys as $key)
         {
-            $loraSummary[] = $key.' '.str_replace('0.', '.', $value);
+            $loraSummary[] = $key.' '.str_replace('0.', '.', $this->data->getString($key));
         }
 
         return implode(', ', $loraSummary);

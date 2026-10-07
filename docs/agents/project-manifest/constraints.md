@@ -36,6 +36,8 @@ This document is the manifest's only binding one. Conventions below were verifie
 - Link upscaled images automatically only for pairs: `detectUpscaledImages()` ignores any settings-hash group that does not contain exactly two images.
 - Refuse to overwrite on move: `moveToFolder()` throws `OrganizerException::ERROR_CANNOT_MOVE_FILE_EXISTS` when the target file exists, and copies before deleting so a failed save does not lose the image.
 - Validate folder names for moves with `^[A-Za-z0-9_-]+$` (`MoveImageMethod`).
+- Keep unknown index keys when the indexer re-analyzes an image: replace a stored entry through `ImageIndexEntry::withKnownFieldsFrom()`, never with a freshly built entry. New entries are written with explicit `modified` and `label` keys.
+- Read every JSON file into a typed data object at the point of reading and pass that object on, not the decoded array: `ImageIndex` / `ImageIndexEntry` for `data/images.json`, `LoRA` / `LoRAModel` for `data/loras/*.json`, `WorkflowData` for workflow files. A data object that is written back (`ImageIndexEntry`, `WorkflowData`) must re-emit every key it does not model, so unknown keys survive a round trip.
 - Take a backup of `data/images.json` before each indexing run; `ImageIndexer` does this into `data/backup/`. Do not remove that step.
 - Keep `data/file_index.json` in step with the index. `image.php` resolves every image and thumbnail request through it, and only `ImageIndexer::updateFileIndex()` writes it (run by every indexing pass and by `composer update-file-index`). Moves and deletes performed through the UI do not rewrite it.
 - Serve a `.jpg` sibling instead of the `.png` when one exists (`image.php`); the JPG is the edited version. The `.psd` and `_websiteImage.png` siblings are located by replacing the `.png` extension of the image path.
@@ -45,26 +47,32 @@ This document is the manifest's only binding one. Conventions below were verifie
 
 - Match LoRAs to files by the official file name (the name given by the download site). Keep that name intact as a suffix when renaming local `.safetensors` files; the `PathFixer` matches the lowercase end of the local file name.
 - Limit `PathFixer` rewrites to `LoraLoaderModelOnly` nodes, first widget value. Back up the workflow (`.json.bak.<timestamp>`) before saving a change, and restore `{}` for empty `flags`, `config` and `properties` after writing, as ComfyUI requires objects there.
+- Mutate a decoded workflow only through `WorkflowData` (it keeps the whole document verbatim); do not loop over the raw decoded array by reference.
+- Put message templates passed to `PathFixerMessage` in trusted HTML only, and pass every untrusted value (workflow values, file names, LoRA IDs) as a `sprintf` argument: the constructor HTML-escapes string arguments. `WorkflowsPage` joins the messages into HTML without escaping them again, so a new message source must follow the same rule.
 - Read workflows from `<ComfyUI>/user/default/workflows`, not from this repository's `docs/workflows/`; the latter holds reference copies only.
 - Keep LoRA IDs unique across all JSON files under `data/loras/`; they are loaded into one collection.
+- Describe a LoRA in `data/loras/*.json` in one of two shapes: nested (a `models` object keyed by model name, each holding `file`, `source`, `triggerWords`) or flat (`model`, `file`, `source`, `triggerWords` on the entry itself). `LoRA::fromJSONEntry()` reads both; read LoRA values only through `LoRA` / `LoRAModel`, never from the raw arrays.
 
 ### Known gaps in the code (do not rely on)
 
-- **LoRA data shape:** `data/loras/loras.json` has been restructured to nest per-model details (`source`, `file`, `triggerWords`) under a `models` object keyed by model name. `LoRA` still reads those values as flat keys (`file`, `source`, `model`, `triggerWords`), so for entries in the nested shape those getters return empty values, and `PathFixer` reports "no file specified" for them. A locally created file such as `nsfw.json` uses the flat shape. Resolve this before changing LoRA reading or path fixing.
+- **Unsupported `files` key:** `LoRA::fromJSONEntry()` reads only the singular `file` key per model. An entry that lists several files under a plural `files` array (`realPussyPeach` in `data/loras/nsfw.json`) gets no file for path fixing and draws a "no file specified" warning. Use one `file` per model, or extend `LoRAModel`.
+- **Silent file-name collisions:** in `PathFixer::buildFileIndex()` two LoRAs sharing the same official file name overwrite each other in the known-file map without a warning.
 - **Upscale detection by name:** in `ImageIndexer::analyzeImage()` the file-name check calls `str_contains()` with its arguments reversed, so it effectively never matches. Upscaled status comes from the `upscaleFactor` property or from a dimension of at least 2000 px.
-- **No tests written yet:** PHPUnit is configured but `tests/` is empty, so nothing verifies the code automatically. Verify behavior manually through the UI and the Composer scripts until tests exist.
+- **Whole-file restoration in `fixPaths()`:** the `{}` restoration for empty `flags`, `config` and `properties` is a `str_replace` over the written file's text, so a matching sequence such as `"flags":[]` inside a string value would be rewritten as well.
+- **`PathFixer::fixPaths()` has no automated test:** it needs the LoRA collection and folder bootstrapped. `WorkflowData` and `PathFixerMessage` are covered by `tests/Workflows/`; verify `fixPaths()` end to end manually on a copy of a workflow.
+- **Parts without automated tests:** `ImageIndexer` (apart from `resolveCheckpoint()`), `PathFixer::fixPaths()` and `ImageBrowser` need the application bootstrap and are untested; verify them manually through the UI and the Composer scripts.
 
 ## Testing and static analysis
 
-- Put PHPUnit tests in `tests/` and run them through the `composer test*` scripts; PHPStan analyses `tests/` as well as `src/`.
-- Keep `composer analyze` (level 8, no baseline file) free of errors. Fix the cause rather than suppressing it: type arrays with PHPDoc value types, and do not add `@phpstan-ignore` comments.
+- Put PHPUnit tests in `tests/` and run them through the `composer test*` scripts; PHPStan analyses `tests/` as well as `src/`. Tests are `final` classes extending `TestCase` in the namespace `Mistralys\ComfyUIOrganizer\Tests`, with sub-namespaces mirroring the `src/` folders (`Tests\LoRAs`, `Tests\Workflows`); tests that touch files write to `sys_get_temp_dir()`, never to `data/`.
+- Keep `composer analyze` (level 9, no baseline file) free of errors. Fix the cause rather than suppressing it: type arrays with PHPDoc value types, and do not add `@phpstan-ignore` comments.
 - `phpstan.neon` lists `config.dist.php` and `prepend.php` under `scanFiles` so PHPStan knows the `Config\APP_*`, `CACHE_FOLDER` and `OUTPUT_FOLDER` constants; add any new global constant file there.
-- Do not commit `phpstan-result.txt` or `.phpunit.cache/`; both are git-ignored tool output.
+- Do not commit `phpstan-result.txt`, `.phpunit.cache/` or `.phpunit.result.cache`; all are git-ignored tool output.
 
 ## UI and frontend
 
 - Wrap user-visible strings in the localization functions (`t()`, `pt()`, `pts()`); both the `AppLocalize` and `AppUtils` namespaces are in use.
 - Render pages as inline PHP templates inside `_render()`; use `OutputBuffering` when HTML must be returned as a string.
-- Keep browser UI state (card size, filter toggles, active folder) in `$_SESSION`, and validate request values against fixed enums as `ImageBrowser` does.
+- Keep browser UI state (card size, filter toggles, active folder) in the session, and validate request values against fixed enums as `ImageBrowser` does. Read and write the session only through `SessionState`; do not access `$_SESSION` directly. A stored value of the wrong type reads as the default, so store strings and booleans only.
 - Make AJAX methods answer through `sendSuccess()` / `sendError()` (never plain output). `BaseImageMethod::sendSuccess()` re-reads the image to attach its flags, so an action that deletes the image must call `$this->methods->sendSuccess()` instead, as `DeleteImageMethod` does.
 - Keep JavaScript as plain classes loaded through `UserInterface::addInternalJS()`; there is no build step.

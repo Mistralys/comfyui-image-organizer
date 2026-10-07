@@ -12,6 +12,7 @@ use Mistralys\ComfyUIOrganizer\ImageCollection;
 use Mistralys\ComfyUIOrganizer\ImageIndexer;
 use Mistralys\ComfyUIOrganizer\ImageInfo;
 use Mistralys\ComfyUIOrganizer\OrganizerApp;
+use Mistralys\ComfyUIOrganizer\SessionState;
 use Mistralys\X4\UI\Icon;
 use function AppLocalize\pt;
 use function AppLocalize\pts;
@@ -131,17 +132,13 @@ class ImageBrowser extends BaseOrganizerPage
     public static function setCardSize(string $size) : void
     {
         if(in_array($size, array_keys(self::getCardSizes()))) {
-            $_SESSION[self::REQUEST_VAR_CARD_SIZE] = $size;
+            SessionState::set(self::REQUEST_VAR_CARD_SIZE, $size);
         }
     }
 
     private function resolveActiveCardSize() : string
     {
-        $size = $this->defaultSize;
-
-        if(isset($_SESSION[self::REQUEST_VAR_CARD_SIZE])) {
-            $size = $_SESSION[self::REQUEST_VAR_CARD_SIZE];
-        }
+        $size = SessionState::getString(self::REQUEST_VAR_CARD_SIZE, $this->defaultSize);
 
         $requestSize = $this->request->registerParam(self::REQUEST_VAR_CARD_SIZE)->setEnum(array_keys($this->cardSizes))->getString();
         if(!empty($requestSize)) {
@@ -155,29 +152,21 @@ class ImageBrowser extends BaseOrganizerPage
 
     private function resolveBooleanToggle(string $name) : bool
     {
-        $result = false;
-
-        if(isset($_SESSION[$name])) {
-            $result = $_SESSION[$name] === true;
-        }
+        $result = SessionState::getBool($name);
 
         $requestVal = $this->request->registerParam($name)->setEnum(array('yes', 'no'))->getString();
         if(!empty($requestVal)) {
             $result = $requestVal === 'yes';
         }
 
-        $_SESSION[$name] = $result;
+        SessionState::set($name, $result);
 
         return $result;
     }
 
     private function resolveActiveFolder() : string
     {
-        $result = '';
-
-        if(isset($_SESSION[self::REQUEST_PARAM_FOLDER_NAME])) {
-            $result = $_SESSION[self::REQUEST_PARAM_FOLDER_NAME];
-        }
+        $result = SessionState::getString(self::REQUEST_PARAM_FOLDER_NAME);
 
         $folders = $this->folders;
         $folders[] = 'all';
@@ -191,7 +180,7 @@ class ImageBrowser extends BaseOrganizerPage
             $result = $folder;
         }
 
-        $_SESSION[self::REQUEST_PARAM_FOLDER_NAME] = $result;
+        SessionState::set(self::REQUEST_PARAM_FOLDER_NAME, $result);
 
         return $result;
     }

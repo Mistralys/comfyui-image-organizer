@@ -36,7 +36,6 @@ class ImageInfo implements StringPrimaryRecordInterface
     public const string KEY_UPSCALED = 'upscaled';
     public const string KEY_IMAGE_SIZE = 'imageSize';
     public const string KEY_MODIFIED = 'modified';
-    public const string KEY_FOR_GALLERY = 'forGallery';
 
     private FileInfo $imageFile;
     private Microtime $date;
@@ -362,32 +361,38 @@ class ImageInfo implements StringPrimaryRecordInterface
         $this->setDataChanged();
     }
 
-    private const array KEY_DEFAULTS = array(
-        self::KEY_UPSCALED => false,
-        self::KEY_MODIFIED => false
-    );
-
-    public static function fromSerialized(mixed $entry) : ImageInfo
+    public static function fromEntry(ImageIndexEntry $entry) : ImageInfo
     {
-        foreach(self::KEY_DEFAULTS as $key => $default) {
-            if(!isset($entry[$key])) {
-                $entry[$key] = $default;
-            }
-        }
-
-        $data = ArrayDataCollection::create($entry);
-        $size = ArrayDataCollection::create($data->getArray(self::KEY_IMAGE_SIZE));
         return new ImageInfo(
-            $data->getString('id'),
-            FileInfo::factory($data->getString(self::KEY_IMAGE_FILE)),
-            JSONFile::factory($data->getString(self::KEY_SIDECAR_FILE)),
-            Microtime::createFromString($data->getString(self::KEY_DATE)),
-            $data->getString(self::KEY_CHECKPOINT),
-            $data->getBool(self::KEY_UPSCALED),
-            $data->getBool(self::KEY_MODIFIED),
-            $data->getString(self::KEY_LABEL),
-            array('width' => $size->getInt('width'), 'height' => $size->getInt('height')),
-            ArrayDataCollection::create($data->getArray(self::KEY_PROPERTIES))
+            $entry->getID(),
+            FileInfo::factory($entry->getImageFile()),
+            JSONFile::factory($entry->getSidecarFile()),
+            Microtime::createFromString($entry->getDate()),
+            $entry->getCheckpoint(),
+            $entry->isUpscaled(),
+            $entry->isModified(),
+            $entry->getLabel(),
+            $entry->getImageSize(),
+            ArrayDataCollection::create($entry->getProperties())
+        );
+    }
+
+    /**
+     * Known fields only; unknown index keys live on the stored entry.
+     */
+    public function toEntry() : ImageIndexEntry
+    {
+        return new ImageIndexEntry(
+            $this->getID(),
+            $this->imageFile->getPath(),
+            $this->sidecarFile->getPath(),
+            $this->date->getISODate(),
+            $this->checkpoint,
+            $this->upscaled,
+            $this->modified,
+            $this->label,
+            $this->imageSize,
+            $this->properties->serialize()
         );
     }
 
@@ -396,18 +401,7 @@ class ImageInfo implements StringPrimaryRecordInterface
      */
     public function serialize() : array
     {
-        return array(
-            self::KEY_ID => $this->getID(),
-            self::KEY_IMAGE_FILE => $this->imageFile->getPath(),
-            self::KEY_SIDECAR_FILE => $this->sidecarFile->getPath(),
-            self::KEY_DATE => $this->date->getISODate(),
-            self::KEY_CHECKPOINT => $this->checkpoint,
-            self::KEY_UPSCALED => $this->upscaled,
-            self::KEY_IMAGE_SIZE => $this->imageSize,
-            self::KEY_MODIFIED => $this->modified,
-            self::KEY_LABEL => $this->label,
-            self::KEY_PROPERTIES => $this->properties->serialize()
-        );
+        return $this->toEntry()->toArray();
     }
 
     public function getID(): string

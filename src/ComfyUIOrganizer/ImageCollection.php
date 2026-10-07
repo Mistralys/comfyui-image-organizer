@@ -31,15 +31,16 @@ class ImageCollection extends BaseStringPrimaryCollection
 {
     const string REQUEST_PARAM_IMAGE_ID = 'imageID';
     private JSONFile $dataFile;
-    /**
-     * @var array<int|string,mixed>
-     */
-    private array $data;
+    private ImageIndex $index;
 
+    /**
+     * @param JSONFile $dataFile
+     * @throws OrganizerException
+     */
     public function __construct(JSONFile $dataFile)
     {
         $this->dataFile = $dataFile;
-        $this->data = $dataFile->getData();
+        $this->index = ImageIndex::load($dataFile);
     }
 
     public function getDefaultID(): string
@@ -55,12 +56,7 @@ class ImageCollection extends BaseStringPrimaryCollection
         $image->getSidecarFile()->delete();
         $image->getThumbnailFile()->delete();
 
-        foreach($this->data as $index => $entry) {
-            if($entry[ImageInfo::KEY_ID] === $image->getID()) {
-                unset($this->data[$index]);
-                break;
-            }
-        }
+        $this->index->remove($image->getID());
 
         foreach($image->findLowResVersions() as $lowResVersion) {
             $this->deleteImage($lowResVersion);
@@ -72,12 +68,22 @@ class ImageCollection extends BaseStringPrimaryCollection
     public function save() : void
     {
         foreach($this->getAll() as $image) {
-            if($image->isDataChanged()) {
-                $this->data[$image->getID()] = $image->serialize();
+            if(!$image->isDataChanged()) {
+                continue;
             }
+
+            $entry = $image->toEntry();
+            $stored = $this->index->get($image->getID());
+
+            // Keeps the unknown keys of the stored entry.
+            if($stored !== null) {
+                $entry = $stored->withKnownFieldsFrom($entry);
+            }
+
+            $this->index->set($entry);
         }
 
-        $this->dataFile->putData($this->data);
+        $this->index->save($this->dataFile);
     }
 
     /**
@@ -138,9 +144,9 @@ class ImageCollection extends BaseStringPrimaryCollection
     {
         $this->missing = array();
 
-        foreach($this->data as $entry)
+        foreach($this->index->getEntries() as $entry)
         {
-            $image = ImageInfo::fromSerialized($entry);
+            $image = ImageInfo::fromEntry($entry);
 
             // Automatic cleanup of images that no longer exist.
             if(!$image->getImageFile()->exists()) {
@@ -177,7 +183,7 @@ class ImageCollection extends BaseStringPrimaryCollection
 
     public function getFromRequest() : ?ImageInfo
     {
-        $id = Request::getInstance()->registerParam(self::REQUEST_PARAM_IMAGE_ID)->setMD5()->get();
+        $id = Request::getInstance()->registerParam(self::REQUEST_PARAM_IMAGE_ID)->setMD5()->getString();
         if(!empty($id) && $this->idExists($id)) {
             return $this->getByID($id);
         }

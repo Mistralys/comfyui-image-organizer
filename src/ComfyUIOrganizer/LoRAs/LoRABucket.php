@@ -27,9 +27,10 @@ class LoRABucket extends GenericStringPrimaryBasket
         $models = array();
 
         foreach($this->getAll() as $lora) {
-            $model = $lora->getModel();
-            if(!in_array($model, $models, true)) {
-                $models[] = $model;
+            foreach($lora->getModelNames() as $model) {
+                if(!in_array($model, $models, true)) {
+                    $models[] = $model;
+                }
             }
         }
 
@@ -69,8 +70,11 @@ class LoRABucket extends GenericStringPrimaryBasket
         $modelName = strtolower($modelName);
 
         foreach($this->getAll() as $lora) {
-            if(strtolower($lora->getModel()) === $modelName) {
-                $result[] = $lora;
+            foreach($lora->getModelNames() as $name) {
+                if(strtolower($name) === $modelName) {
+                    $result[] = $lora;
+                    break;
+                }
             }
         }
 

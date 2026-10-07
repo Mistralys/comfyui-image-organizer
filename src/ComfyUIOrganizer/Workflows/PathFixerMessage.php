@@ -21,7 +21,13 @@ class PathFixerMessage implements StringableInterface
         $this->message = (string)$message;
 
         if(!empty($args)) {
-            $this->message = sprintf($this->message, ...$args);
+            // The message is rendered as HTML; arguments carry untrusted workflow/file data.
+            $escaped = array_map(
+                static fn(string|int|float $arg) : string|int|float => is_string($arg) ? htmlspecialchars($arg, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') : $arg,
+                $args
+            );
+
+            $this->message = sprintf($this->message, ...$escaped);
         }
     }
 

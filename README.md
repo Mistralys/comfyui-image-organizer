@@ -126,6 +126,41 @@ them around in the ComfyUI folders or when renaming them.
 > HINT: The official file name is the one given when downloading the LoRA from AI model
 > websites like Civitai or Huggingface. 
 
+The LoRA JSON files (in `data/loras/`) support two shapes. A LoRA with several model
+variants lists them in a `models` object, keyed by model name; every variant has its own
+`file`, `source` and `triggerWords`:
+
+```json
+{
+  "aztecStyle": {
+    "category": "Styles",
+    "label": "Aztec Style",
+    "models": {
+      "SDXL 1.0": {
+        "source": "https://civitai.com/models/...",
+        "file": "tbh264-sdxl.safetensors",
+        "triggerWords": ["style of aztec"]
+      }
+    }
+  }
+}
+```
+
+The flat shape describes a single model in the entry itself, named by the `model` key:
+
+```json
+{
+  "realisticBeautyModel": {
+    "category": "XXX",
+    "label": "Realistic Beauty Model",
+    "model": "SDXL 1.0",
+    "source": "https://civitai.com/models/...",
+    "file": "Android_XL.safetensors",
+    "triggerWords": ["beuty"]
+  }
+}
+```
+
 The path fixer cross-references all LoRA files it finds in the ComfyUI folders with the 
 official file names it finds in the LoRA collection. If a LoRA file ends with or equals
 an official name, it generates the correct path including subfolders.

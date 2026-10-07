@@ -6,29 +6,87 @@ namespace Mistralys\ComfyUIOrganizer\LoRAs;
 
 use AppUtils\ArrayDataCollection;
 use AppUtils\Interfaces\StringPrimaryRecordInterface;
+use Mistralys\ComfyUIOrganizer\OrganizerException;
 use function AppUtils\sb;
 
 class LoRA implements StringPrimaryRecordInterface
 {
     public const string KEY_LABEL = 'label';
-    public const string KEY_FILE = 'file';
-    public const string KEY_SOURCE = 'source';
     public const string KEY_CATEGORY = 'category';
-    public const string KEY_TRIGGER_WORDS = 'triggerWords';
-    public const string KEY_MODEL = 'model';
-    public const string KEY_NOTES = 'notes';
-    public const string KEY_WEIGHT = 'weight';
+    public const string KEY_MODELS = 'models';
 
     private string $id;
-    private ArrayDataCollection $data;
+    private string $label;
+    private string $category;
 
     /**
-     * @param array<string, mixed> $data
+     * @var LoRAModel[]
      */
-    public function __construct(string $id, array $data)
+    private array $models;
+
+    /**
+     * @param string $id
+     * @param string $label
+     * @param string $category
+     * @param LoRAModel[] $models
+     */
+    public function __construct(string $id, string $label, string $category, array $models)
     {
         $this->id = $id;
-        $this->data = ArrayDataCollection::create($data);
+        $this->label = $label;
+        $this->category = $category;
+        $this->models = $models;
+    }
+
+    /**
+     * Creates a LoRA from an entry of a LoRA definition file.
+     * Supports the nested shape (a `models` object with one
+     * entry per model) and the flat shape (a single model
+     * described by the entry itself).
+     *
+     * @param string $id
+     * @param mixed $entry
+     * @return LoRA
+     * @throws OrganizerException {@see OrganizerException::ERROR_INVALID_LORA_ENTRY}
+     */
+    public static function fromJSONEntry(string $id, mixed $entry) : LoRA
+    {
+        if(!is_array($entry)) {
+            throw new OrganizerException(
+                'Invalid LoRA entry.',
+                sprintf(
+                    'The LoRA entry [%s] is not an object, it is of type [%s].',
+                    $id,
+                    get_debug_type($entry)
+                ),
+                OrganizerException::ERROR_INVALID_LORA_ENTRY
+            );
+        }
+
+        $data = ArrayDataCollection::create($entry);
+        $modelsData = $data->getKey(self::KEY_MODELS);
+        $models = array();
+
+        if(is_array($modelsData))
+        {
+            foreach($modelsData as $modelName => $modelData) {
+                $models[] = LoRAModel::fromArray(
+                    (string)$modelName,
+                    is_array($modelData) ? $modelData : array()
+                );
+            }
+        }
+        else
+        {
+            $models[] = LoRAModel::fromArray($data->getString(LoRAModel::KEY_MODEL), $entry);
+        }
+
+        return new self(
+            $id,
+            $data->getString(self::KEY_LABEL),
+            $data->getString(self::KEY_CATEGORY),
+            $models
+        );
     }
 
     public function getID(): string
@@ -38,7 +96,20 @@ class LoRA implements StringPrimaryRecordInterface
 
     public function getLabel() : string
     {
-        return $this->data->getString(self::KEY_LABEL);
+        return $this->label;
+    }
+
+    public function getCategory() : string
+    {
+        return $this->category;
+    }
+
+    /**
+     * @return LoRAModel[]
+     */
+    public function getModels() : array
+    {
+        return $this->models;
     }
 
     public function getLabelLinkedSource() : string
@@ -46,46 +117,96 @@ class LoRA implements StringPrimaryRecordInterface
         return (string)sb()->link($this->getLabel(), $this->getSource(), true);
     }
 
-    public function getFile() : string
+    /**
+     * The non-empty file names of all models.
+     * @return string[]
+     */
+    public function getFiles() : array
     {
-        return $this->data->getString(self::KEY_FILE);
+        return $this->collectNonEmpty(static fn(LoRAModel $model) : string => $model->getFile());
     }
 
+    /**
+     * The non-empty model names, e.g. `SDXL 1.0`.
+     * @return string[]
+     */
+    public function getModelNames() : array
+    {
+        return $this->collectNonEmpty(static fn(LoRAModel $model) : string => $model->getModelName());
+    }
+
+    /**
+     * The source of the first model that has one.
+     */
     public function getSource() : string
     {
-        return $this->data->getString(self::KEY_SOURCE);
-    }
-
-    public function getCategory() : string
-    {
-        return $this->data->getString(self::KEY_CATEGORY);
+        return $this->getFirstNonEmpty(static fn(LoRAModel $model) : string => $model->getSource());
     }
 
     public function getNotes() : string
     {
-        return $this->data->getString(self::KEY_NOTES);
+        return $this->getFirstNonEmpty(static fn(LoRAModel $model) : string => $model->getNotes());
     }
 
     public function getWeight() : string
     {
-        return $this->data->getString(self::KEY_WEIGHT);
+        return $this->getFirstNonEmpty(static fn(LoRAModel $model) : string => $model->getWeight());
     }
 
     /**
+     * De-duplicated trigger words of all models, in first-seen order.
      * @return string[]
      */
     public function getTriggerWords() : array
     {
-        return $this->data->getArrayFlavored(self::KEY_TRIGGER_WORDS)->toIndexedStrings(true);
-    }
+        $result = array();
 
-    public function getModel() : string
-    {
-        return $this->data->getString(self::KEY_MODEL);
+        foreach($this->models as $model) {
+            foreach($model->getTriggerWords() as $word) {
+                if(!in_array($word, $result, true)) {
+                    $result[] = $word;
+                }
+            }
+        }
+
+        return $result;
     }
 
     public function getTriggerWordsFlattened() : string
     {
         return implode(', ', $this->getTriggerWords());
+    }
+
+    /**
+     * @param callable(LoRAModel):string $getter
+     * @return string[]
+     */
+    private function collectNonEmpty(callable $getter) : array
+    {
+        $result = array();
+
+        foreach($this->models as $model) {
+            $value = $getter($model);
+            if($value !== '') {
+                $result[] = $value;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param callable(LoRAModel):string $getter
+     */
+    private function getFirstNonEmpty(callable $getter) : string
+    {
+        foreach($this->models as $model) {
+            $value = $getter($model);
+            if($value !== '') {
+                return $value;
+            }
+        }
+
+        return '';
     }
 }

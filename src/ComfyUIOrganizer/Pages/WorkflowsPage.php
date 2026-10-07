@@ -54,7 +54,7 @@ class WorkflowsPage extends BaseOrganizerPage
 
         if($this->request->getBool(self::REQUEST_PARAM_FIX_PATHS))
         {
-            $workflow = $this->workflowCollection->getByID($this->request->registerParam(WorkflowFileURL::REQUEST_PRIMARY)->setAlnum()->get());
+            $workflow = $this->workflowCollection->getByID($this->request->registerParam(WorkflowFileURL::REQUEST_PRIMARY)->setAlnum()->getString());
 
             $messages = new PathFixer($workflow->getFile())->fixPaths()->getMessages();
 

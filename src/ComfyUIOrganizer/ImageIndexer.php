@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mistralys\ComfyUIOrganizer;
 
+use AppUtils\ArrayDataCollection;
 use AppUtils\ConvertHelper;
 use AppUtils\FileHelper\FileInfo;
 use AppUtils\FileHelper\FolderInfo;
@@ -24,13 +25,13 @@ class ImageIndexer
     public const string INDEX_IMAGE_FILE = 'imageFile';
 
     private OrganizerApp $app;
-    /** @var array<int|string, array<string, mixed>> */
-    private array $images = array();
+    private ImageIndex $images;
     private JSONFile $storageFile;
 
     public function __construct(OrganizerApp $app)
     {
         $this->app = $app;
+        $this->images = new ImageIndex();
         $this->storageFile = $this->app->getStorageFile();
         $this->analysisResults = new OperationResult_Collection($this);
     }
@@ -64,8 +65,8 @@ class ImageIndexer
         }
 
         Console::line1('Found existing image index file, loading data...');
-        $this->images = $this->storageFile->getData();
         $this->storageFile->copyTo($this->storageFile->getFolder().'/backup/images-'.Microtime::createNow()->format('Y-m-d-H-i-s').'.json');
+        $this->images = ImageIndex::load($this->storageFile);
     }
 
     /**
@@ -113,10 +114,10 @@ class ImageIndexer
         }
 
         Console::nl();
-        Console::line1('Found [%d] images with sidecar files.', count($this->images));
+        Console::line1('Found [%d] images with sidecar files.', $this->images->count());
         Console::line1('Writing image index file...');
 
-        $this->app->getStorageFile()->putData($this->images);
+        $this->images->save($this->app->getStorageFile());
         $this->app->resetImageCollection();
 
         self::updateFileIndex();
@@ -151,36 +152,28 @@ class ImageIndexer
 
         $id = hash_file('md5', $imageFile->getPath());
 
+        if($id === false) {
+            throw new OrganizerException(
+                'Cannot hash the image file.',
+                sprintf('Could not compute the MD5 hash of the image file [%s].', $imageFile->getPath()),
+                OrganizerException::ERROR_CANNOT_HASH_IMAGE_FILE
+            );
+        }
+
         // Do not change any images that have already been indexed and modified.
         // BUT: Update the image and sidecar file paths in the existing entry, as they
         // may have been moved or renamed. Since the ID is a file hash, we can
         // safely update the paths without changing the ID.
 
-        if(isset($this->images[$id][ImageInfo::KEY_MODIFIED]) && $this->images[$id][ImageInfo::KEY_MODIFIED] === true)
+        $stored = $this->images->get($id);
+
+        if($stored !== null && $stored->isModified())
         {
-            $file = $imageFile->getPath();
-            $sidecar = $sidecarFile->getPath();
-            $folder = $imageFile->getFolder()->getName();
-
-            $updated = false;
-
-            if($this->images[$id][ImageInfo::KEY_IMAGE_FILE] !== $file)
-            {
-                $this->images[$id][ImageInfo::KEY_IMAGE_FILE] = $file;
-                $updated = true;
-            }
-
-            if($this->images[$id][ImageInfo::KEY_SIDECAR_FILE] !== $sidecar)
-            {
-                $this->images[$id][ImageInfo::KEY_SIDECAR_FILE] = $sidecar;
-                $updated = true;
-            }
-
-            if(empty($this->images[$id][ImageInfo::KEY_PROPERTIES][ImageProperties::KEY_FOLDER_NAME]) || $this->images[$id][ImageInfo::KEY_PROPERTIES][ImageProperties::KEY_FOLDER_NAME] !== $folder)
-            {
-                $this->images[$id][ImageInfo::KEY_PROPERTIES][ImageProperties::KEY_FOLDER_NAME] = $folder;
-                $updated = true;
-            }
+            $updated = $stored->syncLocation(
+                $imageFile->getPath(),
+                $sidecarFile->getPath(),
+                $imageFile->getFolder()->getName()
+            );
 
             if($updated)
             {
@@ -199,12 +192,15 @@ class ImageIndexer
             return;
         }
 
-        $properties = $data[$date] ?? array();
+        $rawProperties = $data[$date] ?? null;
+        $properties = ArrayDataCollection::create(is_array($rawProperties) ? $rawProperties : array());
 
-        $text = $properties['custom_text'] ?? '';
-        $props = $this->parseText($text);
+        $props = $this->parseText($properties->getString('custom_text'));
 
-        $checkpoint = $properties['checkpoint'] ?? $props[ImageProperties::KEY_MODEL_NAME] ?? '';
+        $checkpoint = self::resolveCheckpoint(
+            $properties->getKey('checkpoint'),
+            $props[ImageProperties::KEY_MODEL_NAME] ?? ''
+        );
 
         if(empty($checkpoint))
         {
@@ -217,8 +213,6 @@ class ImageIndexer
 
             return;
         }
-
-        $props = $this->parseText($text);
 
         $imageParts = ConvertHelper::explodeTrim('-', str_replace('_', '-', $imageFile->getBaseName()));
 
@@ -260,16 +254,21 @@ class ImageIndexer
             $isUpscaled = true;
         }
 
-        $this->images[$id] = array(
-            ImageInfo::KEY_ID => $id,
-            ImageInfo::KEY_IMAGE_FILE => $imageFile->getPath(),
-            ImageInfo::KEY_SIDECAR_FILE => $sidecarFile->getPath(),
-            ImageInfo::KEY_DATE => Microtime::createFromString(str_replace('/', '-', $date))->getISODate(),
-            ImageInfo::KEY_CHECKPOINT => $checkpoint,
-            ImageInfo::KEY_UPSCALED => $isUpscaled,
-            ImageInfo::KEY_IMAGE_SIZE => array('width' => $size->getWidth(), 'height' => $size->getHeight()),
-            ImageInfo::KEY_PROPERTIES => $props
+        $new = new ImageIndexEntry(
+            $id,
+            $imageFile->getPath(),
+            $sidecarFile->getPath(),
+            Microtime::createFromString(str_replace('/', '-', $date))->getISODate(),
+            $checkpoint,
+            $isUpscaled,
+            false,
+            '',
+            array('width' => $size->getWidth(), 'height' => $size->getHeight()),
+            $props
         );
+
+        // Keep the unknown keys of an already stored entry.
+        $this->images->set($stored !== null ? $stored->withKnownFieldsFrom($new) : $new);
 
         $this->analysisResults->makeSuccess(
             t('Image [%s] | OK | Indexed successfully.', $imageFile->getName()),
@@ -280,6 +279,22 @@ class ImageIndexer
     public function getAnalysisResults() : OperationResult_Collection
     {
         return $this->analysisResults;
+    }
+
+    /**
+     * A string sidecar value wins, even when empty; any other value falls back.
+     *
+     * @param mixed $sidecarValue
+     * @param string $fallback
+     * @return string
+     */
+    public static function resolveCheckpoint(mixed $sidecarValue, string $fallback) : string
+    {
+        if(is_string($sidecarValue)) {
+            return $sidecarValue;
+        }
+
+        return $fallback;
     }
 
     /**

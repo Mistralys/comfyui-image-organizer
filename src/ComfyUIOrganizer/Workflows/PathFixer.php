@@ -53,17 +53,19 @@ class PathFixer
         $rootFolder = $this->getLoRAFolder()->getPath();
 
         $knownFiles = array();
-        foreach(LoRAsCollection::getInstance()->getAll() as $file) {
-            $knownFile = $file->getFile();
-            if(empty($knownFile)) {
+        foreach(LoRAsCollection::getInstance()->getAll() as $lora) {
+            $files = $lora->getFiles();
+            if(empty($files)) {
                 $this->addWarning(
                     'LoRA [%s] has no file specified in any of the JSON files.',
-                    $file->getID()
+                    $lora->getID()
                 );
                 continue;
             }
 
-            $knownFiles[mb_strtolower($knownFile)] = $file->getLabel();
+            foreach($files as $knownFile) {
+                $knownFiles[mb_strtolower($knownFile)] = $lora->getLabel();
+            }
         }
 
         foreach($this->getLoRAFiles() as $file)
@@ -116,48 +118,19 @@ class PathFixer
     {
         $this->buildFileIndex();
 
-        $data = $this->workflowFile->getData();
+        $workflow = WorkflowData::fromArray($this->workflowFile->getData());
 
-        if(!isset($data['nodes']) || !is_array($data['nodes'])) {
+        if(!$workflow->hasNodes()) {
             return $this;
         }
 
-        $changed = false;
+        $changed = $workflow->rewriteFirstWidgetString('LoraLoaderModelOnly', $this->resolvePath(...));
 
-        foreach($data['nodes'] as &$node)
-        {
-            if(!isset($node['type'])) {
-                continue;
-            }
-
-            if($node['type'] === 'LoraLoaderModelOnly')
-            {
-                if(!isset($node['widgets_values']) || !is_array($node['widgets_values']) || count($node['widgets_values']) === 0) {
-                    continue;
-                }
-
-                $current = $node['widgets_values'][0] ?? null;
-                if(empty($current) || !is_string($current)) {
-                    continue;
-                }
-
-                $path = $this->resolvePath($current);
-                if($path === $current) {
-                    continue;
-                }
-
-                $node['widgets_values'][0] = $path;
-                $changed = true;
-            }
-        }
-
-        unset($node);
-
-        if($changed)
+        if($changed > 0)
         {
             $this->createBackup();
 
-            $this->workflowFile->putData($data);
+            $this->workflowFile->putData($workflow->toArray());
 
             // Fix empty arrays that should be objects.
             // This is a quirk of ComfyUI's JSON handling.

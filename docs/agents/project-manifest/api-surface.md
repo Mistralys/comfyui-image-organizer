@@ -55,7 +55,10 @@ public function detectUpscaledImages(?string $folderName = null): self
 public function detectUpscaledInFolder(string $folderName): self
 public function cleanUpFolders(): self                      // deletes empty image subfolders
 public function getAnalysisResults(): OperationResult_Collection
+public static function resolveCheckpoint(mixed $sidecarValue, string $fallback): string // a string sidecar value wins, even when empty; any other value yields $fallback
 ```
+
+The indexer keeps the loaded index as an `ImageIndex` (private) for the duration of an analysis run. `analyzeImage()` throws `OrganizerException::ERROR_CANNOT_HASH_IMAGE_FILE` when the MD5 of an image file cannot be computed.
 
 ### `ImageCollection` — `ImageCollection.php`
 Extends `BaseStringPrimaryCollection`; items are `ImageInfo`.
@@ -69,24 +72,27 @@ public function getFolderNames(): array            // sorted unique folder names
 public function getMissingImages(): array          // index entries whose image file no longer exists
 public function removeMissingImages(): self
 public function deleteImage(ImageInfo $image): void // image, sidecar, thumbnail, linked low-res versions, index entry
-public function save(): void                       // writes entries of changed images, then the data file
+public function save(): void                       // merges each changed image onto its stored entry, then writes the whole index
 public function injectJS(UserInterface $ui, string $baseURL): string // registers JS files, returns JS object name
 ```
+
+The collection holds the loaded `data/images.json` as an `ImageIndex` (private). `registerItems()` builds one `ImageInfo` per `ImageIndex::getEntries()` entry through `ImageInfo::fromEntry()`. `save()` takes the stored entry for each changed image and applies `ImageIndexEntry::withKnownFieldsFrom($image->toEntry())`, so unknown keys on the stored entry survive; an image with no stored entry is added as its plain `toEntry()` result. The write goes through `ImageIndex::save()`, which rewrites every entry, not only the changed ones. `deleteImage()` removes the entry with `ImageIndex::remove()`; the removal is persisted by the `save()` that follows. `getFromRequest()` validates the `imageID` request parameter as MD5 and reads it with `getString()`; an absent or invalid value yields `null`.
 
 ### `ImageInfo` — `ImageInfo.php`
 Implements `StringPrimaryRecordInterface`. One indexed image. The ID is the MD5 hash of the PNG file.
 
 ```php
 public const string KEY_ID, KEY_IMAGE_FILE, KEY_SIDECAR_FILE, KEY_DATE, KEY_CHECKPOINT, KEY_UPSCALED,
-                    KEY_IMAGE_SIZE, KEY_MODIFIED, KEY_LABEL, KEY_PROPERTIES, KEY_FOR_GALLERY
+                    KEY_IMAGE_SIZE, KEY_MODIFIED, KEY_LABEL, KEY_PROPERTIES
 public const int THUMBNAIL_WIDTH = 540
 public bool $dataChanged
 
 public function __construct(string $id, FileInfo $imageFile, JSONFile $sidecarFile, Microtime $date, string $checkpoint,
                             bool $upscaled, bool $modified, string $label, array $imageSize, ArrayDataCollection $properties)
-public static function fromSerialized(mixed $entry): ImageInfo
+public static function fromEntry(ImageIndexEntry $entry): ImageInfo
 public static function createThumbnail(FileInfo $sourceImage, FileInfo $thumbnailFile): void
-public function serialize(): array
+public function toEntry(): ImageIndexEntry         // known fields only; unknown index keys stay on the stored entry
+public function serialize(): array                 // toEntry()->toArray(); the browser payload / index shape
 
 public function getID(): string
 public function prop(): ImageProperties
@@ -158,6 +164,62 @@ public function getWebsiteImageID(): ?string
 public function setWebsiteImageID(string $imageID): self
 ```
 
+### `ImageIndexEntry` — `ImageIndexEntry.php`
+Typed round-trip record for one entry of `data/images.json`. Keys it does not model ("unknown keys", e.g. the legacy `forGallery`) are kept and written back, so a load-and-save cycle loses nothing. Persisted key names reuse the `ImageInfo::KEY_*` constants. Used by `ImageInfo` (`fromEntry()` / `toEntry()`), through `ImageIndex` by `ImageCollection`, and by `ImageIndexer`, which builds new entries and merges them onto stored ones.
+
+```php
+public function __construct(string $id, string $imageFile, string $sidecarFile, string $date, string $checkpoint,
+                            bool $upscaled, bool $modified, string $label,
+                            array $imageSize,   // array{width:int,height:int}
+                            array $properties,  // array<int|string,mixed>
+                            array $extra = array()) // array<string,mixed>: unknown top-level keys
+public static function fromArray(array $data): self  // lenient: missing or malformed fields fall back to '' / false / 0 / []
+public function toArray(): array                     // known keys in ImageInfo::serialize() order, then the unknown keys
+public function syncLocation(string $imageFile, string $sidecarFile, string $folderName): bool // mutates; true when a value changed
+public function withKnownFieldsFrom(ImageIndexEntry $source): self // copy with the source's known fields and this entry's unknown keys
+
+public function getID(): string
+public function getImageFile(): string
+public function getSidecarFile(): string
+public function getDate(): string                    // ISO date string
+public function getCheckpoint(): string
+public function isUpscaled(): bool
+public function isModified(): bool
+public function getLabel(): string
+public function getImageSize(): array                // ['width' => int, 'height' => int]
+public function getProperties(): array
+public function getExtra(): array                    // unknown keys
+```
+
+`syncLocation()` compares the image file, the sidecar file and the `folder` property (`ImageProperties::KEY_FOLDER_NAME`), updates only what differs (an empty or missing stored folder name counts as different), and leaves `modified`, `label` and all other properties untouched. `toArray()` merges the unknown keys with `array_merge()`, which would renumber integer-like unknown keys; real index data has none.
+
+### `ImageIndex` — `ImageIndex.php`
+The set of `ImageIndexEntry` records of `data/images.json`, keyed by image ID. Held by `ImageCollection` and `ImageIndexer`.
+
+```php
+public static function fromArray(array $data): self       // throws OrganizerException::ERROR_INVALID_INDEX_ENTRY (179403) when an entry is not an array
+public static function load(JSONFile $file): self
+public function save(JSONFile $file): void                // writes toArray()
+public function toArray(): array                          // array<string,array<string,mixed>>
+public function get(string $id): ?ImageIndexEntry
+public function has(string $id): bool
+public function set(ImageIndexEntry $entry): self         // adds, or replaces the entry stored under the same ID
+public function remove(string $id): self
+public function getEntries(): array                       // array<string,ImageIndexEntry>
+public function count(): int
+```
+
+`fromArray()` keys each entry by the entry's own `id` value and ignores the outer JSON key, so an entry stored under a key that differs from its `id` is written back under its `id`. Numeric IDs become integer array keys.
+
+### `SessionState` — `SessionState.php`
+Static typed accessor for `$_SESSION`; the only code that touches it directly. A value that is absent or has the wrong type yields the default.
+
+```php
+public static function getString(string $key, string $default = ''): string // default unless the stored value is a string
+public static function getBool(string $key): bool                            // true only when the stored value is boolean true
+public static function set(string $key, string|bool $value): void
+```
+
 ### `ComfyUI` — `ComfyUI.php`
 
 ```php
@@ -184,6 +246,9 @@ Extends `AppUtils\BaseException`.
 ```php
 public const int ERROR_CANNOT_SAVE_INEXISTENT_IMAGE = 179401
 public const int ERROR_CANNOT_MOVE_FILE_EXISTS = 179402
+public const int ERROR_INVALID_INDEX_ENTRY = 179403
+public const int ERROR_INVALID_LORA_ENTRY = 179404
+public const int ERROR_CANNOT_HASH_IMAGE_FILE = 179405
 ```
 
 ## Ajax — `Ajax/`
@@ -243,31 +308,53 @@ public function getAllAsBucket(): LoRABucket
 ```
 
 ### `LoRAs\LoRA`
-Implements `StringPrimaryRecordInterface`. Reads flat keys from its data array.
+Implements `StringPrimaryRecordInterface`. Holds a list of `LoRAModel` records; the per-model getters below aggregate over them.
 
 ```php
-public const string KEY_LABEL, KEY_FILE, KEY_SOURCE, KEY_CATEGORY, KEY_TRIGGER_WORDS, KEY_MODEL, KEY_NOTES, KEY_WEIGHT
-public function __construct(string $id, array $data)
+public const string KEY_LABEL, KEY_CATEGORY, KEY_MODELS
+
+/** @param LoRAModel[] $models */
+public function __construct(string $id, string $label, string $category, array $models)
+
+/** @throws OrganizerException ERROR_INVALID_LORA_ENTRY when $entry is not an array */
+public static function fromJSONEntry(string $id, mixed $entry): LoRA   // nested `models` shape or flat shape
+
 public function getID(): string
 public function getLabel(): string
-public function getLabelLinkedSource(): string     // HTML link to the source URL
-public function getFile(): string                  // official file name
-public function getSource(): string
 public function getCategory(): string
+public function getModels(): array                 // LoRAModel[]
+public function getFiles(): array                  // non-empty official file names of all models
+public function getModelNames(): array             // non-empty model names
+public function getSource(): string                // source of the first model that has one
+public function getNotes(): string                 // first non-empty value across models
+public function getWeight(): string                // first non-empty value across models
+public function getTriggerWords(): array           // string[]; de-duplicated union across models, first-seen order
+public function getTriggerWordsFlattened(): string
+public function getLabelLinkedSource(): string     // HTML link to getSource()
+```
+
+### `LoRAs\LoRAModel`
+Read-only value object for one model variant of a LoRA (e.g. `SDXL 1.0`).
+
+```php
+public const string KEY_FILE, KEY_SOURCE, KEY_TRIGGER_WORDS, KEY_MODEL, KEY_NOTES, KEY_WEIGHT
+public function __construct(string $modelName, string $source, string $file, array $triggerWords, string $notes, string $weight)
+public static function fromArray(string $modelName, array $data): self
+public function getModelName(): string
+public function getSource(): string
+public function getFile(): string                  // official file name
+public function getTriggerWords(): array           // string[]
 public function getNotes(): string
 public function getWeight(): string
-public function getModel(): string
-public function getTriggerWords(): array
-public function getTriggerWordsFlattened(): string
 ```
 
 ### `LoRAs\LoRABucket`
 Extends `GenericStringPrimaryBasket` (accepts `LoRA` items only).
 
 ```php
-public function getModels(): array
+public function getModels(): array                 // sorted unique model names (LoRA::getModelNames())
 public function getCategorized(): array            // category => LoRA[]
-public function getByModel(string $modelName): array
+public function getByModel(string $modelName): array   // case-insensitive match on model names
 public function getByModelAsBucket(string $modelName): LoRABucket
 ```
 
@@ -304,24 +391,38 @@ public function base(array $params = array()): string
 public function fixPaths(): string
 ```
 
+### `Workflows\WorkflowData`
+Round-trip owner of one decoded ComfyUI workflow document. It holds the whole document verbatim, so unknown keys, non-array node entries, empty arrays and the node order survive `toArray()` unchanged. The constructor is private.
+
+```php
+public static function fromArray(array $data): self   // array<int|string,mixed>; the decoded workflow JSON
+public function hasNodes(): bool                      // true when the `nodes` key holds an array
+public function toArray(): array                      // the full document, array<int|string,mixed>
+public function rewriteFirstWidgetString(string $nodeType, Closure $resolver): int // Closure(string):string
+```
+
+`rewriteFirstWidgetString()` visits every node whose `type` equals `$nodeType` and passes the first `widgets_values` entry to the resolver. It skips nodes that are not arrays, have no string `type`, have a missing or non-array `widgets_values`, or whose first value is not a non-empty string. It replaces only that first value (other node types, widget values and node keys stay as they were) and returns the number of values whose resolved result differs from the original; a resolver returning the same string counts as unchanged. Returns `0` when there are no nodes.
+
 ### `Workflows\PathFixer`
 
 ```php
 public function __construct(JSONFile $workflowFile)
 public function getLoRAFolder(): FolderInfo        // <ComfyUI>/models/loras
-public function fixPaths(): self
+public function fixPaths(): self                   // rewrites LoraLoaderModelOnly paths through WorkflowData
 public function getMessages(): array               // PathFixerMessage[]
 ```
 
 ### `Workflows\PathFixerMessage`
-Implements `StringableInterface`.
+Implements `StringableInterface`. Rendered as HTML by `WorkflowsPage`.
 
 ```php
 public const string TYPE_ERROR, TYPE_WARNING, TYPE_SUCCESS, TYPE_NOTICE
-public function __construct(string $type, string|StringableInterface $message, ...$args)
-public function render(): string
+public function __construct(string $type, string|StringableInterface $message, string|int|float ...$args)
+public function render(): string                   // "<Type label>: <message>"
 public function __toString(): string
 ```
+
+The `$message` template is trusted HTML and is not escaped. The constructor applies `sprintf()` with `$args` and first HTML-escapes every string argument with `htmlspecialchars()` (`ENT_QUOTES | ENT_SUBSTITUTE`, UTF-8); integer and float arguments are left as they are. Pass any untrusted value (workflow widget values, file names, LoRA IDs) as an argument, never inside the template. Arguments must not be escaped beforehand, or they are escaped twice.
 
 ## Web entry points (non-class)
 
