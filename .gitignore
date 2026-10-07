@@ -13,3 +13,17 @@ data/file_index.json
 
 /phpstan-result.txt
 /.phpunit.cache/
+/.phpunit.result.cache
+
+# AI Insights Ledger Temporary Files
+/docs/agents/**/work/
+/docs/agents/**/work.md
+/docs/agents/**/research-brief.md
+/docs/agents/**/audit.md
+/docs/agents/**/design-review.md
+/docs/agents/**/dependency-analysis.md
+/docs/agents/**/pipeline-configuration.md
+/docs/agents/**/work-packages-draft.md
+/docs/agents/**/.orchestrator-run.json
+/docs/agents/**/insights.jsonl
+/docs/agents/insights/*.jsonl
