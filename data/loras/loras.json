@@ -21,6 +21,97 @@
       }
     }
   },
+  "oldWood": {
+    "category": "Styles",
+    "label": "Old Wood",
+    "models": {
+      "FLUX": {
+        "source": "https://civitai.red/models/1240504/old-wood-ce?modelVersionId=1398198",
+        "file": "OldWood01_CE_FLUX_AIT3k.safetensors",
+        "triggerWords": ["oldwdCE_style"]
+      }
+    }
+  },
+  "emotionalFaces": {
+    "category": "Styles",
+    "label": "Emotional Faces",
+    "models": {
+      "FLUX": {
+        "source": "https://civitai.com/models/331903/pretty-and-emotional-faces?modelVersionId=775760",
+        "file": "Pretty__Emotional_Faces_FLUX-000001.safetensors",
+        "triggerWords": ["pretty", "emotional", "face"]
+      }
+    }
+  },
+  "glowingRunes": {
+    "category": "Styles",
+    "label": "Glowing Runes",
+    "models": {
+      "FLUX": {
+        "source": "https://civitai.com/models/1336640/glowing-runes-sfwnsfw?modelVersionId=1509398",
+        "file": "Glowing_runes.safetensors",
+        "triggerWords": []
+      }
+    }
+  },
+  "crownBraid": {
+    "category": "Styles",
+    "label": "Crown Braid (Hair)",
+    "models": {
+      "FLUX": {
+        "source": "https://civitai.com/models/2409301/classic-crown-braid?modelVersionId=2709410",
+        "file": "NDE_5_Crown_Braid.safetensors",
+        "triggerWords": ["crown braid hair"]
+      }
+    }
+  },
+  "leatherStyle": {
+    "category": "Styles",
+    "label": "Leather Style",
+    "models": {
+      "FLUX": {
+        "source": "https://civitai.com/models/300588/leather-style-by-dever-flux-sdxl-pony-exp?modelVersionId=783500",
+        "file": "dvr-leather-flux.safetensors",
+        "triggerWords": ["made of leather"]
+      }
+    }
+  },
+  "animeShadow": {
+    "category": "Styles",
+    "label": "Neurocore Anime Shadow Circuit",
+    "description": "Classical colorful anime style.",
+    "models": {
+      "FLUX": {
+        "source": "https://civitai.com/models/938811/neurocore-anime-shadow-circuit-by-chronoknight-flux-il-zit-flux2-klein-9b?modelVersionId=1050932",
+        "file": "ck-shadow-circuit-000021.safetensors",
+        "triggerWords": ["in the style of cksc"]
+      }
+    }
+  },
+  "animeCyberpunk": {
+    "category": "Styles",
+    "label": "Neurocore Anime Cyberpunk",
+    "description": "Cyberpunk colorful anime style.",
+    "models": {
+      "FLUX": {
+        "source": "https://civitai.com/models/903057/neurocore-anime-cyberpunk-by-chronoknight-flux-klein-9b-flux-and-il?modelVersionId=1010560",
+        "file": "ck-nc-pastel-cyberpunk.safetensors",
+        "triggerWords": ["A digital artwork in the style of cknc"]
+      }
+    }
+  },
+  "animeArt": {
+    "category": "Styles",
+    "label": "Anime Art",
+    "description": "Pastel-coloured, detailed anime.",
+    "models": {
+      "FLUX": {
+        "source": "https://civitai.com/models/832858/anime-art?modelVersionId=1793524",
+        "file": "Anime_CRABDM.safetensors",
+        "triggerWords": ["Anime CRABDM style"]
+      }
+    }
+  },
   "feralGrace": {
     "category": "Styles",
     "label": "Feralgrace - Nordic, Shamanic and Tribal",
