@@ -27,7 +27,6 @@ class OrganizerApp extends X4Application
     private FolderInfo $imageFolder;
     private FolderInfo $storageFolder;
     private FolderInfo $cacheFolder;
-    private UserInterface $ui;
     private FolderInfo $comfyFolder;
 
     public function __construct(SplFileInfo|string|PathInfoInterface $comfyFolder, SplFileInfo|string|PathInfoInterface $imageFolder)
@@ -132,7 +131,10 @@ class OrganizerApp extends X4Application
         );
 
         foreach($ajaxClasses->getClasses() as $class) {
-            $methods->addItem(new $class($methods));
+            $methods->addItem(ClassHelper::requireObjectInstanceOf(
+                AjaxMethodInterface::class,
+                new $class($methods)
+            ));
         }
     }
 

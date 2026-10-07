@@ -19,10 +19,12 @@ class ImageIndexer
     public const int ACTION_UPDATE_PATHS = 180901;
     public const int ACTION_SKIP_NO_CHECKPOINT = 180902;
     public const int ACTION_IMAGE_INDEXED = 180903;
+    public const int ACTION_SKIP_NO_DATE = 180904;
     public const string INDEX_THUMBNAIL_FILE = 'thumbnailFile';
     public const string INDEX_IMAGE_FILE = 'imageFile';
 
     private OrganizerApp $app;
+    /** @var array<int|string, array<string, mixed>> */
     private array $images = array();
     private JSONFile $storageFile;
 
@@ -66,6 +68,9 @@ class ImageIndexer
         $this->storageFile->copyTo($this->storageFile->getFolder().'/backup/images-'.Microtime::createNow()->format('Y-m-d-H-i-s').'.json');
     }
 
+    /**
+     * @return FileInfo[]
+     */
     public function findAllImages() : array
     {
         return $this->app->getImageFolder()->createFileFinder()
@@ -131,6 +136,19 @@ class ImageIndexer
         $data = $sidecarFile->getData();
 
         $date = key($data);
+
+        if(!is_string($date))
+        {
+            Console::line2('SKIP | No date entry found in sidecar file.');
+
+            $this->analysisResults->makeWarning(
+                t('Image [%s] | SKIP | No date entry found in the sidecar file.', $imageFile->getName()),
+                self::ACTION_SKIP_NO_DATE
+            );
+
+            return;
+        }
+
         $id = hash_file('md5', $imageFile->getPath());
 
         // Do not change any images that have already been indexed and modified.
@@ -264,6 +282,9 @@ class ImageIndexer
         return $this->analysisResults;
     }
 
+    /**
+     * @return array<string, string>
+     */
     private function parseText(string $text) : array
     {
         if(empty($text)) {
@@ -287,7 +308,7 @@ class ImageIndexer
         $result = array();
         foreach($properties as $propertyString) {
             $parts = explode(':', $propertyString);
-            $name = $parts[0] ?? '';
+            $name = $parts[0];
             $value = $parts[1] ?? '';
             $result[$name] = str_replace(array_keys($punctuation), array_values($punctuation), trim($value, '`'));
         }
@@ -400,6 +421,9 @@ class ImageIndexer
         return $this;
     }
 
+    /**
+     * @return FileInfo[]
+     */
     public function findFolderImages(string $folderName) : array
     {
         $folder = FolderInfo::factory($this->app->getImageFolder().'/'.$folderName);

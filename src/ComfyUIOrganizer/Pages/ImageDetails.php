@@ -28,7 +28,7 @@ class ImageDetails extends BasePage
     public const string REQUEST_PARAM_RESET_WSIMGID = 'reset-website-image';
     public const string REQUEST_PARAM_SEND_TO_WEBSITE = 'send-to-website';
 
-    private ?ImageInfo $image;
+    private ImageInfo $image;
 
     public function getID(): string
     {
@@ -209,6 +209,9 @@ class ImageDetails extends BasePage
         OutputBuffering::flush();
     }
 
+    /**
+     * @param array<string, mixed> $properties
+     */
     private function renderProperties(string $title, array $properties) : void
     {
         $grid = $this->ui->createDataGrid();
@@ -254,6 +257,9 @@ class ImageDetails extends BasePage
         return array();
     }
 
+    /**
+     * @return array<string, string>
+     */
     protected function getURLParams(): array
     {
         return array();

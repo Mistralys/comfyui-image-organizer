@@ -15,7 +15,10 @@ use Mistralys\ComfyUIOrganizer\OrganizerApp;
 class PathFixer
 {
     private JSONFile $workflowFile;
+    /** @var array<string, array{relativePath: string, officialFileName: string, loraLabel: string}> */
     private array $loraFileIndex = array();
+
+    /** @var PathFixerMessage[] */
     private array $messages = array();
 
     public function __construct(JSONFile $workflowFile)
@@ -28,21 +31,15 @@ class PathFixer
         return FolderInfo::factory(OrganizerApp::create()->getComfyFolder().'/models/loras');
     }
 
-    private function addNotice(string|StringableInterface $message, ...$args) : self
+    private function addNotice(string|StringableInterface $message, string|int|float ...$args) : self
     {
         $this->messages[] = new PathFixerMessage(PathFixerMessage::TYPE_NOTICE, $message, ...$args);
         return $this;
     }
 
-    private function addWarning(string|StringableInterface $message, ...$args) : self
+    private function addWarning(string|StringableInterface $message, string|int|float ...$args) : self
     {
         $this->messages[] = new PathFixerMessage(PathFixerMessage::TYPE_WARNING, $message, ...$args);
-        return $this;
-    }
-
-    private function addError(string|StringableInterface $message, ...$args) : self
-    {
-        $this->messages[] = new PathFixerMessage(PathFixerMessage::TYPE_ERROR, $message, ...$args);
         return $this;
     }
 
@@ -165,7 +162,7 @@ class PathFixer
             // Fix empty arrays that should be objects.
             // This is a quirk of ComfyUI's JSON handling.
             //
-            $content = file_get_contents($this->workflowFile->getPath());
+            $content = $this->workflowFile->getContents();
             $objectProps = array('flags', 'config', 'properties');
             foreach($objectProps as $prop) {
                 $content = str_replace('"'.$prop.'":[]', '"'.$prop.'":{}', $content);
@@ -190,7 +187,7 @@ class PathFixer
     }
 
     /**
-     * @return string[]
+     * @return PathFixerMessage[]
      */
     public function getMessages() : array
     {

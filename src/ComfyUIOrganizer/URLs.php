@@ -26,21 +26,33 @@ class URLs
         return $this->build(ImageBrowser::URL_NAME);
     }
 
+    /**
+     * @param array<string, string|int|float|bool> $params
+     */
     public function indexManager(array $params=array()) : string
     {
         return $this->build(IndexManagerPage::URL_NAME, $params);
     }
 
+    /**
+     * @param array<string, string|int|float|bool> $params
+     */
     public function workflows(array $params=array()) : string
     {
         return $this->build(WorkflowsPage::URL_NAME, $params);
     }
 
+    /**
+     * @param array<string, string|int|float|bool> $params
+     */
     public function loras(array $params=array()) : string
     {
         return $this->build(LoRAOverviewPage::URL_NAME, $params);
     }
 
+    /**
+     * @param array<string, string|int|float|bool> $params
+     */
     private function build(string $pageName, array $params=array()) : string
     {
         $params[BasePage::REQUEST_PARAM_PAGE] = $pageName;

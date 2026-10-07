@@ -83,6 +83,7 @@ class ImageCollection extends BaseStringPrimaryCollection
     /**
      * @var array<string,ImageInfo> $deleted
      */
+    /** @var array<string, ImageInfo> */
     private array $missing = array();
 
     public function injectJS(UserInterface $ui, string $baseURL) : string
@@ -184,6 +185,9 @@ class ImageCollection extends BaseStringPrimaryCollection
         return null;
     }
 
+    /**
+     * @return string[]
+     */
     public function getFolderNames() : array
     {
         $result = array();

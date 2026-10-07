@@ -22,6 +22,9 @@ class LoRA implements StringPrimaryRecordInterface
     private string $id;
     private ArrayDataCollection $data;
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public function __construct(string $id, array $data)
     {
         $this->id = $id;
@@ -68,6 +71,9 @@ class LoRA implements StringPrimaryRecordInterface
         return $this->data->getString(self::KEY_WEIGHT);
     }
 
+    /**
+     * @return string[]
+     */
     public function getTriggerWords() : array
     {
         return $this->data->getArrayFlavored(self::KEY_TRIGGER_WORDS)->toIndexedStrings(true);

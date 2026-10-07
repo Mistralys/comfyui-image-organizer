@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mistralys\ComfyUIOrganizer\Workflows;
 
 use AppUtils\Collections\BaseStringPrimaryCollection;
+use AppUtils\FileHelper\JSONFile;
 use Mistralys\ComfyUIOrganizer\ComfyUI;
 
 /**
@@ -29,6 +30,9 @@ class WorkflowsCollection extends BaseStringPrimaryCollection
         return $this->getAutoDefault();
     }
 
+    /**
+     * @return JSONFile[]
+     */
     public function getWorkflowFiles() : array
     {
         return ComfyUI::create()->getWorkflowsFolder()

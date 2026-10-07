@@ -123,6 +123,9 @@ class ImageProperties
         return $this->data->getString(self::KEY_TEST_NAME);
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function serialize() : array
     {
         $data = $this->data->getData();

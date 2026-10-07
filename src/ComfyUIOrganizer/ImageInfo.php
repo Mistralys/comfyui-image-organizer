@@ -93,6 +93,9 @@ class ImageInfo implements StringPrimaryRecordInterface
         return $this->properties;
     }
 
+    /**
+     * @param array<string, string|int|float|bool> $params
+     */
     public function getViewDetailsURL(array $params=array()) : string
     {
         $params[BasePage::REQUEST_PARAM_PAGE] = ImageDetails::URL_NAME;
@@ -124,7 +127,7 @@ class ImageInfo implements StringPrimaryRecordInterface
         $words = array(
             $this->getID(),
             $this->imageFile->getName(),
-            $this->prop()->getSeed(),
+            (string)$this->prop()->getSeed(),
             $this->imageFile->getFolder()->getName(),
             $this->checkpoint,
             $this->prop()->getTestName()
@@ -373,7 +376,7 @@ class ImageInfo implements StringPrimaryRecordInterface
         }
 
         $data = ArrayDataCollection::create($entry);
-
+        $size = ArrayDataCollection::create($data->getArray(self::KEY_IMAGE_SIZE));
         return new ImageInfo(
             $data->getString('id'),
             FileInfo::factory($data->getString(self::KEY_IMAGE_FILE)),
@@ -383,11 +386,14 @@ class ImageInfo implements StringPrimaryRecordInterface
             $data->getBool(self::KEY_UPSCALED),
             $data->getBool(self::KEY_MODIFIED),
             $data->getString(self::KEY_LABEL),
-            $data->getArray(self::KEY_IMAGE_SIZE),
+            array('width' => $size->getInt('width'), 'height' => $size->getInt('height')),
             ArrayDataCollection::create($data->getArray(self::KEY_PROPERTIES))
         );
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function serialize() : array
     {
         return array(

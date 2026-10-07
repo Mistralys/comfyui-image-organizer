@@ -28,6 +28,9 @@ class WorkflowFileURL
         ));
     }
 
+    /**
+     * @param array<string, string|int|float|bool> $params
+     */
     public function base(array $params=array()) : string
     {
         $params[self::REQUEST_PRIMARY] = $this->file->getID();

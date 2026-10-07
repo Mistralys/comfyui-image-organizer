@@ -15,7 +15,7 @@ class PathFixerMessage implements StringableInterface
 
     private string $type;
     private string $message;
-    public function __construct(string $type, string|StringableInterface $message, ...$args)
+    public function __construct(string $type, string|StringableInterface $message, string|int|float ...$args)
     {
         $this->type = $type;
         $this->message = (string)$message;

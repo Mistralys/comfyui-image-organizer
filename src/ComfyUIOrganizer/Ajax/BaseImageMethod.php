@@ -63,6 +63,9 @@ abstract class BaseImageMethod extends BaseAjaxMethod
         $this->collection = $this->application->createImageCollection();
     }
 
+    /**
+     * @param array<string, mixed> $payload
+     */
     protected function sendSuccess(string $message = '', array $payload = array()): never
     {
         $image = $this->getImage();

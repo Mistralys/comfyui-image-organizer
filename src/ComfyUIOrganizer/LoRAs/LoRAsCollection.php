@@ -70,7 +70,7 @@ class LoRAsCollection extends BaseStringPrimaryCollection
     private function loadDataFile(JSONFile $dataFile) : void
     {
         foreach($dataFile->getData() as $loraID => $loraData) {
-            $this->registerItem(new LoRA($loraID, $loraData));
+            $this->registerItem(new LoRA((string)$loraID, $loraData));
         }
     }
 

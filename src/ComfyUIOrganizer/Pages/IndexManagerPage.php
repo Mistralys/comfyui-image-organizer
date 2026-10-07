@@ -109,6 +109,9 @@ class IndexManagerPage extends BaseOrganizerPage
         }
     }
 
+    /**
+     * @return array<string, string>
+     */
     protected function getURLParams(): array
     {
         return array();

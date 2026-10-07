@@ -89,6 +89,9 @@ class WorkflowsPage extends BaseOrganizerPage
         echo $grid;
     }
 
+    /**
+     * @return array<string, string>
+     */
     protected function getURLParams(): array
     {
         return array();

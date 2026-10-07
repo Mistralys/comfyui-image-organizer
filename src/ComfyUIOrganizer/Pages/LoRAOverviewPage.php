@@ -137,6 +137,9 @@ class LoRAOverviewPage extends BaseOrganizerPage
         return $items;
     }
 
+    /**
+     * @return array<string, string>
+     */
     protected function getURLParams(): array
     {
         return array();

@@ -84,6 +84,9 @@ class SendToWebsiteMethod extends BaseImageMethod
         $image->save();
     }
 
+    /**
+     * @return array<string, string|int|float>
+     */
     private function compileProperties(ImageInfo $image) : array
     {
         return array(

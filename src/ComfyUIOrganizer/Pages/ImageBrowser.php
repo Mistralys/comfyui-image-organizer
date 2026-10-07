@@ -115,6 +115,9 @@ class ImageBrowser extends BaseOrganizerPage
         );
     }
 
+    /**
+     * @return array<string, string>
+     */
     public static function getCardSizes() : array
     {
         return array(
@@ -411,6 +414,9 @@ class ImageBrowser extends BaseOrganizerPage
         <?php
     }
 
+    /**
+     * @return ImageInfo[]
+     */
     private function resolveFilteredImages() : array
     {
         $result = array();
@@ -772,6 +778,9 @@ class ImageBrowser extends BaseOrganizerPage
         <?php
     }
 
+    /**
+     * @return array<string, string>
+     */
     protected function getURLParams(): array
     {
         return array(
