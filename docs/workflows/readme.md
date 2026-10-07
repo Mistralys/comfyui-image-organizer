@@ -12,9 +12,8 @@
 The workflows write a `-meta.json` file next to each generated image, in the
 same folder. The file name follows the image's file prefix, for example
 `2-flux-seed678193439927262-nr1-meta.json`. Preview renders get a
-`-preview-meta.json` file instead. The Organizer's indexer does not read these
-files yet (it pairs each PNG with a JSON file of the same base name); support
-for this format is planned.
+`-preview-meta.json` file instead. The Organizer's indexer reads these files and
+prefers them over a legacy JSON file of the same base name.
 
 Example:
 

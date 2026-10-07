@@ -6,7 +6,7 @@ Descriptive paths through the system. Every type named here is listed in [api-su
 
 | Store | Written by | Read by | Shape |
 |---|---|---|---|
-| ComfyUI output folder (`*.png` + same-named `*.json` sidecar) | ComfyUI ("Save Image Extended" node) | `ImageIndexer` | Sidecar: one top-level key (a date string) whose value holds `checkpoint`, `custom_text` and other fields |
+| ComfyUI output folder (`*.png` + sidecar) | ComfyUI ("Save Image Extended" node) | `ImageIndexer`, through `MetadataRegistry` | Legacy sidecar (`<name>.json`): one top-level key (a date string) whose value holds `checkpoint`, `custom_text` and other fields. Structured sidecar (`<name>-meta.json` or `<name>-meta_<nr>.json`): `image`, `prompt` and `sampler` objects plus optional `model`, `flow`, `upscale`, `loras`. A workflow export (`nodes` and `links`) may sit beside a PNG; it is never indexed |
 | `data/images.json` | `ImageIndexer`, `ImageCollection::save()` | `ImageCollection`, `ImageIndexer` | Object keyed by image ID; each value is the output of `ImageInfo::serialize()` (`ImageIndexEntry::toArray()`), plus any unknown keys the stored entry carried. Both writers go through `ImageIndex`, which writes every entry. Legacy entries that lack `label` or `modified` gain explicit defaults (`""` / `false`) on the first save, so that save produces a one-time, large diff |
 | `data/file_index.json` | `ImageIndexer::updateFileIndex()` | `image.php` | Object keyed by image ID with `imageFile` and `thumbnailFile` paths |
 | `data/backup/images-<timestamp>.json` | `ImageIndexer` (before each analysis run) | manual recovery | Copy of `images.json` |
@@ -23,20 +23,25 @@ Builder::build() | Builder::index() | IndexManagerPage (refresh) | ImageBrowser 
   → ImageIndexer::indexAll() / indexFolder()
       → findAllImages() / findFolderImages()         (*.png under OrganizerApp::getImageFolder())
       → load data/images.json into an ImageIndex (a backup copy is taken first; a non-array entry throws ERROR_INVALID_INDEX_ENTRY)
-      → for each PNG: look for the sidecar *.json with the same name
-          → none: skipped
-          → ID = MD5 of the PNG file (ERROR_CANNOT_HASH_IMAGE_FILE when the hash cannot be computed)
-          → ID already indexed with modified = true: ImageIndexEntry::syncLocation() updates only image path, sidecar path, folder name
-          → otherwise: read the sidecar's date entry (must be an array), parse `custom_text` into properties once,
-            take the checkpoint from the sidecar (resolveCheckpoint(): a string wins even when empty, anything else
-            falls back to the model name from `custom_text`), fall back to the file name for
-            test number / test name / seed / batch number, read the image size, decide "upscaled",
-            and store a new ImageIndexEntry (skipped when no checkpoint or modelName is found);
-            an entry already stored under the ID is replaced by withKnownFieldsFrom(), so its unknown keys survive
+      → one ImageAnalyzer per run (built after the load, which replaces the index object)
+      → for each PNG: MetadataRegistry::resolve(png) → SidecarResolution
+          → no sidecar resolved, unrecognized candidates exist: console skip line + ACTION_SKIP_UNRECOGNIZED_SIDECAR warning (file name only)
+          → no sidecar resolved, no candidate file: console "no sidecar" line only
+          → sidecar resolved (a structured -meta.json wins over a legacy .json and a workflow export): ImageAnalyzer::analyze(png, sidecar)
+              → ID = MD5 of the PNG file (ERROR_CANNOT_HASH_IMAGE_FILE when the hash cannot be computed)
+              → ID already indexed with modified = true: ImageIndexEntry::syncLocation() updates only image path, sidecar path, folder name
+              → otherwise: format->parse() the sidecar (ERROR_NO_MODEL_NAME: ACTION_SKIP_NO_CHECKPOINT warning;
+                any other MetadataException: ACTION_SKIP_INVALID_SIDECAR warning; the image is left out either way),
+                complete the index-property bag from the file name / folder, read the image size, decide "upscaled",
+                take the date from the sidecar (legacy) or the PNG's modification time (structured), and store a new ImageIndexEntry
+                (the checkpoint is ImageMetadata::getModelName() ?? ''); an entry already stored under the ID is replaced by
+                withKnownFieldsFrom(), so its unknown keys survive
       → write data/images.json through ImageIndex::save(), reset the collection
       → ImageIndexer::updateFileIndex() → data/file_index.json
   → cleanUpFolders()                                 (build/index only; deletes empty image subfolders)
 ```
+
+The skip results are warnings, so `ImageBrowser::handleRefreshFolder()`, which reads `countSuccesses()` and `countNotices()`, reports legacy images as before. The per-image decisions live in `ImageAnalyzer`, which works without `OrganizerApp` and is covered by PHPUnit; `ImageIndexer::analyzeImages()` itself is not.
 
 Upscaled-image detection (`detectUpscaledImages`, run by `build` and the Index Manager):
 
@@ -45,6 +50,19 @@ ImageCollection → group images by ImageInfo::getSettingsHash()
   → groups of exactly two images (one regular, one upscaled)
       → regular ImageProperties::setUpscaledImage(upscaled) → ImageCollection::save()
 ```
+
+Metadata census (`composer verify-metadata`, run by hand; separate from indexing):
+
+```
+Builder::verifyMetadata()
+  → every *.png under APP_IMAGE_FOLDER (no OrganizerApp, no data/ access)
+  → MetadataVerifier::census(): MetadataRegistry::resolve() per image, then the resolved format's parse()
+      → no candidate file: noSidecar   | candidates but none recognized (also malformed JSON): unrecognized
+      → ERROR_NO_MODEL_NAME: noModelName | any other MetadataException: failures | success: counted per format ID
+  → prints the counts and the file names of the four lists; returns false (Composer exit 1) only when failures is not empty
+```
+
+The census writes nothing and does not read `data/images.json`.
 
 ## 2. Browsing
 
@@ -71,6 +89,17 @@ image.php?imageID=<id>[&thumbnail=yes]
 ```
 
 The details page (`ImageDetails`) shows one image from `ImageCollection::getFromRequest()`, with actions to reset the stored website image ID and to send the image to the website.
+
+Lazy metadata path (nothing in the browser or the pages calls it yet):
+
+```
+ImageInfo::getMetadata()
+  → first call: MetadataRegistry::getInstance()->parseFile(<stored sidecar file>) → ImageMetadata, cached on the ImageInfo instance
+  → later calls: the cached object
+  → a missing or unrecognized sidecar throws MetadataException
+```
+
+The path reads the sidecar only. It never writes `data/images.json`, never calls `setDataChanged()` and never sets `modified`.
 
 ## 3. AJAX image actions
 

@@ -68,7 +68,7 @@ When a change is made to the codebase, the documents below must be updated in th
 | Change touches something `constraints.md` lists as a known defect | Read the entry first, do not build on the defective behavior, and report it | MUST |
 | Change adds a page or AJAX action | Follow the registration rules in `constraints.md`; do not wire it in by hand | MUST |
 | Change would edit third-party code under `vendor/` | Do not. Work around it in `src/` or raise it with the user | MUST |
-| Untested code path | Tests exist for the data objects, `SessionState`, `LoRA` and the workflow classes; `ImageIndexer`, `PathFixer::fixPaths()` and `ImageBrowser` have none. Add a PHPUnit test where practical, otherwise proceed with caution and add a manual test recommendation | SHOULD |
+| Untested code path | Tests exist for the data objects, `SessionState`, `LoRA`, the metadata module, `ImageAnalyzer` and the workflow classes; `ImageIndexer`, `PathFixer::fixPaths()` and `ImageBrowser` have none. Add a PHPUnit test where practical, otherwise proceed with caution and add a manual test recommendation | SHOULD |
 | Manifest entry found to be wrong while working | Fix a small error in place; otherwise report it rather than working around it | SHOULD |
 
 ---
@@ -97,3 +97,4 @@ When a change is made to the codebase, the documents below must be updated in th
 | `composer analyze` | Run PHPStan |
 | `composer analyze-save` | Run PHPStan, writing output to `phpstan-result.txt` |
 | `composer analyze-clear` | Clear the PHPStan result cache |
+| `composer verify-metadata` | Read-only census of every image's sidecar (format counts, no-sidecar / unrecognized / no-model-name / failure lists); exits 1 only on parse failures |

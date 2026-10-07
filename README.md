@@ -65,11 +65,27 @@ Open the URL you set in `APP_WEBROOT_URL` in your browser to start browsing.
 
 The guides below cover the metadata syntax, indexing and the LoRA path fixer.
 
+### Supported sidecar formats
+
+The indexer looks for the sidecar of each PNG image and recognizes it by its content,
+not only by its name. Two formats are supported:
+
+| Format | File name | Content |
+|--------|-----------|---------|
+| Structured | `<image name>-meta.json`, or `<image name>-meta_<counter>.json` when the image name ends in a counter such as `_00001_`; previews use `-preview-meta.json` | Sections for image, prompt, model, sampler, upscale, LoRAs and flow. |
+| Legacy | `<image name>.json` | A single date-keyed entry with the `custom_text` property string and the checkpoint. |
+
+When several candidates exist for an image, the structured file wins. A ComfyUI workflow
+export saved next to an image is not a sidecar and is ignored; a JSON file that no format
+recognizes is reported as a skipped image during indexing, by file name only.
+
+Structured sidecars also carry the flow metadata of the workflow run, such as whether the
+image is a preview render. The legacy format is indexed exactly as before.
+
 ### Image property collection
 
-To be able to collect all manner of metadata without relying on custom nodes,
-I have used a custom text-based syntax that is built in the workflow by concatenating
-strings. 
+The `custom_text` property string of the legacy format uses a custom text-based syntax
+that is built in the workflow by concatenating strings. 
 
 Hyphens are used as property separators, and colons for values. Example: 
 
@@ -112,6 +128,7 @@ The following Composer scripts are available:
 | `composer detect-upscaled` | Detects upscaled versions of indexed images. |
 | `composer clean-folders` | Cleans up empty image folders. |
 | `composer update-file-index` | Rebuilds the file index used to serve images and thumbnails. |
+| `composer verify-metadata` | Reads the sidecar of every image and reports how many use each format, plus the images without a sidecar, with an unrecognized sidecar, without a model name, or with a sidecar that fails to parse. Changes nothing; exits with an error only if a sidecar fails to parse. |
 
 ### LoRA path fixing
 

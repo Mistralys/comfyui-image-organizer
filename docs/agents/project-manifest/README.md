@@ -20,9 +20,10 @@ There is no file-tree document: the project is CTX-enabled, and the generated `.
 
 ## Where to Start
 
-- Changing how images are discovered or what is stored per image: `data-flows.md` (Indexing), then `ImageIndexer`, `ImageInfo` and `ImageProperties` in `api-surface.md`.
+- Changing how images are discovered or what is stored per image: `data-flows.md` (Indexing), then `ImageIndexer`, `ImageAnalyzer`, `ImageInfo` and `ImageProperties` in `api-surface.md`.
 - Adding a page or an AJAX action: `constraints.md` (auto-registration rules), then the Pages and Ajax sections of `api-surface.md`.
 - Anything involving LoRA data or workflow path fixing: `constraints.md` (Workflows and LoRA files), then the LoRAs and Workflows sections of `api-surface.md`.
+- Parsing a sidecar into a format-independent result: `constraints.md` (Sidecar metadata module), then the Metadata section of `api-surface.md`.
 - Reading or writing a JSON file (image index, LoRA files, workflows): `constraints.md` (the DTO boundary rule under Index integrity), then `ImageIndex` / `ImageIndexEntry` and `Workflows\WorkflowData` in `api-surface.md`.
 
 ## Related Project Files

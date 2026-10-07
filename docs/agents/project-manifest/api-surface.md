@@ -35,13 +35,15 @@ public static function index(): void          // indexAll + cleanUpFolders
 public static function detectUpscaled(): void
 public static function cleanFolders(): void
 public static function updateFileIndex(): void
+public static function verifyMetadata(): bool // read-only census; false when a sidecar fails to parse
 public static function postAutoload(): void   // clears the ClassHelper repository cache
 ```
 
 ### `ImageIndexer` — `ImageIndexer.php`
 
 ```php
-public const int ACTION_UPDATE_PATHS, ACTION_SKIP_NO_CHECKPOINT, ACTION_IMAGE_INDEXED, ACTION_SKIP_NO_DATE
+public const int ACTION_UPDATE_PATHS = 180901, ACTION_SKIP_NO_CHECKPOINT = 180902, ACTION_IMAGE_INDEXED = 180903,
+                 ACTION_SKIP_UNRECOGNIZED_SIDECAR = 180905, ACTION_SKIP_INVALID_SIDECAR = 180906
 public const string INDEX_THUMBNAIL_FILE = 'thumbnailFile'
 public const string INDEX_IMAGE_FILE = 'imageFile'
 
@@ -55,10 +57,35 @@ public function detectUpscaledImages(?string $folderName = null): self
 public function detectUpscaledInFolder(string $folderName): self
 public function cleanUpFolders(): self                      // deletes empty image subfolders
 public function getAnalysisResults(): OperationResult_Collection
-public static function resolveCheckpoint(mixed $sidecarValue, string $fallback): string // a string sidecar value wins, even when empty; any other value yields $fallback
 ```
 
-The indexer keeps the loaded index as an `ImageIndex` (private) for the duration of an analysis run. `analyzeImage()` throws `OrganizerException::ERROR_CANNOT_HASH_IMAGE_FILE` when the MD5 of an image file cannot be computed.
+The indexer is a thin orchestrator. It holds `MetadataRegistry::getInstance()`, the loaded index as an `ImageIndex` (private) and the run's `OperationResult_Collection`. In `analyzeImages()` (private, behind `indexAll()` and `indexFolder()`) it loads the index, builds one `ImageAnalyzer` for the run, and resolves each PNG through `MetadataRegistry::resolve()`:
+
+- Resolved sidecar: `ImageAnalyzer::analyze()` decides what happens to the image. `analyze()` throws `OrganizerException::ERROR_CANNOT_HASH_IMAGE_FILE` when the MD5 of an image file cannot be computed.
+- No resolved sidecar, but unrecognized candidate files: a console skip line and an `ACTION_SKIP_UNRECOGNIZED_SIDECAR` warning. The message names only the image file name. No exception escapes the loop for such a file (e.g. a workflow export beside the PNG).
+- No candidate file at all: only the console "no sidecar" line; no result entry.
+
+When both a `-meta.json` and a workflow export exist for a PNG, the registry resolves the `-meta.json` and the export is merely reported as unrecognized. `ACTION_SKIP_UNRECOGNIZED_SIDECAR` and `ACTION_SKIP_INVALID_SIDECAR` are warnings, so `countSuccesses()` and `countNotices()` (read by `ImageBrowser::handleRefreshFolder()`) keep their meaning for legacy images. `ACTION_SKIP_NO_DATE` (180904) was removed together with the indexer's own `analyzeImage()`, `parseText()` and `resolveCheckpoint()`; the code stays unassigned, and `Tests\Metadata\MetadataExceptionTest::testErrorCodesAreUnique` guards that the constants of `MetadataException`, `OrganizerException` and `ImageIndexer` are pairwise distinct.
+
+### `ImageAnalyzer` — `ImageAnalyzer.php`
+The per-image decision logic of the indexer, on top of the metadata module. It works only on the `ImageIndex` and `OperationResult_Collection` it is given: no `OrganizerApp`, no storage file, no `data/` access. `ImageIndexer::analyzeImages()` builds one per run, after the index is loaded.
+
+```php
+public function __construct(ImageIndex $images, OperationResult_Collection $results) // the index being built and the run's results
+public function analyze(FileInfo $imageFile, ResolvedSidecar $sidecar): void          // @throws OrganizerException ERROR_CANNOT_HASH_IMAGE_FILE
+public static function completeProperties(array $bag, FileInfo $imageFile): array     // array<string,string> in and out
+```
+
+`analyze()` runs these steps in order:
+
+1. Hashes the image (MD5, the entry ID). A failed `hash_file()` throws `ERROR_CANNOT_HASH_IMAGE_FILE`; its PHP warning is absorbed by a temporary error handler.
+2. If the index holds an entry for the ID with `modified = true`, calls `ImageIndexEntry::syncLocation()` with the image path, the resolved sidecar's path and the folder name, adds an `ACTION_UPDATE_PATHS` notice only when a value changed, and returns. Label, favorite flag and properties stay as they are.
+3. Parses the sidecar with `ResolvedSidecar::getFormat()->parse()`. A `MetadataException` with `ERROR_NO_MODEL_NAME` gives an `ACTION_SKIP_NO_CHECKPOINT` warning; any other `MetadataException` gives an `ACTION_SKIP_INVALID_SIDECAR` warning. Either way the index stays unchanged. The messages name only the image file name, never sidecar content or exception text.
+4. Builds the property bag with `completeProperties()`, reads the image size, and decides "upscaled": `upscaleFactor` in the bag, a file name containing `upscale` (see the defect in `constraints.md`), or a width or height of 2000 px or more.
+5. Takes the date from `ImageMetadata::getDate()` when the sidecar has one (the legacy format). Otherwise it keeps the date of a stored unmodified entry, and for a new entry uses the PNG's modification time.
+6. Sets the entry to the index. An entry already stored under the ID is replaced through `ImageIndexEntry::withKnownFieldsFrom()`, so its unknown keys survive. The checkpoint is `ImageMetadata::getModelName() ?? ''`: a structured sidecar without a model gives an empty checkpoint, not a skip. Adds an `ACTION_IMAGE_INDEXED` success.
+
+`completeProperties()` always sets the folder name from the image's parent folder (taken with `basename(dirname())`, not `FileInfo::getFolder()`, which throws for a folder named like a file, e.g. `SD1.5`). It sets seed, batch number, test number and test name from the file name `<testNr>-<testName>-seed<seed>-<imageNr>` only where the bag lacks the key. A name without a `seed` part gives an empty test name.
 
 ### `ImageCollection` — `ImageCollection.php`
 Extends `BaseStringPrimaryCollection`; items are `ImageInfo`.
@@ -99,6 +126,7 @@ public function prop(): ImageProperties
 public function getProperties(): ImageProperties
 public function getImageFile(): FileInfo
 public function getSidecarFile(): JSONFile
+public function getMetadata(): ImageMetadata       // lazy; see below
 public function getThumbnailFile(): FileInfo       // cache/<id>-540.jpg
 public function getPSDFile(): FileInfo             // sibling .psd
 public function getJPGFile(): FileInfo             // sibling .jpg
@@ -133,9 +161,12 @@ Typed view over the free-form property bag stored under an image's `properties` 
 public const string KEY_TEST_NAME, KEY_TEST_NUMBER, KEY_SEED, KEY_FOLDER_NAME, KEY_IMG_BATCH_NR, KEY_FAVORITE,
                     KEY_FOR_WEBSITE, KEY_FOR_GALLERY, KEY_UPSCALED_IMAGE, KEY_CFG, KEY_PROMPT_NEGATIVE,
                     KEY_PROMPT_POSITIVE, KEY_SAMPLER, KEY_SAMPLER_STEPS, KEY_SCHEDULER, KEY_FACEFIX,
-                    KEY_WEBSITE_IMAGE_ID, KEY_MODEL_NAME, KEY_VAE_NAME, KEY_CLIP_NAMES
+                    KEY_WEBSITE_IMAGE_ID, KEY_MODEL_NAME, KEY_VAE_NAME, KEY_CLIP_NAMES, KEY_FLOW_TYPE, KEY_IS_PREVIEW,
+                    KEY_WORKFLOW_VERSION
+// KEY_VAE_NAME = 'VAEName', the key the legacy sidecar's custom_text uses
+// KEY_FLOW_TYPE = 'flowType', KEY_IS_PREVIEW = 'isPreview', KEY_WORKFLOW_VERSION = 'workflowVersion'
 
-public function __construct(ImageInfo $image, ArrayDataCollection $data, callable $modifiedCallback)
+public function __construct(ImageInfo $image, ArrayDataCollection $data, Closure $modifiedCallback)
 public function serialize(): array                 // key-sorted copy of the property bag
 
 public function getSeed(): int
@@ -158,11 +189,16 @@ public function setForGallery(bool $enabled): self // enabling also enables favo
 public function isForWebsite(): bool
 public function setForWebsite(bool $enabled): self // enabling also enables gallery (and thereby favorite)
 public function isFacefix(): bool
+public function getFlowType(): ?string             // the `flowType` key; null when absent
+public function getWorkflowVersion(): ?int         // the `workflowVersion` key; null when absent or empty
+public function isPreview(): bool                  // the `isPreview` key; false when absent
 public function getUpscaledImage(): ?ImageInfo
 public function setUpscaledImage(ImageInfo $image): self
 public function getWebsiteImageID(): ?string
 public function setWebsiteImageID(string $imageID): self
 ```
+
+`$modifiedCallback` is a `Closure`, not any `callable`; `ImageInfo` passes a first-class callable. `getWorkflowVersion()` accepts an int or a numeric string (`'32.7'` and `'1e3'` are cast to `32` and `1000`) and returns `null` for any other type, a float included; `0` is returned as `0`. There is one version key, `workflowVersion`, for both sidecar formats, and no `flowVersion` key or fallback getter. `flowType` and `isPreview` are new keys that only `StructuredSidecarFormat` puts in its index-property bag; the indexer stores the bag as it is, so they reach the index for structured sidecars only. A legacy sidecar never has them, so `getFlowType()` is `null` and `isPreview()` is `false` for legacy images.
 
 ### `ImageIndexEntry` — `ImageIndexEntry.php`
 Typed round-trip record for one entry of `data/images.json`. Keys it does not model ("unknown keys", e.g. the legacy `forGallery`) are kept and written back, so a load-and-save cycle loses nothing. Persisted key names reuse the `ImageInfo::KEY_*` constants. Used by `ImageInfo` (`fromEntry()` / `toEntry()`), through `ImageIndex` by `ImageCollection`, and by `ImageIndexer`, which builds new entries and merges them onto stored ones.
@@ -423,6 +459,187 @@ public function __toString(): string
 ```
 
 The `$message` template is trusted HTML and is not escaped. The constructor applies `sprintf()` with `$args` and first HTML-escapes every string argument with `htmlspecialchars()` (`ENT_QUOTES | ENT_SUBSTITUTE`, UTF-8); integer and float arguments are left as they are. Pass any untrusted value (workflow widget values, file names, LoRA IDs) as an argument, never inside the template. Arguments must not be escaped beforehand, or they are escaped twice.
+
+## Metadata — `Metadata/`
+
+The sidecar metadata module: a format-independent, immutable description of one image's sidecar, the contract a sidecar format implements, and the registry that finds and parses a sidecar. Namespace `Mistralys\ComfyUIOrganizer\Metadata`. This module holds the value objects, the format interface, the shared base class and `MetadataRegistry`; concrete formats live in `Metadata/Formats/` (see the interface description).
+
+### `Metadata\MetadataException`
+Extends `OrganizerException`.
+
+```php
+public const int ERROR_NO_MODEL_NAME = 183001
+public const int ERROR_INVALID_STRUCTURE = 183002
+```
+
+### `Metadata\ImageMetadata`
+Final, immutable result of parsing a sidecar. No setters; every property is `readonly`. Build it with named arguments: every constructor parameter except `$formatID` defaults to `null` (or an empty array), so a field a format does not supply is `null` by construction. `null` means "the sidecar does not say" and is distinct from an empty value.
+
+```php
+public function __construct(
+    string $formatID,
+    ?Microtime $date = null, ?string $modelName = null, ?string $vaeName = null, ?string $clipNames = null,
+    ?string $seed = null, ?int $width = null, ?int $height = null, ?float $cfg = null,
+    ?string $positivePrompt = null, ?string $negativePrompt = null,
+    ?string $testName = null, ?int $testNumber = null, ?int $batchNumber = null,
+    ?string $folderName = null, ?string $filePrefix = null, ?bool $embedFlow = null, ?string $loraTriggers = null,
+    ?FlowInfo $flow = null, ?SamplerInfo $sampler = null, ?UpscaleInfo $upscale = null,
+    ?array $loras = null,            // LoRAUsage[]|null: null = format cannot say, [] = none used
+    array $indexProperties = array(),// array<string,string>: the flat property bag persisted in the index
+    array $rawData = array())        // array<int|string,mixed>: the decoded sidecar
+
+public function getFormatID(): string
+public function getDate(): ?Microtime
+public function getModelName(): ?string
+public function getVaeName(): ?string
+public function getClipNames(): ?string            // raw string as stored in the sidecar
+public function getSeed(): ?string                 // a string: seeds can exceed PHP_INT_MAX
+public function getWidth(): ?int
+public function getHeight(): ?int
+public function getCFG(): ?float
+public function getPositivePrompt(): ?string
+public function getNegativePrompt(): ?string
+public function getTestName(): ?string
+public function getTestNumber(): ?int
+public function getBatchNumber(): ?int
+public function getFolderName(): ?string
+public function getFilePrefix(): ?string
+public function isEmbedFlow(): ?bool
+public function getLoRATriggers(): ?string         // raw string as stored in the sidecar
+public function getFlow(): FlowInfo                // never null; its fields may be
+public function getSampler(): SamplerInfo          // never null; its fields may be
+public function getUpscale(): UpscaleInfo          // never null; its fields may be
+public function getLoRAs(): ?array                 // LoRAUsage[]|null
+public function getIndexProperties(): array        // array<string,string>
+public function getRawData(): array                // array<int|string,mixed>
+```
+
+### Sub-objects
+Final, immutable value objects. Every constructor parameter is optional and defaults to `null` (except `LoRAUsage::$id`); every getter is nullable except `LoRAUsage::getID()`.
+
+| Class | Constructor parameters | Getters |
+|---|---|---|
+| `Metadata\FlowInfo` | `?string $typeName, ?int $version, ?bool $preview, ?bool $negativePromptEnabled` | `getTypeName(): ?string`, `getVersion(): ?int`, `isPreview(): ?bool`, `isNegativePromptEnabled(): ?bool` |
+| `Metadata\SamplerInfo` | `?string $name, ?string $scheduler, ?int $steps, ?int $previewSteps, ?int $refinerSteps` | `getName()`, `getScheduler()`, `getSteps()`, `getPreviewSteps()`, `getRefinerSteps()` |
+| `Metadata\UpscaleInfo` | `?float $factor, ?int $steps, ?float $calculatedFactor, ?bool $upscaled, ?string $modelName` | `getFactor()`, `getSteps()`, `getCalculatedFactor()`, `isUpscaled()`, `getModelName()` |
+| `Metadata\LoRAUsage` | `string $id, ?float $strength, ?string $triggerWords` | `getID(): string`, `getStrength(): ?float`, `getTriggerWords(): ?string` |
+
+`UpscaleInfo::getFactor()` is only the configured setting; `isUpscaled()` says whether the image was upscaled.
+
+### `Metadata\SidecarFormatInterface`
+One sidecar schema family. Implementations live in `Metadata/Formats/` and are discovered by `MetadataRegistry` through a folder scan; the interface declares exactly these methods.
+
+```php
+public function getID(): string
+public function getPriority(): int                 // lower numbers are tried first
+public function getSidecarCandidates(FileInfo $image): array // string[]: candidate sidecar paths, best match first
+public function detect(ArrayDataCollection $data): bool      // whether the decoded content belongs to this format
+public function parse(ArrayDataCollection $data): ImageMetadata // @throws MetadataException
+```
+
+### `Metadata\BaseSidecarFormat`
+Abstract; implements `SidecarFormatInterface`. Provides the lenient readers below, all `protected`. Each reads one key of an `ArrayDataCollection` and returns `null` both for an absent key and for a value of another type, so "absent" stays distinguishable from "empty" (`''`, `0`, `false`, `[]`).
+
+```php
+protected function readString(ArrayDataCollection $data, string $key): ?string  // strings only
+protected function readInt(ArrayDataCollection $data, string $key): ?int         // ints only; 5.0 yields null
+protected function readFloat(ArrayDataCollection $data, string $key): ?float     // floats, plus ints widened to float
+protected function readBool(ArrayDataCollection $data, string $key): ?bool       // bools only
+protected function normalizeFloat(float|int $value): string                      // (string)round($value, 4)
+protected function isObjectSection(ArrayDataCollection $data, string $key): bool // true for a JSON object, the empty object included; false for a list, a scalar or an absent key
+```
+
+`readInt()` is strict while `readFloat()` widens, because JSON writers emit `4` for `4.0` but a whole float is never a valid integer field. `normalizeFloat()` strips floating-point noise (`6.200000000000001` gives `'6.2'`, `0.4000000000000001` gives `'0.4'`); it rounds to 4 decimals, so `-0.0` gives `'-0'`, values below 0.00005 collapse to `'0'`, and `NAN` / `INF` pass through.
+
+### Resolution value objects
+
+```php
+// Metadata\ResolvedSidecar — final; a sidecar file with the format that recognized it
+public function __construct(JSONFile $sidecar, SidecarFormatInterface $format, ArrayDataCollection $data)
+public function getSidecar(): JSONFile
+public function getFormat(): SidecarFormatInterface
+public function getData(): ArrayDataCollection     // the decoded content
+
+// Metadata\SidecarResolution — final; the outcome of looking for one image's sidecar
+public function __construct(?ResolvedSidecar $sidecar = null, array $unrecognizedCandidates = array()) // JSONFile[]
+public function getSidecar(): ?ResolvedSidecar
+public function isResolved(): bool                 // false when built without a sidecar
+public function getUnrecognizedCandidates(): array // JSONFile[]: existing candidates no format recognized
+```
+
+### `Metadata\MetadataVerifier`
+Read-only census of how the sidecars of a set of images resolve and parse. Non-final class; it holds only the registry, so it does not touch the index, the application or any file other than reading the candidates through the registry.
+
+```php
+public function __construct(MetadataRegistry $registry)
+/** @param FileInfo[] $images */
+public function census(array $images): array // array{formats: array<string,int>, noSidecar: string[], unrecognized: string[], noModelName: string[], failures: string[]}
+```
+
+`census()` resolves each image through the registry and sorts it into exactly one outcome. The lists hold image file names, not paths:
+
+- `noSidecar`: no candidate file exists.
+- `unrecognized`: candidate files exist but no format recognized any of them (this includes a sidecar that is not valid JSON, whose root is not an object, or a workflow export).
+- `noModelName`: the format's `parse()` threw `MetadataException::ERROR_NO_MODEL_NAME`. Reported, not a failure; it is a known state of legacy sidecars.
+- `failures`: `parse()` threw any other `MetadataException`.
+- `formats`: parsed images counted per `ImageMetadata::getFormatID()`, sorted by format ID.
+
+Only `MetadataException` is caught per image; any other throwable from a format aborts the census.
+
+`Builder::verifyMetadata()` (Composer script `verify-metadata`) finds all `*.png` files under `APP_IMAGE_FOLDER` (recursive, without `OrganizerApp::create()` or any `data/` access), runs the census with `MetadataRegistry::getInstance()` and prints the count per format ID and the four lists. It returns `false` only when `failures` is not empty, which Composer turns into exit status 1; a callable's `int` return would be ignored.
+
+### `Metadata\Formats\LegacySidecarFormat`
+Extends `BaseSidecarFormat`. The legacy sidecar: a JSON file whose first top-level key is the generation date, holding the properties and a `custom_text` string of `-name:value` pairs.
+
+```php
+public const string FORMAT_ID = 'legacy'
+public const int PRIORITY = 200
+
+public function getSidecarCandidates(FileInfo $image): array   // [<png path without a trailing .png, case-insensitive>.json]
+public function detect(ArrayDataCollection $data): bool
+public function parse(ArrayDataCollection $data): ImageMetadata // @throws MetadataException
+public static function resolveCheckpoint(mixed $sidecarValue, string $fallback): string // a string sidecar value wins, even when empty; any other value yields $fallback
+```
+
+- `detect()` looks at the first top-level key only; further keys are ignored. It accepts a file whose first value is an object (an empty one included) and rejects an empty file, a first value that is not an object (a non-empty list counts as not an object), a structured-shaped file (`image`, `prompt` and `sampler` objects) and a workflow export (`nodes` and `links`).
+- `parse()` returns the `custom_text` bag untouched from `ImageMetadata::getIndexProperties()`, so legacy indexing stays byte-identical. Typed getters filled: model name (checkpoint, else the bag's model name), VAE name, clip names and LoRA trigger strings (raw), positive / negative prompt (the bag, else the top-level `positive_prompt` / `negative_prompt`), date (the key, `/` replaced by `-`), `FlowInfo::getVersion()` (`workflowVersion`), `UpscaleInfo::getFactor()` (`upscaleFactor`) and `getModelName()` (`upscale_model`). Everything else, including seed, CFG and size, stays `null`; `getLoRAs()` is `null`.
+- `parse()` throws `MetadataException::ERROR_NO_MODEL_NAME` when the resolved model name is empty (a model named `"0"` counts as empty), and `ERROR_INVALID_STRUCTURE` when the first key is not a date string holding an object; a `Microtime_Exception` from a non-date key is converted to the latter.
+
+### `Metadata\Formats\StructuredSidecarFormat`
+Extends `BaseSidecarFormat`. The structured sidecar: a JSON file with the `image`, `prompt` and `sampler` objects plus optional `model`, `flow`, `upscale` and `loras` sections. Every section and key is optional; what is missing is `null` in the metadata and absent from the property bag.
+
+```php
+public const string FORMAT_ID = 'structured'
+public const int PRIORITY = 100
+
+public function getSidecarCandidates(FileInfo $image): array   // see below
+public function detect(ArrayDataCollection $data): bool        // image, prompt and sampler are all objects
+public function parse(ArrayDataCollection $data): ImageMetadata // lenient: never throws
+```
+
+- Candidates: `x-nr1_00001_.png` gives `x-nr1-meta.json`, then `x-nr1-meta_00001.json`; a name without the trailing `_<digits>_` counter gives `<name>-meta.json` only. The folder comes from `dirname()`, not `FileInfo::getFolder()`, because `FolderInfo` throws for a folder name that looks like a file name (e.g. `SD1.5`).
+- `parse()` reads the model name from `model.prettyName` (`null` without a `model` section; the skip rule for a missing model belongs to the caller), `getDate()` is always `null`, and `getLoRAs()` is `null` without a `loras` section, `[]` for an empty one. Scalar entries in `loras` (`_collectedTriggerWords`, `loraTriggers`) yield no `LoRAUsage`; `getLoRATriggers()` is the top-level `loraTriggers` string. `getRawData()`, `embedFlow`, `UpscaleInfo::getCalculatedFactor()`, and `SamplerInfo` preview / refiner steps are exposed.
+- `getIndexProperties()` maps onto the existing bag keys: `testName`, `testNumber`, `imgBatchNr`, `seed`, `imgCFG`, `imgWidth`, `imgHeight`, `promptPositive`, `promptNegative`, `sampler`, `samplerSteps`, `scheduler`, one key per LoRA ID (its strength), `upscaleFactor`, `workflowVersion`, `flowType` and `isPreview`. All values are strings; a key whose source is absent is omitted.
+
+### `Metadata\MetadataRegistry`
+Knows the sidecar formats and finds the sidecar of an image by recognizing the content of its candidate files. Non-final class with a private constructor; formats are sorted by `getPriority()` (lower first), so `structured` precedes `legacy`.
+
+```php
+public static function create(): self                          // scans Metadata/Formats/ (uncached) and instantiates every SidecarFormatInterface class
+public static function getInstance(): self                     // one shared instance per process, built by create()
+public static function createWithFormats(array $formats): self // SidecarFormatInterface[]; exactly these formats, no scan
+public function getFormats(): array                            // SidecarFormatInterface[] in priority order
+public function resolve(FileInfo $image): SidecarResolution
+public function parseFile(JSONFile $file): ImageMetadata      // @throws MetadataException (ERROR_INVALID_STRUCTURE) if no format recognizes the content
+```
+
+- Discovery uses `ClassHelper::findClassesInFolder()` on `Metadata/Formats/` directly, not the class cache folder that only `prepend.php` sets up, so the registry also works under the plain `vendor/autoload.php` bootstrap (PHPUnit). A new format needs no registration; run `composer dump-autoload` so the classmap contains it.
+- `resolve()` walks the formats in priority order and reads each existing candidate file once. A candidate is accepted only when the format's `detect()` recognizes its content; the first accepted candidate wins, but the walk continues so that every other existing candidate no format recognized is reported in `SidecarResolution::getUnrecognizedCandidates()`, also when a sidecar was resolved (e.g. a workflow export beside a `-meta.json`). A PNG without any candidate file gives an unresolved result and an empty list.
+- A candidate that is not readable JSON, or whose root is not an object (scalar, `null`, or a list), is treated as unrecognized and raises no exception. The list check runs before the data is wrapped in `ArrayDataCollection`, which would present a list's indexes as string keys. An empty object is accepted as a root and left to `detect()`.
+- `parseFile()` is the lazy path for one known file: it applies the first format whose `detect()` accepts the content and returns that format's `parse()` result.
+- Known limits: a UTF-8 BOM before the JSON makes the file unrecognized, and a directory named like a candidate (`dir.json/`) triggers a PHP warning from the file read before it is reported as unrecognized. The read has no `is_file()` guard and no size cap.
+
+The consumers of the module are `ImageIndexer` (calls `resolve()` per image and hands the result to `ImageAnalyzer`), `ImageAnalyzer` (takes a `ResolvedSidecar` and calls its format's `parse()`), `MetadataVerifier` (calls `resolve()`) and `ImageInfo::getMetadata()` (calls `parseFile()`). The browser does not read `getMetadata()` yet.
 
 ## Web entry points (non-class)
 
