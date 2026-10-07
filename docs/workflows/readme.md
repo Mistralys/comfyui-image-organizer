@@ -38,7 +38,7 @@ Example:
     "_collectedTriggerWords": ""
   },
   "model": { "prettyName": "FLUX 1 DEV" },
-  "flow": { "version": 32, "typeName": "FLUX1", "isPreview": false },
+  "flow": { "version": 32, "typeName": "FLUX1", "isPreview": false, "changelog": "{Markdown changelog source}" },
   "sampler": { "steps": 26, "name": "euler", "scheduler": "simple" }
 }
 ```
@@ -60,4 +60,23 @@ Only keys that are not self-explanatory are described below.
 | `model.prettyName` | User-provided name of the model used for generation. |
 | `flow.typeName` | The type of workflow, which distinguishes FLUX from SDXL and other workflow types. Together with `flow.version`, it uniquely identifies the workflow that generated the image. |
 | `flow.isPreview` | Relevant only for FLUX: enables the preview mode for fast preview rendering. |
+| `flow.changelog` | Full Markdown-formatted changelog of the workflow (see changelog format below) |
 | `sampler` | Details of the sampler used to generate the image. |
+
+## Changelog Format
+
+The workflow changelog is integrated into the workflow metadata, with each version having a dedicated section with a list of changes made.
+
+```markdown
+# Changelog
+
+## v32 - 2026-10-07
+- Fixed missing workflow version metadata
+- Added `flow.typeName` metadata
+- Added `flow.changelog` metadata
+- Added workflow subgraph and JSON
+
+## v31 - 2026-08-11
+- Initial subgraph-enabled release.
+- Everything converted to subgraphs.
+```
