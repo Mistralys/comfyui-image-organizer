@@ -17,11 +17,18 @@
     ]
   },
   "require": {
+    "php": ">=8.4",
     "mistralys/application-utils-core": ">=2.3",
     "mistralys/application-utils-collections": ">=1.2",
     "mistralys/x4-core": ">=1.1.1",
     "ext-mbstring": "*",
     "ext-curl": "*"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^12.0",
+    "phpstan/phpstan": "^2.1",
+    "phpstan/phpstan-phpunit": "^2.0",
+    "roave/security-advisories": "dev-latest"
   },
   "scripts": {
     "build": "Mistralys\\ComfyUIOrganizer\\Builder::build",
@@ -29,6 +36,14 @@
     "detect-upscaled": "Mistralys\\ComfyUIOrganizer\\Builder::detectUpscaled",
     "clean-folders": "Mistralys\\ComfyUIOrganizer\\Builder::cleanFolders",
     "update-file-index": "Mistralys\\ComfyUIOrganizer\\Builder::updateFileIndex",
-    "post-autoload-dump": "Mistralys\\ComfyUIOrganizer\\Builder::postAutoload"
+    "post-autoload-dump": "Mistralys\\ComfyUIOrganizer\\Builder::postAutoload",
+    "analyze": "php vendor/bin/phpstan analyse --configuration phpstan.neon --memory-limit=900M",
+    "analyze-save": "php vendor/bin/phpstan analyse --configuration phpstan.neon --memory-limit=900M > phpstan-result.txt || true",
+    "analyze-clear": "php vendor/bin/phpstan clear-result-cache",
+    "test": "php vendor/bin/phpunit",
+    "test-file": "php vendor/bin/phpunit --no-progress",
+    "test-suite": "php vendor/bin/phpunit --no-progress --testsuite",
+    "test-filter": "php vendor/bin/phpunit --no-progress --filter",
+    "test-group": "php vendor/bin/phpunit --no-progress --group"
   }
 }
