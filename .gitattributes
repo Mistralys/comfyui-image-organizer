@@ -1,2 +1,5 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Sidecar fixtures must stay byte-identical (CRLF) to the real files they copy
+tests/fixtures/** -text

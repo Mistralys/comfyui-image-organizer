@@ -18,6 +18,9 @@ use AppUtils\OutputBuffering;
 use AppUtils\Request;
 use AppUtils\StringHelper;
 use Closure;
+use Mistralys\ComfyUIOrganizer\Metadata\ImageMetadata;
+use Mistralys\ComfyUIOrganizer\Metadata\MetadataException;
+use Mistralys\ComfyUIOrganizer\Metadata\MetadataRegistry;
 use Mistralys\ComfyUIOrganizer\Pages\ImageDetails;
 use Mistralys\X4\UI\Page\BasePage;
 use Mistralys\X4\UI\UserInterface;
@@ -445,6 +448,24 @@ class ImageInfo implements StringPrimaryRecordInterface
     public function getSidecarFile(): JSONFile
     {
         return $this->sidecarFile;
+    }
+
+    private ?ImageMetadata $metadata = null;
+
+    /**
+     * Parses the sidecar on first access and keeps the result for this
+     * instance. Reading it never touches the index or the changed flag.
+     *
+     * @return ImageMetadata
+     * @throws MetadataException If the sidecar is missing or not recognized.
+     */
+    public function getMetadata() : ImageMetadata
+    {
+        if($this->metadata === null) {
+            $this->metadata = MetadataRegistry::getInstance()->parseFile($this->sidecarFile);
+        }
+
+        return $this->metadata;
     }
 
     public function getLabel() : string

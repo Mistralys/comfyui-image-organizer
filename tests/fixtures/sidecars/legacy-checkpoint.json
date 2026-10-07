@@ -1,0 +1,33 @@
+{
+    "29/08/2025 21:59:20": {
+        "filename_prefix": "47-initial-seed100106045988674",
+        "resolution": "1600x896",
+        "custom_text": "-alienZkin:0.2-epicFantasy:0.6-neonNoir:0.4-organicMacabre:1.0-sampler:dpm_2-samplerSteps:18-seed:100106045988674-imgWidth:1600-imgHeight:900-scheduler:karras-folder:`LichQueen`-testName:`initial`-testNumber:47-promptPositive:`digital painting, lich princess, non-human skin, her skin is made of leather, purple-colored skin, dark purple eyes, black eyeliner, teal-colored magic, magic flows from her hands, plunging neckline, holding a magical bone staff, ornate leather robe, bone headdress, hauntingly beautiful, bone necklace with a pink crystal stone, short white hair, straight hair, purple robe accents, silver arm rings, bone arms, firm breasts, \n\nbackdrop is an ancient cavern with skeleton pillars, \n\ndark mood, cinematic, dramatic scene, mystery,`-promptNegative:`elf ears, big breasts`-imgCFG:4.7-imgBatchNr:3",
+        "checkpoint": "nevolutionXLIL_v2Base",
+        "loras": "Organic_Macabre",
+        "upscale_model": "4x-UltraSharp",
+        "sampler_parameters": {
+            "seed": [
+                "3282",
+                0
+            ],
+            "cfg": [
+                "3421",
+                0
+            ],
+            "sampler_name": [
+                "3288",
+                3
+            ],
+            "scheduler": [
+                "3288",
+                4
+            ],
+            "steps": [
+                "3288",
+                0
+            ],
+            "denoise": 1.0
+        }
+    }
+}

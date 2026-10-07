@@ -1,0 +1,47 @@
+{
+  "image": {
+    "seed": 216878393744831,
+    "width": 1600,
+    "height": 900,
+    "counter": 87,
+    "seriesName": "sdxl",
+    "folderName": "OctoCatapult",
+    "filePrefix": "87-sdxl-seed216878393744831",
+    "batchNumber": 1,
+    "cfg": 4.7
+  },
+  "prompt": {
+    "positive": "Digital painting of an octopus grabbing a black bomb within its tentacles. Whimsical style. ,  , ",
+    "negative": "watermark, text"
+  },
+  "upscale": {
+    "factor": 4,
+    "steps": 30
+  },
+  "loras": {
+    "faetastic": {
+      "strength": 0.4,
+      "name": "faetastic",
+      "triggerWords": ""
+    },
+    "_collectedTriggerWords": ", , ",
+    "cyberGraphic": {
+      "strength": 0.4,
+      "name": "cyberGraphic",
+      "triggerWords": ""
+    }
+  },
+  "model": {
+    "prettyName": "SDXL AlbedoBase"
+  },
+  "flow": {
+    "isPreview": false,
+    "isNegativePromptEnabled": true
+  },
+  "sampler": {
+    "steps": 42,
+    "previewSteps": 15,
+    "name": "dpm_2",
+    "scheduler": "karras"
+  }
+}

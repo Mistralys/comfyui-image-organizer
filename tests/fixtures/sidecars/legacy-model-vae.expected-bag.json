@@ -1,0 +1,20 @@
+{
+    "neonNoir": "0.25",
+    "sampler": "euler",
+    "samplerSteps": "44",
+    "seed": "1025741115066804",
+    "imgWidth": "915",
+    "imgHeight": "1144",
+    "scheduler": "simple",
+    "folder": "BarbarianCore",
+    "testName": "initial",
+    "testNumber": "100",
+    "promptPositive": "Fantasy medieval style realistic painting of a 30 year old barbarian woman standing on a rocky outcropping, on the top of a hill overlooking a wide verdant canyon. Far below, a river lazily winds through the valley floor. A medieval castle can be seen in the distance, built into the cliffside of the canyon.\n\nShe has a fit, warrior-honed body. She has long white hair with interspersed black strands, which is tied into one big braid, tied with burgundy-colored leather strips. She has green eyes, and she wears black eye shadow and eyeliner. \n\nShe wears metal earrings and a sturdy, self-made tempered leather outfit with metal clasps and embedded decorative crystals. The outfit is made for cold weather.\n\nShe looks serenely at the viewer. She is a falconeer, and her falcon is standing on her hand held aloft. The bird is looking down into the canyon.\n\nThe sky is clear but for a few white clouds. The sun is quite bright, and bathes the landscape in warm light. In the distance, one can see a dragon flying through the canyon, its wings fully spread. At the bottom of the canyon near the river, several knights on horseback can be seen traveling alongside the medieval dirt road that follows the river.",
+    "promptNegative": "",
+    "workflowVersion": "1",
+    "modelName": "RealDream_flux1V1.safetensors",
+    "VAEName": "ae.safetensors",
+    "clipNames": "clip_l.safetensors|t5xxl_fp16.safetensors",
+    "imgCFG": "1.2",
+    "imgBatchNr": "1"
+}

@@ -145,7 +145,7 @@ class OrganizerApp extends X4Application
 
     public function getVersion(): string
     {
-        return '1.0.0';
+        return '1.2.0';
     }
 
     public function url() : URLs

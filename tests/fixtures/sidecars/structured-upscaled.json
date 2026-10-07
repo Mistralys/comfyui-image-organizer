@@ -1,0 +1,56 @@
+{
+  "image": {
+    "seed": 656765794489516,
+    "width": 1600,
+    "height": 904,
+    "embedFlow": true,
+    "counter": 170,
+    "seriesName": "continued",
+    "folderName": "AmazonBlonde-EpicRealism",
+    "filePrefix": "170-continued-seed656765794489516",
+    "batchNumber": 1,
+    "cfg": 3.2
+  },
+  "prompt": {
+    "positive": "digital painting style, medium shot of a russian woman, 30 years old, obsidian hair, ice blue eyes, tribal face tattoos, wearing golden lipstick, slim lips, hollow cheeks, sharp jawline,  multi-colored feathers in her hair, black eyeliner, thick eyebrows, oval face, delicate nose, narrow nose, almond-shaped eyes, short eyelashes, shy smile, pretty, cute,  \n\nwearing a white and green silk robe with floral embroidery, \n\nluscious jungle, god rays, dewdrops on foliage, ancient stone monolith with carvings in the background, waterfall in the distance,\n\nfantasy, dramatic shadows, bokeh, 8k, cinematic lighting, ",
+    "negative": "pale skin"
+  },
+  "upscale": {
+    "factor": 4,
+    "steps": 30,
+    "calculatedFactor": 4.0,
+    "isUpscaled": true
+  },
+  "loras": {
+    "eyeDetailer": {
+      "strength": 0.4000000000000001,
+      "name": "eyeDetailer",
+      "triggerWords": ""
+    },
+    "cyberGraphic": {
+      "strength": 0.8,
+      "name": "cyberGraphic",
+      "triggerWords": ""
+    },
+    "neonCyberpunk": {
+      "strength": 0.8,
+      "name": "neonCyberpunk",
+      "triggerWords": "mad-cbrpnksplshrt"
+    },
+    "faetastic": {
+      "strength": 0.6,
+      "name": "faetastic",
+      "triggerWords": ""
+    }
+  },
+  "loraTriggers": ", , , mad-cbrpnksplshrt, ",
+  "flow": {
+    "version": 31
+  },
+  "sampler": {
+    "steps": 42,
+    "refinerSteps": 24,
+    "name": "dpm_2",
+    "scheduler": "karras"
+  }
+}

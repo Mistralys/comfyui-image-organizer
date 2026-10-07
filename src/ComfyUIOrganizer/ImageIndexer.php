@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace Mistralys\ComfyUIOrganizer;
 
-use AppUtils\ArrayDataCollection;
 use AppUtils\ConvertHelper;
 use AppUtils\FileHelper\FileInfo;
 use AppUtils\FileHelper\FolderInfo;
 use AppUtils\FileHelper\JSONFile;
-use AppUtils\ImageHelper;
 use AppUtils\Microtime;
 use AppUtils\OperationResult_Collection;
+use Mistralys\ComfyUIOrganizer\Metadata\MetadataRegistry;
 use Mistralys\X4\UI\Console;
 use function AppUtils\t;
 
@@ -20,17 +19,20 @@ class ImageIndexer
     public const int ACTION_UPDATE_PATHS = 180901;
     public const int ACTION_SKIP_NO_CHECKPOINT = 180902;
     public const int ACTION_IMAGE_INDEXED = 180903;
-    public const int ACTION_SKIP_NO_DATE = 180904;
+    public const int ACTION_SKIP_UNRECOGNIZED_SIDECAR = 180905;
+    public const int ACTION_SKIP_INVALID_SIDECAR = 180906;
     public const string INDEX_THUMBNAIL_FILE = 'thumbnailFile';
     public const string INDEX_IMAGE_FILE = 'imageFile';
 
     private OrganizerApp $app;
     private ImageIndex $images;
     private JSONFile $storageFile;
+    private MetadataRegistry $registry;
 
     public function __construct(OrganizerApp $app)
     {
         $this->app = $app;
+        $this->registry = MetadataRegistry::getInstance();
         $this->images = new ImageIndex();
         $this->storageFile = $this->app->getStorageFile();
         $this->analysisResults = new OperationResult_Collection($this);
@@ -102,15 +104,32 @@ class ImageIndexer
 
         $this->analysisResults = new OperationResult_Collection($this);
 
+        $analyzer = new ImageAnalyzer($this->images, $this->analysisResults);
+
         foreach($files as $file)
         {
-            $sidecarFile = JSONFile::factory(str_replace('.png', '.json', $file->getPath()));
-            if(!$sidecarFile->exists()) {
+            $resolution = $this->registry->resolve($file);
+            $sidecar = $resolution->getSidecar();
+
+            if($sidecar === null)
+            {
+                if($resolution->getUnrecognizedCandidates() !== array())
+                {
+                    Console::line1('Image [%s] | SKIP | Unrecognized sidecar file.', $file->getBaseName());
+
+                    $this->analysisResults->makeWarning(
+                        t('Image [%s] | SKIP | The sidecar file is not recognized.', $file->getName()),
+                        self::ACTION_SKIP_UNRECOGNIZED_SIDECAR
+                    );
+
+                    continue;
+                }
+
                 Console::line1('Image [%s] | SKIP | No sidecar file found.', $file->getBaseName());
                 continue;
             }
 
-            $this->analyzeImage($file, $sidecarFile);
+            $analyzer->analyze($file, $sidecar);
         }
 
         Console::nl();
@@ -128,207 +147,9 @@ class ImageIndexer
         return $this;
     }
 
-    private function analyzeImage(FileInfo $imageFile, JSONFile $sidecarFile): void
-    {
-        $baseName = $imageFile->getBaseName();
-
-        Console::line1('Image [%s] | Analyzing...', $baseName);
-
-        $data = $sidecarFile->getData();
-
-        $date = key($data);
-
-        if(!is_string($date))
-        {
-            Console::line2('SKIP | No date entry found in sidecar file.');
-
-            $this->analysisResults->makeWarning(
-                t('Image [%s] | SKIP | No date entry found in the sidecar file.', $imageFile->getName()),
-                self::ACTION_SKIP_NO_DATE
-            );
-
-            return;
-        }
-
-        $id = hash_file('md5', $imageFile->getPath());
-
-        if($id === false) {
-            throw new OrganizerException(
-                'Cannot hash the image file.',
-                sprintf('Could not compute the MD5 hash of the image file [%s].', $imageFile->getPath()),
-                OrganizerException::ERROR_CANNOT_HASH_IMAGE_FILE
-            );
-        }
-
-        // Do not change any images that have already been indexed and modified.
-        // BUT: Update the image and sidecar file paths in the existing entry, as they
-        // may have been moved or renamed. Since the ID is a file hash, we can
-        // safely update the paths without changing the ID.
-
-        $stored = $this->images->get($id);
-
-        if($stored !== null && $stored->isModified())
-        {
-            $updated = $stored->syncLocation(
-                $imageFile->getPath(),
-                $sidecarFile->getPath(),
-                $imageFile->getFolder()->getName()
-            );
-
-            if($updated)
-            {
-                Console::line2('UPDATE | Updated file paths in index.');
-
-                $this->analysisResults->makeNotice(
-                    t('Image [%s] | UPDATE | Updated file paths in index.', $imageFile->getName()),
-                    self::ACTION_UPDATE_PATHS
-                );
-            }
-            else
-            {
-                Console::line2('SKIP | Already indexed and modified, no changes.');
-            }
-
-            return;
-        }
-
-        $rawProperties = $data[$date] ?? null;
-        $properties = ArrayDataCollection::create(is_array($rawProperties) ? $rawProperties : array());
-
-        $props = $this->parseText($properties->getString('custom_text'));
-
-        $checkpoint = self::resolveCheckpoint(
-            $properties->getKey('checkpoint'),
-            $props[ImageProperties::KEY_MODEL_NAME] ?? ''
-        );
-
-        if(empty($checkpoint))
-        {
-            Console::line2('SKIP | No checkpoint found.');
-
-            $this->analysisResults->makeWarning(
-                t('Image [%s] | SKIP | No checkpoint information found.', $imageFile->getName()),
-                self::ACTION_SKIP_NO_CHECKPOINT
-            );
-
-            return;
-        }
-
-        $imageParts = ConvertHelper::explodeTrim('-', str_replace('_', '-', $imageFile->getBaseName()));
-
-        $testNr = (int)array_shift($imageParts);
-        $imageNr = (int)array_pop($imageParts);
-        $seed = '';
-        foreach($imageParts as $index => $part) {
-            if(str_starts_with($part, 'seed')) {
-                $seed = str_replace('seed', '', $part);
-                $testName = implode('-', array_slice($imageParts, 0, $index));
-            }
-        }
-
-        $props[ImageProperties::KEY_FOLDER_NAME] = $imageFile->getFolder()->getName();
-
-        if(!isset($props[ImageProperties::KEY_SEED])) {
-            $props[ImageProperties::KEY_SEED] = $seed;
-        }
-
-        if(!isset($props[ImageProperties::KEY_IMG_BATCH_NR])) {
-            $props[ImageProperties::KEY_IMG_BATCH_NR] = (string)$imageNr;
-        }
-
-        if(!isset($props[ImageProperties::KEY_TEST_NUMBER])) {
-            $props[ImageProperties::KEY_TEST_NUMBER] = (string)$testNr;
-        }
-
-        if(!isset($props[ImageProperties::KEY_TEST_NAME])) {
-            $props[ImageProperties::KEY_TEST_NAME] = $testName ?? '';
-        }
-
-        $size = ImageHelper::getImageSize($imageFile->getPath());
-
-        $isUpscaled = isset($props['upscaleFactor']) || str_contains('upscale', $imageFile->getBaseName());
-
-        if($isUpscaled === false && ($size->getWidth() >= 2000 || $size->getHeight() >= 2000)) {
-            // If the image is larger than 2000x2000 pixels, we assume it is an upscaled image.
-            // This is a heuristic to avoid false positives.
-            $isUpscaled = true;
-        }
-
-        $new = new ImageIndexEntry(
-            $id,
-            $imageFile->getPath(),
-            $sidecarFile->getPath(),
-            Microtime::createFromString(str_replace('/', '-', $date))->getISODate(),
-            $checkpoint,
-            $isUpscaled,
-            false,
-            '',
-            array('width' => $size->getWidth(), 'height' => $size->getHeight()),
-            $props
-        );
-
-        // Keep the unknown keys of an already stored entry.
-        $this->images->set($stored !== null ? $stored->withKnownFieldsFrom($new) : $new);
-
-        $this->analysisResults->makeSuccess(
-            t('Image [%s] | OK | Indexed successfully.', $imageFile->getName()),
-            self::ACTION_IMAGE_INDEXED
-        );
-    }
-
     public function getAnalysisResults() : OperationResult_Collection
     {
         return $this->analysisResults;
-    }
-
-    /**
-     * A string sidecar value wins, even when empty; any other value falls back.
-     *
-     * @param mixed $sidecarValue
-     * @param string $fallback
-     * @return string
-     */
-    public static function resolveCheckpoint(mixed $sidecarValue, string $fallback) : string
-    {
-        if(is_string($sidecarValue)) {
-            return $sidecarValue;
-        }
-
-        return $fallback;
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    private function parseText(string $text) : array
-    {
-        if(empty($text)) {
-            return array();
-        }
-
-        preg_match_all('/`([^`]*)`/', $text, $matches);
-
-        $punctuation = array(
-            '__HYPHEN__' => '-',
-            '__COLON__' => ':'
-        );
-
-        foreach($matches[1] as $match) {
-            $replace = str_replace(array_values($punctuation), array_keys($punctuation), $match);
-            $text = str_replace($match, $replace, $text);
-        }
-
-        $properties = ConvertHelper::explodeTrim('-', $text);
-
-        $result = array();
-        foreach($properties as $propertyString) {
-            $parts = explode(':', $propertyString);
-            $name = $parts[0];
-            $value = $parts[1] ?? '';
-            $result[$name] = str_replace(array_keys($punctuation), array_values($punctuation), trim($value, '`'));
-        }
-
-        return $result;
     }
 
     public function detectUpscaledInFolder(string $folderName) : self

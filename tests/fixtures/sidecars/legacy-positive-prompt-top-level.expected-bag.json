@@ -1,0 +1,20 @@
+{
+    "cyberGraphic": "0.8",
+    "neonCyberpunk": "0.8",
+    "faetastic": "0.6",
+    "iridescence": "0.4",
+    "glass": "0.4",
+    "sampler": "dpm_2",
+    "samplerSteps": "42",
+    "seed": "1085897555240861",
+    "imgWidth": "1600",
+    "imgHeight": "904",
+    "scheduler": "karras",
+    "folder": "AmazonBlonde-EpicRealism",
+    "testName": "reborn",
+    "testNumber": "133",
+    "promptPositive": "Stable_Yogis_PDXL_Positives2\n\nrussian woman, golden hair, (green eyes:1), (tribal face tattoos:1.5), (gold lipstick:1.5), slim lips, hollow cheeks, sharp jawline,  multi-colored feathers in her hair, black eyeliner, thick eyebrows, oval face, delicate nose, narrow nose, almond eyes, short eyelashes,\n\nwhite and green silk robe, floral embroidery, shy smile, pretty, cute, detailed face, upper body shot, \n\nluscious jungle, god rays, dewdrops on foliage, ancient stone monolith with carvings behind her, waterfall in the distance,\n\nfantasy, dramatic shadows, bokeh, 8k, cinematic lighting, ",
+    "promptNegative": "Stable_Yogis_PDXL_Negatives2,\n\nbig breasts,\n\ntext, watermark, censored, jpeg artifacts, deformed teeth, deformed body, elongated body, drooping breasts, crossed eyes, amputee, long neck, extra fingers, bad body proportions, mutated hands, mutilated, mutation, fused fingers, malformed limbs, extra heads, disfigured, undersaturated, overexposed, underexposed, tanned skin,\n\nciri_w3_outfit, nude, topless,\n\nlowres, worst quality, low quality, bad anatomy, bad hands, film grain",
+    "imgCFG": "6.2",
+    "imgBatchNr": "1"
+}

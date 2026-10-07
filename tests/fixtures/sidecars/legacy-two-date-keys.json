@@ -1,0 +1,70 @@
+{
+    "30/09/2025 10:31:22": {
+        "filename_prefix": "146-initial-seed12537901431950",
+        "resolution": "912x1144",
+        "custom_text": "-alienZkin:0.4-artDecoVintageFuture:0.4-tronCyberspace:0.4-scifiEnvironments:0.4-spaceNebula:0.4-shipCockpit:0.8-neonNoir:0.25-sampler:euler-samplerSteps:26-seed:12537901431950-imgWidth:915-imgHeight:1144-scheduler:simple-folder:`FluxTests`-testName:`initial`-testNumber:146-promptPositive:`Photograph of a 20 year old woman. She has blond and auburn hair. Her figure is slim and muscular. She has thin lips. She wears no makeup except for some black eyeliner.  \n\nShe is wearing a futuristic captain's uniform with two main colors: black and orange with gold trimmings. She wears matching pants and a belt with a golden buckle in the form of an anchor. Her whole outfit is very stylish like haute couture. She is wearing a necklace with an anchor pendant. Her uniform is closed, so her medium breasts are not visible. She is wearing a futuristic monocle with a heads-up display.\n\nShe is standing in the cockpit of a spaceship, smiling shyly with closed lips and using a high-tech computer console. \n\nThe cockpit is well lit. A nebula is visible outside through a porthole.\n\nThe scene has a dynamic action and cinematic feel to it. `-promptNegative:``-workflowVersion:1-modelName:`flux_dev.safetensors`-VAEName:`ae.safetensors`-clipNames:`clip_l.safetensors|t5xxl_fp16.safetensors`-imgCFG:1.3-imgBatchNr:2",
+        "loras": "FLUX\\Scifi\\Space Nebula FLUX",
+        "vae": "ae",
+        "upscale_model": "4x-UltraSharp",
+        "sampler_parameters": {
+            "model_name": "4x-UltraSharp",
+            "loras": "FLUX\\Scifi\\Space Nebula FLUX",
+            "vae_name": "ae",
+            "seed": [
+                "3282",
+                0
+            ],
+            "cfg": [
+                "3421",
+                0
+            ],
+            "sampler_name": [
+                "3288",
+                3
+            ],
+            "scheduler": [
+                "3288",
+                4
+            ],
+            "steps": [
+                "3288",
+                0
+            ],
+            "denoise": 1.0
+        }
+    },
+    "30/09/2025 10:31:23": {
+        "filename_prefix": "146-initial-seed12537901431950",
+        "resolution": "912x1144",
+        "custom_text": "-alienZkin:0.4-artDecoVintageFuture:0.4-tronCyberspace:0.4-scifiEnvironments:0.4-spaceNebula:0.4-shipCockpit:0.8-neonNoir:0.25-sampler:euler-samplerSteps:26-seed:12537901431950-imgWidth:915-imgHeight:1144-scheduler:simple-folder:`FluxTests`-testName:`initial`-testNumber:146-promptPositive:`Photograph of a 20 year old woman. She has blond and auburn hair. Her figure is slim and muscular. She has thin lips. She wears no makeup except for some black eyeliner.  \n\nShe is wearing a futuristic captain's uniform with two main colors: black and orange with gold trimmings. She wears matching pants and a belt with a golden buckle in the form of an anchor. Her whole outfit is very stylish like haute couture. She is wearing a necklace with an anchor pendant. Her uniform is closed, so her medium breasts are not visible. She is wearing a futuristic monocle with a heads-up display.\n\nShe is standing in the cockpit of a spaceship, smiling shyly with closed lips and using a high-tech computer console. \n\nThe cockpit is well lit. A nebula is visible outside through a porthole.\n\nThe scene has a dynamic action and cinematic feel to it. `-promptNegative:``-workflowVersion:1-modelName:`flux_dev.safetensors`-VAEName:`ae.safetensors`-clipNames:`clip_l.safetensors|t5xxl_fp16.safetensors`-imgCFG:1.6-imgBatchNr:1",
+        "loras": "FLUX\\Scifi\\Space Nebula FLUX",
+        "vae": "ae",
+        "upscale_model": "4x-UltraSharp",
+        "sampler_parameters": {
+            "model_name": "4x-UltraSharp",
+            "loras": "FLUX\\Scifi\\Space Nebula FLUX",
+            "vae_name": "ae",
+            "seed": [
+                "3282",
+                0
+            ],
+            "cfg": [
+                "3421",
+                0
+            ],
+            "sampler_name": [
+                "3288",
+                3
+            ],
+            "scheduler": [
+                "3288",
+                4
+            ],
+            "steps": [
+                "3288",
+                0
+            ],
+            "denoise": 1.0
+        }
+    }
+}

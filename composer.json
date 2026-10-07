@@ -36,6 +36,7 @@
     "detect-upscaled": "Mistralys\\ComfyUIOrganizer\\Builder::detectUpscaled",
     "clean-folders": "Mistralys\\ComfyUIOrganizer\\Builder::cleanFolders",
     "update-file-index": "Mistralys\\ComfyUIOrganizer\\Builder::updateFileIndex",
+    "verify-metadata": "Mistralys\\ComfyUIOrganizer\\Builder::verifyMetadata",
     "post-autoload-dump": "Mistralys\\ComfyUIOrganizer\\Builder::postAutoload",
     "analyze": "php vendor/bin/phpstan analyse --configuration phpstan.neon --memory-limit=900M",
     "analyze-save": "php vendor/bin/phpstan analyse --configuration phpstan.neon --memory-limit=900M > phpstan-result.txt || true",

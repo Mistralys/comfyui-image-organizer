@@ -1,0 +1,49 @@
+{
+  "image": {
+    "seed": 678193439927262,
+    "width": 1600,
+    "height": 900,
+    "counter": 2,
+    "seriesName": "flux",
+    "folderName": "VikingGoddess",
+    "filePrefix": "2-flux-seed678193439927262",
+    "batchNumber": 1,
+    "cfg": 1.0
+  },
+  "prompt": {
+    "positive": "Digital painting of Sayathea, the viking goddess of fertility, standing tall with her arms beckoning to the viewer. Her cleavage looks inviting, and her leather and fur garments are enticing enough for the viking's fertility rates. She is standing before the open hearth of her wooden home., ",
+    "negative": ""
+  },
+  "upscale": {
+    "factor": 4,
+    "steps": 30
+  },
+  "loras": {
+    "faetastic": {
+      "strength": 0.3,
+      "name": "faetastic",
+      "triggerWords": ""
+    },
+    "_collectedTriggerWords": "",
+    "greg": {
+      "strength": 0.4,
+      "name": "greg",
+      "triggerWords": ""
+    }
+  },
+  "model": {
+    "prettyName": "FLUX 1 DEV"
+  },
+  "flow": {
+    "version": 32,
+    "typeName": "FLUX1",
+    "isPreview": false,
+    "isNegativePromptEnabled": false
+  },
+  "sampler": {
+    "steps": 26,
+    "previewSteps": 8,
+    "name": "euler",
+    "scheduler": "simple"
+  }
+}

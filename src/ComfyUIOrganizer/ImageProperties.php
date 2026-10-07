@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mistralys\ComfyUIOrganizer;
 
 use AppUtils\ArrayDataCollection;
+use Closure;
 use Mistralys\ComfyUIOrganizer\LoRAs\LoRAsCollection;
 
 class ImageProperties
@@ -27,18 +28,17 @@ class ImageProperties
     public const string KEY_FACEFIX = 'isFacefix';
     public const string KEY_WEBSITE_IMAGE_ID = 'websiteImageID';
     public const string KEY_MODEL_NAME = 'modelName';
-    public const string KEY_VAE_NAME = 'vaeName';
+    public const string KEY_VAE_NAME = 'VAEName';
     public const string KEY_CLIP_NAMES = 'clipNames';
+    public const string KEY_FLOW_TYPE = 'flowType';
+    public const string KEY_IS_PREVIEW = 'isPreview';
+    public const string KEY_WORKFLOW_VERSION = 'workflowVersion';
 
     private ArrayDataCollection $data;
-
-    /**
-     * @var callable
-     */
-    private $modifiedCallback;
+    private Closure $modifiedCallback;
     private ImageInfo $image;
 
-    public function __construct(ImageInfo $image, ArrayDataCollection $data, callable $modifiedCallback)
+    public function __construct(ImageInfo $image, ArrayDataCollection $data, Closure $modifiedCallback)
     {
         $this->image = $image;
         $this->data = $data;
@@ -234,6 +234,30 @@ class ImageProperties
     public function isFacefix() : bool
     {
         return $this->data->getBool(self::KEY_FACEFIX);
+    }
+
+    public function getFlowType() : ?string
+    {
+        return $this->data->getStringN(self::KEY_FLOW_TYPE);
+    }
+
+    /**
+     * @return int|null `null` when the version is absent or empty.
+     */
+    public function getWorkflowVersion() : ?int
+    {
+        $value = $this->data->getKey(self::KEY_WORKFLOW_VERSION);
+
+        if(is_int($value)) {
+            return $value;
+        }
+
+        return is_string($value) && is_numeric($value) ? (int)$value : null;
+    }
+
+    public function isPreview() : bool
+    {
+        return $this->data->getBool(self::KEY_IS_PREVIEW);
     }
 
     public function setFolderName(string $folderName) : self

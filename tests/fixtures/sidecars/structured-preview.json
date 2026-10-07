@@ -1,0 +1,47 @@
+{
+  "image": {
+    "seed": 723787551876991,
+    "width": 512,
+    "height": 512,
+    "counter": 89,
+    "seriesName": "flux",
+    "folderName": "OctoCatapult",
+    "filePrefix": "89-flux-seed723787551876991",
+    "batchNumber": 1,
+    "cfg": 1.0
+  },
+  "prompt": {
+    "positive": "Digital painting of an octopus grabbing a black bomb within its tentacles. Whimsical style. ,  , ",
+    "negative": "watermark, text"
+  },
+  "upscale": {
+    "factor": 4,
+    "steps": 30
+  },
+  "loras": {
+    "faetastic": {
+      "strength": 0.4,
+      "name": "faetastic",
+      "triggerWords": ""
+    },
+    "_collectedTriggerWords": ", , ",
+    "cyberGraphic": {
+      "strength": 0.4,
+      "name": "cyberGraphic",
+      "triggerWords": ""
+    }
+  },
+  "model": {
+    "prettyName": "FLUX 1 DEV"
+  },
+  "flow": {
+    "isPreview": true,
+    "isNegativePromptEnabled": false
+  },
+  "sampler": {
+    "steps": 20,
+    "previewSteps": 11,
+    "name": "euler",
+    "scheduler": "simple"
+  }
+}
