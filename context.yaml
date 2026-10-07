@@ -1,0 +1,241 @@
+$schema: 'https://raw.githubusercontent.com/context-hub/generator/refs/heads/main/json-schema.json'
+
+mcp:
+  name: "ComfyUI Image Organizer CTX"
+  version: "1.0.0"
+
+project:
+  path: "."
+  alias: "comfyui-image-organizer"
+
+documents:
+
+  ## ---- PROJECT-WIDE ----
+
+  - description: 'Project - Folder Structure'
+    outputPath: 'project-folder-structure.md'
+    sources:
+      - type: text
+        content: |
+          # Project Folder Structure
+
+          Annotated-by-name file tree of the ComfyUI Image Organizer. Dependencies,
+          caches, runtime data, generated images and local configuration are excluded.
+      - type: tree
+        sourcePaths: [ ./ ]
+        filePattern: '*'
+        notPath:
+          - 'vendor/'
+          - 'cache/'
+          - 'data/'
+          - 'output-images/'
+          - '.idea/'
+          - '.git/'
+          - '.context/'
+          - '.phpunit.cache/'
+          - 'phpstan-result.txt'
+          - 'config.php'
+        renderFormat: ascii
+        showCharCount: false
+        maxDepth: 6
+
+  - description: 'Project - Overview'
+    outputPath: 'project-overview.md'
+    sources:
+      - type: text
+        content: |
+          # Project Overview
+
+          User-facing README (including the sidecar text-property syntax) followed by
+          the agent operating manual and the release history.
+      - type: file
+        sourcePaths: [ README.md, AGENTS.md, changelog.md ]
+
+  - description: 'Project - Manifest'
+    outputPath: 'project-manifest.md'
+    sources:
+      - type: text
+        content: |
+          # Project Manifest
+
+          The canonical description of the codebase: tech stack, API surface, data flows
+          and binding constraints (including known defects). The directory structure is
+          in `project-folder-structure.md`.
+      - type: file
+        sourcePaths: [ docs/agents/project-manifest ]
+        filePattern: '*.md'
+        excludePatterns:
+          - 'curation-log.md'
+
+  - description: 'Project - Composer Configuration'
+    outputPath: 'project-composer.md'
+    sources:
+      - type: text
+        content: |
+          # Composer Configuration
+
+          Dependencies, classmap autoloading and the Composer scripts that drive
+          indexing, build, testing and static analysis, followed by the PHPUnit
+          (`phpunit.xml`) and PHPStan (`phpstan.neon`) configuration they run against.
+      - type: file
+        sourcePaths: [ composer.json, phpunit.xml, phpstan.neon ]
+
+  ## ---- WEB ENTRY POINTS ----
+
+  - description: 'Entry Points - Web Bootstrap and Configuration Template'
+    outputPath: 'entry-points.md'
+    modifiers:
+      - name: sanitizer
+        options:
+          rules:
+            - type: regex
+              usePatterns: [ "api-key", "jwt" ]
+    sources:
+      - type: text
+        content: |
+          # Web Entry Points
+
+          `index.php` (browser page), `image.php` (image serving), `prepend.php`
+          (shared bootstrap) and `config.dist.php` (the template for the git-ignored
+          local `config.php`).
+      - type: file
+        sourcePaths: [ index.php, image.php, prepend.php, config.dist.php ]
+
+  ## ---- CORE (src/ComfyUIOrganizer) ----
+
+  - description: 'Core - Public API'
+    outputPath: 'modules/core/architecture-core.md'
+    sources:
+      - type: text
+        content: |
+          # Core Architecture
+
+          Public API signatures of the classes directly in `src/ComfyUIOrganizer/`:
+          application, builder, image indexing and collection, image properties,
+          ComfyUI integration, URL helpers, base page and exception. The `Ajax`,
+          `LoRAs`, `Pages` and `Workflows` subfolders are documented separately.
+      - type: file
+        sourcePaths: [ src/ComfyUIOrganizer ]
+        filePattern: '*.php'
+        excludePatterns:
+          - 'Ajax/'
+          - 'LoRAs/'
+          - 'Pages/'
+          - 'Workflows/'
+        modifiers:
+          - name: php-content-filter
+            options:
+              method_visibility: [ "public" ]
+              property_visibility: [ "public" ]
+              constant_visibility: [ "public" ]
+              keep_method_bodies: false
+              keep_doc_comments: true
+
+  ## ---- AJAX ----
+
+  - description: 'Ajax - Request Handlers'
+    outputPath: 'modules/ajax/architecture-ajax.md'
+    sources:
+      - type: text
+        content: |
+          # Ajax Architecture
+
+          Public API signatures of the AJAX request handlers: the shared
+          `BaseImageMethod` and the individual action classes in `Methods/`.
+      - type: file
+        sourcePaths: [ src/ComfyUIOrganizer/Ajax ]
+        filePattern: '*.php'
+        modifiers:
+          - name: php-content-filter
+            options:
+              method_visibility: [ "public" ]
+              property_visibility: [ "public" ]
+              constant_visibility: [ "public" ]
+              keep_method_bodies: false
+              keep_doc_comments: true
+
+  ## ---- LORAS ----
+
+  - description: 'LoRAs - Data and Reference Rendering'
+    outputPath: 'modules/loras/architecture-loras.md'
+    sources:
+      - type: text
+        content: |
+          # LoRAs Architecture
+
+          Public API signatures of the LoRA collection, buckets, individual LoRA
+          records and the reference renderer.
+      - type: file
+        sourcePaths: [ src/ComfyUIOrganizer/LoRAs ]
+        filePattern: '*.php'
+        modifiers:
+          - name: php-content-filter
+            options:
+              method_visibility: [ "public" ]
+              property_visibility: [ "public" ]
+              constant_visibility: [ "public" ]
+              keep_method_bodies: false
+              keep_doc_comments: true
+
+  ## ---- PAGES ----
+
+  - description: 'Pages - Web UI'
+    outputPath: 'modules/pages/architecture-pages.md'
+    sources:
+      - type: text
+        content: |
+          # Pages Architecture
+
+          Public API signatures of the web UI page classes (image browser, image
+          details, LoRA overview, workflows, index manager).
+      - type: file
+        sourcePaths: [ src/ComfyUIOrganizer/Pages ]
+        filePattern: '*.php'
+        modifiers:
+          - name: php-content-filter
+            options:
+              method_visibility: [ "public" ]
+              property_visibility: [ "public" ]
+              constant_visibility: [ "public" ]
+              keep_method_bodies: false
+              keep_doc_comments: true
+
+  ## ---- WORKFLOWS ----
+
+  - description: 'Workflows - Workflow Files and Path Fixing'
+    outputPath: 'modules/workflows/architecture-workflows.md'
+    sources:
+      - type: text
+        content: |
+          # Workflows Architecture
+
+          Public API signatures of the workflow collection, workflow file and URL
+          classes, and the path fixer with its message type.
+      - type: file
+        sourcePaths: [ src/ComfyUIOrganizer/Workflows ]
+        filePattern: '*.php'
+        modifiers:
+          - name: php-content-filter
+            options:
+              method_visibility: [ "public" ]
+              property_visibility: [ "public" ]
+              constant_visibility: [ "public" ]
+              keep_method_bodies: false
+              keep_doc_comments: true
+
+  ## ---- FRONTEND ----
+
+  - description: 'Frontend - JavaScript and CSS'
+    outputPath: 'modules/frontend/frontend.md'
+    sources:
+      - type: text
+        content: |
+          # Frontend
+
+          Plain JavaScript classes (no bundler) and the application stylesheet.
+      - type: file
+        sourcePaths: [ js ]
+        filePattern: '*.js'
+      - type: file
+        sourcePaths: [ css ]
+        filePattern: '*.css'
