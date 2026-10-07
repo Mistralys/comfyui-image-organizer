@@ -27,7 +27,7 @@ documents:
         notPath:
           - 'vendor/'
           - 'cache/'
-          - 'data/'
+          - '#^data/#'
           - 'output-images/'
           - '.idea/'
           - '.git/'
@@ -111,15 +111,17 @@ documents:
           # Core Architecture
 
           Public API signatures of the classes directly in `src/ComfyUIOrganizer/`:
-          application, builder, image indexing and collection, image properties,
-          ComfyUI integration, URL helpers, base page and exception. The `Ajax`,
-          `LoRAs`, `Pages` and `Workflows` subfolders are documented separately.
+          application, builder, image indexing, per-image analysis and collection,
+          image properties, ComfyUI integration, URL helpers, base page and exception. The `Ajax`,
+          `LoRAs`, `Metadata`, `Pages` and `Workflows` subfolders are documented
+          separately.
       - type: file
         sourcePaths: [ src/ComfyUIOrganizer ]
         filePattern: '*.php'
         excludePatterns:
           - 'Ajax/'
           - 'LoRAs/'
+          - 'Metadata/'
           - 'Pages/'
           - 'Workflows/'
         modifiers:
@@ -167,6 +169,32 @@ documents:
           records and the reference renderer.
       - type: file
         sourcePaths: [ src/ComfyUIOrganizer/LoRAs ]
+        filePattern: '*.php'
+        modifiers:
+          - name: php-content-filter
+            options:
+              method_visibility: [ "public" ]
+              property_visibility: [ "public" ]
+              constant_visibility: [ "public" ]
+              keep_method_bodies: false
+              keep_doc_comments: true
+
+  ## ---- METADATA ----
+
+  - description: 'Metadata - Sidecar Formats and Image Metadata'
+    outputPath: 'modules/metadata/architecture-metadata.md'
+    sources:
+      - type: text
+        content: |
+          # Metadata Architecture
+
+          Public API signatures of the sidecar metadata module: the immutable
+          image metadata and its sub-objects, the sidecar format interface and
+          base class, the concrete format implementations in `Formats/`, the
+          resolution value objects, the read-only metadata verifier and the
+          metadata exception.
+      - type: file
+        sourcePaths: [ src/ComfyUIOrganizer/Metadata ]
         filePattern: '*.php'
         modifiers:
           - name: php-content-filter
