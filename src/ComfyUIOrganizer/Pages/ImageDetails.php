@@ -6,6 +6,7 @@ namespace Mistralys\ComfyUIOrganizer\Pages;
 
 use AppUtils\ArrayDataCollection;
 use AppUtils\FileHelper\FileInfo;
+use AppUtils\ImageHelper;
 use AppUtils\OutputBuffering;
 use Mistralys\ComfyUIOrganizer\Ajax\Methods\SendToWebsiteMethod;
 use Mistralys\ComfyUIOrganizer\ImageInfo;
@@ -175,10 +176,11 @@ class ImageDetails extends BasePage
             t('Files'),
             array(
                 t('Folder') => $serialized->getString(ImageProperties::KEY_FOLDER_NAME),
-                t('Image file') => $this->adjustPath($this->image->getImageFile()),
-                t('Sidecar file') => $this->adjustPath($this->image->getSidecarFile()),
+                t('Image file') => $this->renderMandatoryFile($this->image->getImageFile()),
+                t('Sidecar file') => $this->renderMandatoryFile($this->image->getSidecarFile()),
                 t('PSD File') => $this->renderOptionalFile($this->image->getPSDFile()),
                 t('JPG File') => $this->renderOptionalFile($this->image->getJPGFile()),
+                t('JPG Specifications') => '<i>'.t('Original size, JPG format (%1$s)', t('Export quality: %1$s', 6)).'</i>'
             )
         );
 
@@ -193,7 +195,8 @@ class ImageDetails extends BasePage
             t('Website Gallery connection'),
             array(
                 t('Website Image') => $this->renderOptionalFile($this->image->getWebsiteImage()),
-                t('Website image ID') => $imageID
+                t('Website image ID') => $imageID,
+                t('Image specifications') => '<i>1.900 Pixels on the largest side, PNG format.</i>'
             )
         );
 
@@ -235,12 +238,23 @@ class ImageDetails extends BasePage
 
     private function renderOptionalFile(FileInfo $file) : string
     {
-        if($file->exists()) {
-            return $this->adjustPath($file);
+        if(!$file->exists()) {
+            return '<span class="text-secondary">('.t('File not present:').' '.$file->getName().')</span>';
         }
 
-        return '<span class="text-secondary">('.t('File not present:').' '.$file->getName().')</span>';
+        return $this->renderMandatoryFile($file);
+    }
 
+    private function renderMandatoryFile(FileInfo $file) : string
+    {
+        $label = $this->adjustPath($file);
+
+        if(ImageHelper::getImageType($file->getExtension()) !== null) {
+            $size = ImageHelper::getImageSize($file->getPath());
+            $label .= ' '.sprintf('(%1$s x %2$s)', $size->getWidth(), $size->getHeight());
+        }
+
+        return $label;
     }
 
     private function adjustPath(FileInfo $file) : string
