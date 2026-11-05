@@ -718,6 +718,16 @@ class ImageBrowser extends BaseOrganizerPage
                     <?php pt('Copy to output folder'); ?>
                 </a
             </li>
+            <li>
+                <a class="dropdown-item"
+                   href="#"
+                   data-path="<?php echo htmlspecialchars(str_replace('/', DIRECTORY_SEPARATOR, $image->getImageFile()->getPath()), ENT_QUOTES) ?>"
+                   onclick="<?php echo $this->objName ?>.CopyPath(this);return false;"
+                >
+                    <?php echo Icon::typeSolid('clipboard') ?>
+                    <?php pt('Copy path'); ?>
+                </a>
+            </li>
         </ul>
         <?php
     }

@@ -192,6 +192,42 @@ class ImageBrowser
         UserInterface.ShowStatus('Image [' + image.GetID() + '] has been copied to the output folder.');
     }
 
+    /**
+     * Copies the absolute image path stored in the element's data-path attribute to the clipboard.
+     * @param {HTMLElement} element
+     */
+    async CopyPath(element)
+    {
+        const path = element.dataset.path;
+
+        try {
+            if(navigator.clipboard && window.isSecureContext) {
+                await navigator.clipboard.writeText(path);
+            } else {
+                // Fallback for non-secure contexts, where the Clipboard API is unavailable.
+                const textarea = document.createElement('textarea');
+                textarea.value = path;
+                textarea.style.position = 'fixed';
+                textarea.style.opacity = '0';
+                document.body.appendChild(textarea);
+                textarea.select();
+                const ok = document.execCommand('copy');
+                document.body.removeChild(textarea);
+                if(!ok) {
+                    throw new Error('execCommand copy failed');
+                }
+            }
+        } catch(error) {
+            console.error('Error:', error);
+            UserInterface.ShowStatus('Could not copy the path to the clipboard.');
+            return;
+        }
+
+        const code = document.createElement('code');
+        code.textContent = path;
+        UserInterface.ShowStatus('Path copied to clipboard: ' + code.outerHTML);
+    }
+
     SendToWebsite(imageID)
     {
         const image = this.RequireImage(imageID);
