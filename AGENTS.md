@@ -20,6 +20,8 @@ The project manifest lives in `docs/agents/project-manifest/`. It is the canonic
 | Folder Structure (CTX-generated) | `.context/project-folder-structure.md` | Directory structure; generated from `context.yaml`, not part of the manifest and never edited by hand |
 | README | `README.md` | User-facing description, including the sidecar text-property syntax |
 | Changelog | `changelog.md` | Release history |
+| FLUX Prompting Guide | `docs/flux-prompting-guide.md` | Reference for writing prompts for FLUX.1 Dev in local ComfyUI; not part of the manifest and independent of the application code |
+| FLUX Prompt Generation Skill | `.github/skills/flux-prompt-generation/SKILL.md` | Agent skill that converts an image prompt (SDXL-style keywords, negative prompts) into a FLUX-compatible prompt; supplements the FLUX Prompting Guide |
 
 ### Ingestion Path
 
@@ -54,6 +56,7 @@ When a change is made to the codebase, the documents below must be updated in th
 - **Understanding how a feature flows through the system?** Check `data-flows.md` FIRST.
 - **Unsure whether something is allowed, or why it is done a certain way?** Check `constraints.md` FIRST.
 - **A manifest section looks deliberately absent or oddly arranged?** Check `curation-log.md` FIRST.
+- **Asked to convert, rewrite, or generate an image prompt for FLUX?** Use the FLUX Prompt Generation Skill, and consult `docs/flux-prompting-guide.md` for detail the skill does not carry.
 - **Only then** read source files.
 
 ---
