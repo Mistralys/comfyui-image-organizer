@@ -14,10 +14,12 @@ class LoRA implements StringPrimaryRecordInterface
     public const string KEY_LABEL = 'label';
     public const string KEY_CATEGORY = 'category';
     public const string KEY_MODELS = 'models';
+    public const string KEY_DESCRIPTION = 'description';
 
     private string $id;
     private string $label;
     private string $category;
+    private string $description;
 
     /**
      * @var LoRAModel[]
@@ -29,13 +31,15 @@ class LoRA implements StringPrimaryRecordInterface
      * @param string $label
      * @param string $category
      * @param LoRAModel[] $models
+     * @param string $description
      */
-    public function __construct(string $id, string $label, string $category, array $models)
+    public function __construct(string $id, string $label, string $category, array $models, string $description = '')
     {
         $this->id = $id;
         $this->label = $label;
         $this->category = $category;
         $this->models = $models;
+        $this->description = $description;
     }
 
     /**
@@ -85,7 +89,8 @@ class LoRA implements StringPrimaryRecordInterface
             $id,
             $data->getString(self::KEY_LABEL),
             $data->getString(self::KEY_CATEGORY),
-            $models
+            $models,
+            $data->getString(self::KEY_DESCRIPTION)
         );
     }
 
@@ -102,6 +107,11 @@ class LoRA implements StringPrimaryRecordInterface
     public function getCategory() : string
     {
         return $this->category;
+    }
+
+    public function getDescription() : string
+    {
+        return $this->description;
     }
 
     /**
