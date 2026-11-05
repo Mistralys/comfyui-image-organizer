@@ -178,6 +178,9 @@ The flat shape describes a single model in the entry itself, named by the `model
 }
 ```
 
+In both shapes, an optional `description` key on the entry is shown in the last column
+of the LoRA overview.
+
 The path fixer cross-references all LoRA files it finds in the ComfyUI folders with the 
 official file names it finds in the LoRA collection. If a LoRA file ends with or equals
 an official name, it generates the correct path including subfolders.
