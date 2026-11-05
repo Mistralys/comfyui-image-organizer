@@ -132,7 +132,7 @@ class ImageDetails extends BasePage
         foreach($serialized->getData() as $key => $value)
         {
             if(in_array($key, $loraIDs)) {
-                $loras[t('LoRA: ').$key] = $value;
+                $loras[t('LoRA:').' '.$key] = $value;
                 continue;
             }
 
