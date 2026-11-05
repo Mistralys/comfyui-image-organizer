@@ -21,6 +21,150 @@
       }
     }
   },
+  "matteVantaBlack": {
+    "category": "Styles",
+    "label": "Matte Vanta Black",
+    "description": "Deeper shadows, more dramatic color contrasts.",
+    "models": {
+      "FLUX": {
+        "source": "https://civitai.red/models/263107/sdxl-flux1-d-matte-vantablack-experiment?modelVersionId=801005",
+        "file": "- Flux1 - vanta_black_V2.0.safetensors",
+        "triggerWords": ["vantablack"]
+      }
+    }
+  },
+  "epicDetails": {
+    "category": "Fantasy",
+    "label": "Epic Gorgeous Details",
+    "description": "Enhances fine details and textures for a more dramatic effect.",
+    "models": {
+      "FLUX": {
+        "source": "https://civitai.red/models/736706/epic-gorgeous-details?modelVersionId=863655",
+        "file": "flux.1_lora_flyway_Epic-detail_v2.safetensors",
+        "triggerWords": []
+      }
+    }
+  },
+  "vividizer": {
+    "category": "Styles",
+    "label": "Vividizer",
+    "description": "Tends to maximalism. Likes to add twisty tube-like structures, bubbly stuff and sometimes a wet-looking surface. Great for increasing surreal and creative effects.",
+    "models": {
+      "FLUX": {
+        "source": "https://civitai.red/models/663742/flux-vividizer-or-flux-enhancer?modelVersionId=742813",
+        "file": "flux_vividizer.safetensors",
+        "triggerWords": []
+      }
+    }
+  },
+  "artifyFantasyScifi": {
+    "category": "Fantasy",
+    "label": "Artify's Fantasy & Sci-fi Art",
+    "description": "0.8-1.0 strength if used standalone, 0.5-0.8 if used with other styles.",
+    "models": {
+      "FLUX": {
+        "source": "https://civitai.red/models/751420/artifys-fantasy-and-sci-fi-art-flux-lora?modelVersionId=840288",
+        "file": "artisketchyfs-v02.safetensors",
+        "triggerWords": []
+      }
+    }
+  },
+  "characterMorrigan": {
+    "category": "Characters",
+    "label": "Morrigan",
+    "description": "Do not use too high strength: has a tendency to add a lot of dramatic fantasy elements if you only want the face.",
+    "models": {
+      "FLUX": {
+        "source": "https://civitai.red/models/50065/morrigan-dragon-age-character-lora?modelVersionId=1424530",
+        "file": "DAMorriganors.safetensors",
+        "triggerWords": ["morriganDA"]
+      }
+    }
+  },
+  "characterSophieMolgrin": {
+    "category": "Characters",
+    "label": "Sophie Molgrin",
+    "description": "Redhead, Young, Freckles, Classy, New Zealand.",
+    "models": {
+      "FLUX": {
+        "source": "https://civitai.red/models/485692/sophie-molgrin-ai-generated-character-fluxsdxlpony?modelVersionId=1028623",
+        "file": "sophie-molgrin-v5-flux_local.safetensors",
+        "triggerWords": ["sophie-molgrin"]
+      }
+    }
+  },
+  "characterHazel": {
+    "category": "Characters",
+    "label": "Hazel",
+    "description": "Redhead, Young, Many freckles, Long Hair, Irish.",
+    "models": {
+      "FLUX": {
+        "source": "https://civitai.red/models/1163140/hazel-fictional-character?modelVersionId=1308420",
+        "file": "Hazel-000015.safetensors",
+        "triggerWords": ["ff-hazel"]
+      }
+    }
+  },
+  "characterCrystal": {
+    "category": "Characters",
+    "label": "Crystal",
+    "description": "Digital, Surreal, Hair-Agnostic.",
+    "models": {
+      "FLUX": {
+        "source": "https://civitai.red/models/1195274/crystal-virtual-character?modelVersionId=1345788",
+        "file": "Crystal-0001_rank32_bf16.safetensors",
+        "triggerWords": ["Crystal-0001"]
+      }
+    }
+  },
+  "characterJessicaLonestar": {
+    "category": "Characters",
+    "label": "Jessica Lonestar",
+    "description": "Digital, Perky, Blonde.",
+    "models": {
+      "FLUX": {
+        "source": "https://civitai.red/models/2650197/jessica-lonestar-ai-character?modelVersionId=2975806",
+        "file": "Jessica Lonestar - test.safetensors",
+        "triggerWords": []
+      }
+    }
+  },
+  "characterSavannahRae": {
+    "category": "Characters",
+    "label": "Savannah Rae",
+    "description": "Blonde, Long Hair, 30ies, Elegant.",
+    "models": {
+      "FLUX": {
+        "source": "https://civitai.red/models/2688258/savannah-rae-character-model?modelVersionId=3018417",
+        "file": "Savannah_Rae_Character_Model-000004.safetensors",
+        "triggerWords": ["SavannahRaeV1"]
+      }
+    }
+  },
+  "characterKuleenaFoxx": {
+    "category": "Characters",
+    "label": "Kuleena Foxx",
+    "description": "Dark Haired, 30ies, Long Hair, Native American.",
+    "models": {
+      "FLUX": {
+        "source": "https://civitai.red/models/1749381/kuleena-foxx-original-character-or-native-american-beauty?modelVersionId=1979822",
+        "file": "Kuleena_Foxx__-_Original_Character__Native_American_Beauty.safetensors",
+        "triggerWords": ["kul33naf0xx"]
+      }
+    }
+  },
+  "characterAriaFoxx": {
+    "category": "Characters",
+    "label": "Aria Foxx",
+    "description": "Brunette/Redhead, Young, Meg Ryan-like.",
+    "models": {
+      "FLUX": {
+        "source": "https://civitai.red/models/2057610/aria-foxx-original-character-or-petite-short-haired-woman?modelVersionId=2328477",
+        "file": "Aria_Foxx_-_Original_Character___Petite_Short-Haired_Woman_2220401.safetensors",
+        "triggerWords": ["4r14f0xx"]
+      }
+    }
+  },
   "oldWood": {
     "category": "Styles",
     "label": "Old Wood",
