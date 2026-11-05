@@ -112,6 +112,10 @@ class LoRAOverviewPage extends BaseOrganizerPage
             ->useObjectValues()
             ->fetchByMethod(array(LoRA::class, 'getTriggerWordsFlattened'));
 
+        $grid->addColumn('description', t('Description'))
+            ->useObjectValues()
+            ->fetchByCallback(static fn(LoRA $lora) : string => htmlspecialchars($lora->getDescription()));
+
         $grid->addRowsFromObjects($this->filterResults());
 
         echo $grid;
