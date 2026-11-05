@@ -123,6 +123,7 @@ Action-specific behavior:
 - **Set upscaled** (`SetUpscaledImageMethod`): `ImageProperties::setUpscaledImage()`; `ImageInfo::registerLowResImage()` then merges favorite/gallery/website/label flags between the pair.
 - **Send to website** (`SendToWebsiteMethod`): requires the `_websiteImage.png` sibling; POSTs base64 image plus properties (checkpoint, sampler/scheduler, steps, CFG, seed, LoRA summary, prompt) to the configured website API, then stores the returned image ID in `ImageProperties::setWebsiteImageID()`. `ImageDetails` can invoke `sendRequest()` directly, outside AJAX.
 - **Copy to output** (`CopyToOutputMethod`): `ImageInfo::copyToOutput()` writes `<label or id>-<test number>-<batch number>.png` into `output-images/`, replacing an existing file.
+- **Copy path** (client-side only, no AJAX): the "More" menu item carries the absolute image path in `data-path` (rendered by `ImageBrowser::renderImageMenu()`); `ImageBrowser.CopyPath()` writes it to the clipboard and shows a status message.
 - **Card size** (`SetCardSizeMethod`): stores the size in the session through `ImageBrowser::setCardSize()` (which uses `SessionState`); does not involve an image.
 
 ## 4. LoRA reference and workflow path fixing

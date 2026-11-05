@@ -347,10 +347,10 @@ public function getAllAsBucket(): LoRABucket
 Implements `StringPrimaryRecordInterface`. Holds a list of `LoRAModel` records; the per-model getters below aggregate over them.
 
 ```php
-public const string KEY_LABEL, KEY_CATEGORY, KEY_MODELS
+public const string KEY_LABEL, KEY_CATEGORY, KEY_MODELS, KEY_DESCRIPTION
 
 /** @param LoRAModel[] $models */
-public function __construct(string $id, string $label, string $category, array $models)
+public function __construct(string $id, string $label, string $category, array $models, string $description = '')
 
 /** @throws OrganizerException ERROR_INVALID_LORA_ENTRY when $entry is not an array */
 public static function fromJSONEntry(string $id, mixed $entry): LoRA   // nested `models` shape or flat shape
@@ -358,6 +358,7 @@ public static function fromJSONEntry(string $id, mixed $entry): LoRA   // nested
 public function getID(): string
 public function getLabel(): string
 public function getCategory(): string
+public function getDescription(): string           // entry-level `description` key; '' when absent
 public function getModels(): array                 // LoRAModel[]
 public function getFiles(): array                  // non-empty official file names of all models
 public function getModelNames(): array             // non-empty model names
