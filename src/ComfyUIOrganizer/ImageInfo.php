@@ -434,7 +434,9 @@ class ImageInfo implements StringPrimaryRecordInterface
 
     public function getWebsiteImage() : FileInfo
     {
-        return FileInfo::factory(str_replace('.png', '_websiteImage.png', $this->imageFile->getPath()));
+        $path = str_replace('_.png', '.png', $this->imageFile->getPath());
+        $path = str_replace('.png', '_websiteImage.png', $path);
+        return FileInfo::factory($path);
     }
 
     /**
