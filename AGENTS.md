@@ -13,9 +13,9 @@ The project manifest lives in `docs/agents/project-manifest/`. It is the canonic
 |----------|------|---------|
 | Manifest Index | `docs/agents/project-manifest/README.md` | Entry point: project summary, document list, where to start for common tasks |
 | Tech Stack | `docs/agents/project-manifest/tech-stack.md` | Runtime, dependencies, framework base, architectural pattern, tooling, generated and git-ignored paths, CTX tooling |
-| API Surface | `docs/agents/project-manifest/api-surface.md` | Public signatures of the classes in `src/ComfyUIOrganizer/`, by module |
+| Architecture | `docs/agents/project-manifest/architecture.md` | Module map of `src/ComfyUIOrganizer/` and who calls whom; signatures and per-method contracts are in the source |
 | Data Flows | `docs/agents/project-manifest/data-flows.md` | Main paths through the system: indexing, browsing, AJAX actions, workflow path fixing |
-| Constraints | `docs/agents/project-manifest/constraints.md` | Binding conventions and gotchas, including known defects in the code |
+| Constraints | `docs/agents/project-manifest/constraints.md` | Binding conventions and gotchas, including known defects in the code and where contracts and rationale are written |
 | Curation Log | `docs/agents/project-manifest/curation-log.md` | Standing decisions about how the manifest is arranged, and the history of curation passes |
 | Folder Structure (CTX-generated) | `.context/project-folder-structure.md` | Directory structure; generated from `context.yaml`, not part of the manifest and never edited by hand |
 | README | `README.md` | User-facing description, including the sidecar text-property syntax |
@@ -27,8 +27,8 @@ The project manifest lives in `docs/agents/project-manifest/`. It is the canonic
 
 1. **Read** `constraints.md` — the rules and known defects that bind any change.
 2. **Read** `tech-stack.md` — runtime, dependencies, and the page / AJAX pattern.
-3. **Read** `api-surface.md` and `data-flows.md` for the area you are changing.
-4. **Then** read source files as needed.
+3. **Read** `architecture.md` and `data-flows.md` for the area you are changing.
+4. **Then** read the source files for it; a class's or method's contract is the docblock at the site.
 
 ---
 
@@ -38,7 +38,8 @@ When a change is made to the codebase, the documents below must be updated in th
 
 | Change Made | Documents to Update |
 |---|---|
-| Class, method, or constant added, removed, or its signature changed | `api-surface.md` |
+| Class, method, or constant added, removed, or its contract changed | The docblock or one-line comment at the site, in the same diff; the manifest lists no signatures |
+| Class or module added, removed, or its collaborators changed | `architecture.md` |
 | File or folder added, moved, or renamed | Regenerate the CTX output in `.context/`; `tech-stack.md` if the change affects generated or git-ignored paths |
 | Indexing, browsing, AJAX, or workflow-fixing behavior changed | `data-flows.md` |
 | Dependency, runtime requirement, Composer script, or tooling changed | `tech-stack.md`, `composer.json` |
@@ -52,7 +53,8 @@ When a change is made to the codebase, the documents below must be updated in th
 ## 3. Efficiency Rules — Search Smart
 
 - **Finding files?** Check `.context/project-folder-structure.md` FIRST.
-- **Looking for a class or method signature?** Check `api-surface.md` FIRST.
+- **Looking for which class does what, or who calls whom?** Check `architecture.md` FIRST.
+- **Looking for a class or method signature or contract?** Read the docblock in the source; the manifest does not carry it.
 - **Understanding how a feature flows through the system?** Check `data-flows.md` FIRST.
 - **Unsure whether something is allowed, or why it is done a certain way?** Check `constraints.md` FIRST.
 - **A manifest section looks deliberately absent or oddly arranged?** Check `curation-log.md` FIRST.
@@ -66,12 +68,13 @@ When a change is made to the codebase, the documents below must be updated in th
 | Scenario | Action | Priority |
 |---|---|---|
 | Ambiguous requirement | Consult `constraints.md` for intent; use the most restrictive interpretation | MUST |
-| Manifest/code conflict | Trust the manifest, then flag the code for fix and report the conflict | MUST |
+| Manifest/code conflict over a convention or cross-class structure | Trust the manifest, then flag the code for fix and report the conflict | MUST |
+| Docblock/code conflict over one class's or method's contract | Check the tests that pin it, fix whichever of code and docblock is wrong in the same change, and report the conflict | MUST |
 | Missing documentation | Flag the gap; do not invent facts | MUST |
-| Change touches something `constraints.md` lists as a known defect | Read the entry first, do not build on the defective behavior, and report it | MUST |
+| Change touches something `constraints.md` lists as a known defect, or a `// TODO:` marks one at the site | Read the entry first, do not build on the defective behavior, and report it | MUST |
 | Change adds a page or AJAX action | Follow the registration rules in `constraints.md`; do not wire it in by hand | MUST |
 | Change would edit third-party code under `vendor/` | Do not. Work around it in `src/` or raise it with the user | MUST |
-| Untested code path | Tests exist for the data objects, `SessionState`, `LoRA`, the metadata module, `ImageAnalyzer` and the workflow classes; `ImageIndexer`, `PathFixer::fixPaths()` and `ImageBrowser` have none. Add a PHPUnit test where practical, otherwise proceed with caution and add a manual test recommendation | SHOULD |
+| Untested code path | `constraints.md` lists the parts without automated tests. Add a PHPUnit test where practical, otherwise proceed with caution and add a manual test recommendation | SHOULD |
 | Manifest entry found to be wrong while working | Fix a small error in place; otherwise report it rather than working around it | SHOULD |
 
 ---

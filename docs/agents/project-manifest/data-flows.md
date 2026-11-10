@@ -1,6 +1,6 @@
 # Key Data Flows
 
-Descriptive paths through the system. Every type named here is listed in [api-surface.md](api-surface.md).
+Descriptive paths through the system. Every type named here appears in the module map of [architecture.md](architecture.md).
 
 ## Data stores
 
@@ -92,7 +92,7 @@ image.php?imageID=<id>[&thumbnail=yes]
 
 The details page (`ImageDetails`) shows one image from `ImageCollection::getFromRequest()`, with actions to reset the stored website image ID and to send the image to the website.
 
-Lazy metadata path (nothing in the browser or the pages calls it yet):
+Lazy metadata path:
 
 ```
 ImageInfo::getMetadata()

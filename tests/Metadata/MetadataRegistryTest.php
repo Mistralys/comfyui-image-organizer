@@ -10,9 +10,11 @@ use Mistralys\ComfyUIOrganizer\Metadata\Formats\LegacySidecarFormat;
 use Mistralys\ComfyUIOrganizer\Metadata\Formats\StructuredSidecarFormat;
 use Mistralys\ComfyUIOrganizer\Metadata\MetadataException;
 use Mistralys\ComfyUIOrganizer\Metadata\MetadataRegistry;
+use Mistralys\ComfyUIOrganizer\Metadata\SidecarFormatInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
 
 #[Group('metadata')]
 final class MetadataRegistryTest extends TestCase
@@ -150,6 +152,8 @@ final class MetadataRegistryTest extends TestCase
             'scalar number' => array('42'),
             'scalar null' => array('null'),
             'list root' => array('[{"a":1}]'),
+            'empty list' => array('[]'),
+            'empty object is accepted as root and left to detect()' => array('{}'),
         );
     }
 
@@ -162,6 +166,50 @@ final class MetadataRegistryTest extends TestCase
 
         $this->assertFalse($resolution->isResolved());
         $this->assertCount(1, $resolution->getUnrecognizedCandidates());
+    }
+
+    /**
+     * Pins a known defect: a UTF-8 BOM before the JSON makes `json_decode()` fail, so an
+     * otherwise valid sidecar is reported as unrecognized.
+     */
+    public function testBomPrefixedSidecarIsUnrecognizedKnownDefectCharacterisation() : void
+    {
+        $content = (string)file_get_contents(self::fixturePath('legacy-checkpoint.json'));
+
+        $this->write('plain.json', $content);
+        $this->write('bom.json', "\xEF\xBB\xBF".$content);
+
+        $this->assertTrue(MetadataRegistry::create()->resolve($this->image('plain.png'))->isResolved());
+
+        $resolution = MetadataRegistry::create()->resolve($this->image('bom.png'));
+
+        $this->assertFalse($resolution->isResolved());
+        $this->assertCount(1, $resolution->getUnrecognizedCandidates());
+    }
+
+    /**
+     * A class in `Metadata/Formats/` that is not a concrete format is silently ignored by the scan,
+     * so it would never be registered.
+     */
+    public function testEveryClassInFormatsFolderIsRegisteredAsFormat() : void
+    {
+        $files = (array)glob(__DIR__.'/../../src/ComfyUIOrganizer/Metadata/Formats/*.php');
+
+        $this->assertNotEmpty($files);
+
+        foreach($files as $file)
+        {
+            $class = 'Mistralys\ComfyUIOrganizer\Metadata\Formats\\'.basename((string)$file, '.php');
+
+            $this->assertTrue(class_exists($class), $class.' is not autoloadable; run composer dump-autoload.');
+
+            $reflection = new ReflectionClass($class);
+
+            $this->assertTrue($reflection->implementsInterface(SidecarFormatInterface::class), $class.' is not a format.');
+            $this->assertTrue($reflection->isInstantiable(), $class.' cannot be instantiated.');
+        }
+
+        $this->assertCount(count($files), MetadataRegistry::create()->getFormats());
     }
 
     public function testParseFile() : void

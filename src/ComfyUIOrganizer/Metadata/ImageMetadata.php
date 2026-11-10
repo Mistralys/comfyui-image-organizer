@@ -12,7 +12,12 @@ use AppUtils\Microtime;
  * Every scalar getter is nullable: `null` means "the sidecar does
  * not say", which is distinct from an empty value. Build it with
  * named arguments, so that a field a format does not supply is
- * `null` by construction.
+ * `null` by construction. `getFlow()`, `getSampler()` and `getUpscale()`
+ * are never `null`, but their fields may be.
+ *
+ * Strings taken from the sidecar (prompts, model, clip and LoRA names,
+ * folder name, file prefix, raw data) are unsanitized: escape them at
+ * output and never build a file path from the folder name or file prefix.
  */
 final class ImageMetadata
 {
@@ -86,6 +91,9 @@ final class ImageMetadata
         return $this->clipNames;
     }
 
+    /**
+     * A string, because seeds can exceed `PHP_INT_MAX`.
+     */
     public function getSeed() : ?string
     {
         return $this->seed;

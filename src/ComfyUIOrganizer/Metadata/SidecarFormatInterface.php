@@ -30,13 +30,19 @@ interface SidecarFormatInterface
 
     /**
      * Whether the decoded content of a candidate belongs to this format.
+     *
+     * The registry calls it for every format against every existing candidate and keeps
+     * walking after a match, so it must be cheap and free of side effects. It takes
+     * already decoded content and must not read files.
      */
     public function detect(ArrayDataCollection $data) : bool;
 
     /**
+     * Takes already decoded content and must not read files.
+     *
      * @param ArrayDataCollection $data
      * @return ImageMetadata
-     * @throws MetadataException
+     * @throws MetadataException Never the base {@see \Mistralys\ComfyUIOrganizer\OrganizerException}.
      */
     public function parse(ArrayDataCollection $data) : ImageMetadata;
 }

@@ -17,6 +17,10 @@ class ImageIndex
     private array $entries = array();
 
     /**
+     * Keys each entry by its own `id` and ignores the outer JSON key, so an entry
+     * stored under another key is written back under its `id`. A numeric `id`
+     * becomes an integer array key.
+     *
      * @param array<int|string,mixed> $data
      * @return self
      * @throws OrganizerException {@see OrganizerException::ERROR_INVALID_INDEX_ENTRY}

@@ -527,6 +527,7 @@ class ImageBrowser extends BaseOrganizerPage
     {
         $image->injectJS($this->ui, $this->objName);
 
+        // TODO: The checkpoint, test name and folder name come from sidecars and are echoed below unescaped; the label is escaped.
         $props = $image->getProperties();
 
         $classes = array();

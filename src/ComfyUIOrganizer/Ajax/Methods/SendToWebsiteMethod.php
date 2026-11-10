@@ -61,6 +61,9 @@ class SendToWebsiteMethod extends BaseImageMethod
     }
 
     /**
+     * Also called by `ImageDetails`, outside the AJAX flow, so the checks of `preProcessImage()`
+     * do not run there; it needs the `_websiteImage.png` sibling of the image.
+     *
      * @param ImageInfo $image
      * @return void
      * @throws AjaxMethodException

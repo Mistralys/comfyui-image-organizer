@@ -53,6 +53,7 @@ class LegacySidecarFormat extends BaseSidecarFormat
      */
     public function detect(ArrayDataCollection $data) : bool
     {
+        // A structured sidecar and a workflow export can also hold an object as their first value.
         if($this->isObjectSection($data, 'image') && $this->isObjectSection($data, 'prompt') && $this->isObjectSection($data, 'sampler')) {
             return false;
         }
@@ -76,6 +77,14 @@ class LegacySidecarFormat extends BaseSidecarFormat
         return $first === array() || !array_is_list($first);
     }
 
+    /**
+     * `getIndexProperties()` is the parsed `custom_text` bag, untouched, so that legacy indexing stays
+     * byte-identical; the bag carries seed, CFG and size, while their typed getters stay `null`.
+     * Parity quirk: a model named `"0"` counts as empty.
+     *
+     * @throws MetadataException {@see MetadataException::ERROR_NO_MODEL_NAME} for an empty model name,
+     *         {@see MetadataException::ERROR_INVALID_STRUCTURE} when the first key is not a date string holding an object.
+     */
     public function parse(ArrayDataCollection $data) : ImageMetadata
     {
         $raw = $data->getData();

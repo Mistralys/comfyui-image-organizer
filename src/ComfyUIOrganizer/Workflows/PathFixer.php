@@ -64,6 +64,7 @@ class PathFixer
             }
 
             foreach($files as $knownFile) {
+                // TODO: Two LoRAs that share an official file name silently overwrite each other here.
                 $knownFiles[mb_strtolower($knownFile)] = $lora->getLabel();
             }
         }
@@ -114,6 +115,7 @@ class PathFixer
             ->typeANY();
     }
 
+    // TODO: No automated test; it needs the LoRA collection and the ComfyUI folder bootstrapped.
     public function fixPaths() : self
     {
         $this->buildFileIndex();
@@ -134,6 +136,8 @@ class PathFixer
 
             // Fix empty arrays that should be objects.
             // This is a quirk of ComfyUI's JSON handling.
+            // TODO: A text replace over the whole file, so every `flags`, `config` or `properties` key
+            // holding an empty array becomes an object, at any depth and not only on nodes.
             //
             $content = $this->workflowFile->getContents();
             $objectProps = array('flags', 'config', 'properties');

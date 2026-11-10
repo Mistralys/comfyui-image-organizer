@@ -6,6 +6,7 @@ namespace Mistralys\ComfyUIOrganizer;
 
 /**
  * Typed access to `$_SESSION`: an absent or wrong-typed value yields the default.
+ * The only code that touches `$_SESSION`.
  */
 class SessionState
 {

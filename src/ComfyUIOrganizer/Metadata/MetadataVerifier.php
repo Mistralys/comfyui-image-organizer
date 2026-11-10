@@ -11,6 +11,10 @@ use AppUtils\FileHelper\FileInfo;
  *
  * It flags sidecars that no format recognizes and parse errors nobody
  * expected, so schema drift on the real image folder shows up early.
+ *
+ * It holds only the registry and stays read-only: no reference to the index types or `ImageAnalyzer`,
+ * no read of `data/images.json`, no file writes. Only `MetadataException` is caught per image; any
+ * other throwable aborts the census.
  */
 class MetadataVerifier
 {

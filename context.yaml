@@ -58,9 +58,12 @@ documents:
         content: |
           # Project Manifest
 
-          The canonical description of the codebase: tech stack, API surface, data flows
-          and binding constraints (including known defects). The directory structure is
-          in `project-folder-structure.md`.
+          The canonical description of the codebase: tech stack, architecture (module
+          map and who calls whom), data flows and binding constraints (including known
+          defects). The manifest carries no signature listing; public signatures are in
+          the generated `modules/*/architecture-*.md` documents, and per-method
+          contracts are docblocks in the source. The directory structure is in
+          `project-folder-structure.md`.
       - type: file
         sourcePaths: [ docs/agents/project-manifest ]
         filePattern: '*.md'

@@ -96,6 +96,10 @@ class OrganizerApp extends X4Application
 
     private ?ImageCollection $imageCollection = null;
 
+    /**
+     * Cached per instance, so it does not see index changes made elsewhere until
+     * {@see self::resetImageCollection()} discards it, as the indexer does after saving.
+     */
     public function createImageCollection() : ImageCollection
     {
         if(!isset($this->imageCollection)) {
@@ -110,6 +114,10 @@ class OrganizerApp extends X4Application
         return t('ComfyUI Organizer');
     }
 
+    /**
+     * Instantiates every class found in `Pages/`, and each must be a `BasePage`, so keep other classes
+     * out of that folder. Run `composer dump-autoload` after adding a page, which also clears the class cache.
+     */
     public function registerPages(UserInterface $ui): void
     {
         foreach(ClassHelper::findClassesInRepository(FolderInfo::factory(__DIR__.'/Pages'))->getClasses() as $class)
@@ -122,6 +130,10 @@ class OrganizerApp extends X4Application
         }
     }
 
+    /**
+     * Registers the classes in `Ajax/Methods/` that implement `AjaxMethodInterface`; others are ignored.
+     * Run `composer dump-autoload` after adding a method, which also clears the class cache.
+     */
     public function registerAjaxMethods(AjaxMethods $methods): void
     {
         $ajaxClasses = ClassHelper::findClassesInRepository(

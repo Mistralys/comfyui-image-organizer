@@ -69,6 +69,13 @@ final class BaseSidecarFormatTest extends TestCase
         $this->assertSame(4.0, $this->format->float($data, 'f'));
     }
 
+    public function testIntReaderIsStrictAboutWholeFloats() : void
+    {
+        $data = ArrayDataCollection::create(array('i' => 5.0));
+
+        $this->assertNull($this->format->int($data, 'i'));
+    }
+
     /**
      * @return array<string,array{0:float|int,1:string}>
      */
@@ -80,6 +87,10 @@ final class BaseSidecarFormatTest extends TestCase
             'sum noise' => array(0.1 + 0.2, '0.3'),
             'whole float' => array(1.0, '1'),
             'integer' => array(4, '4'),
+            'negative zero keeps its sign' => array(-0.0, '-0'),
+            'below the rounding precision collapses to zero' => array(0.00004, '0'),
+            'not a number passes through' => array(NAN, 'NAN'),
+            'infinity passes through' => array(INF, 'INF'),
         );
     }
 

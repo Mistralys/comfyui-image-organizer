@@ -21,6 +21,7 @@ use function AppUtils\t;
  *
  * It works on the index and the result collection it is given and does
  * not touch the application, the storage file or the `data/` folder.
+ * Result messages name only the image file name.
  */
 class ImageAnalyzer
 {
@@ -107,8 +108,10 @@ class ImageAnalyzer
 
         $props = self::completeProperties($metadata->getIndexProperties(), $imageFile);
 
+        // TODO: An unreadable PNG makes this throw an ImageHelper_Exception that nothing catches, which aborts the whole run; pinned by testUnreadablePngAbortsAnalysisKnownDefectCharacterisation.
         $size = ImageHelper::getImageSize($imageFile->getPath());
 
+        // TODO: str_contains() has swapped arguments, so the file name check never matches. Kept for byte-identical legacy indexing; pinned by testUpscaleFlagCharacterisation.
         $isUpscaled = isset($props['upscaleFactor']) || str_contains('upscale', $imageFile->getBaseName());
 
         if($isUpscaled === false && ($size->getWidth() >= 2000 || $size->getHeight() >= 2000)) {

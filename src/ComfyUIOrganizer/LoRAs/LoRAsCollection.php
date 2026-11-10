@@ -67,6 +67,10 @@ class LoRAsCollection extends BaseStringPrimaryCollection
         }
     }
 
+    /**
+     * LoRA IDs must be unique across all files under `data/loras/`, as they load into one collection:
+     * on a duplicate, the first one registered wins and the later one is dropped silently.
+     */
     private function loadDataFile(JSONFile $dataFile) : void
     {
         foreach($dataFile->getData() as $loraID => $loraData) {

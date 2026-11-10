@@ -24,6 +24,7 @@ class MoveImageMethod extends BaseImageMethod
 
     protected function processImage(ImageInfo $image): never
     {
+        // The name becomes a path segment in ImageInfo::moveToFolder(), so no dots or separators.
         $folderName = $this->request->registerParam(self::REQUEST_PARAM_FOLDER_NAME)->setRegex('/^[A-Za-z0-9_-]+$/')->getString();
 
         if(empty($folderName)) {

@@ -58,6 +58,7 @@ class WorkflowsPage extends BaseOrganizerPage
 
             $messages = new PathFixer($workflow->getFile())->fixPaths()->getMessages();
 
+            // The list does not escape its items, so every message source must follow PathFixerMessage's escaping rule.
             $this->redirectWithSuccessMessage(
                 $this->getURL(),
                 (string)sb()

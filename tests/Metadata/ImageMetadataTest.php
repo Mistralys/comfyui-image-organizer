@@ -10,8 +10,10 @@ use Mistralys\ComfyUIOrganizer\Metadata\ImageMetadata;
 use Mistralys\ComfyUIOrganizer\Metadata\LoRAUsage;
 use Mistralys\ComfyUIOrganizer\Metadata\SamplerInfo;
 use Mistralys\ComfyUIOrganizer\Metadata\UpscaleInfo;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
 
 #[Group('metadata')]
 final class ImageMetadataTest extends TestCase
@@ -109,5 +111,38 @@ final class ImageMetadataTest extends TestCase
     {
         $this->assertSame(array(), (new ImageMetadata(formatID: 'test', loras: array()))->getLoRAs());
         $this->assertNull((new ImageMetadata(formatID: 'test'))->getLoRAs());
+    }
+
+    /**
+     * @return array<string,array{0:class-string}>
+     */
+    public static function valueObjectProvider() : array
+    {
+        return array(
+            'ImageMetadata' => array(ImageMetadata::class),
+            'FlowInfo' => array(FlowInfo::class),
+            'SamplerInfo' => array(SamplerInfo::class),
+            'UpscaleInfo' => array(UpscaleInfo::class),
+            'LoRAUsage' => array(LoRAUsage::class),
+        );
+    }
+
+    /**
+     * @param class-string $class
+     */
+    #[DataProvider('valueObjectProvider')]
+    public function testValueObjectIsFinalAndImmutable(string $class) : void
+    {
+        $reflection = new ReflectionClass($class);
+
+        $this->assertTrue($reflection->isFinal());
+
+        foreach($reflection->getProperties() as $property) {
+            $this->assertTrue($property->isReadOnly(), sprintf('%s::$%s is not readonly.', $class, $property->getName()));
+        }
+
+        foreach($reflection->getMethods() as $method) {
+            $this->assertStringStartsNotWith('set', $method->getName(), sprintf('%s has a setter.', $class));
+        }
     }
 }

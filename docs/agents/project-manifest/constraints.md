@@ -2,6 +2,13 @@
 
 This document is the manifest's only binding one. Conventions below were verified against the code at the commit recorded in [curation-log.md](curation-log.md); where a section describes a known defect rather than a rule, it says so.
 
+## Contracts and rationale live with the code
+
+- Write a method's or class's contract, its rationale and its "watch out" as a docblock or one-line comment at the site, and change it in the same diff as the code. Do not restate it in the manifest.
+- Enforce a claim with a test where that is practical; a prose note is the fallback.
+- Record a defect or missing capability as a `// TODO:` at the site, and add it to the known-gap list below when agents must be warned before touching the area. Keep history ("was removed together with ...") in Git, not in comments or the manifest.
+- Do not list signatures in the manifest. [architecture.md](architecture.md) holds the module map and the cross-class collaboration; this document holds only the conventions that bind several classes.
+
 ## Environment
 
 - Target PHP 8.4 or newer. The code uses typed class constants, `new Foo()->method()` without parentheses and `array_any()`, and `composer.json` declares `"php": ">=8.4"`.
@@ -12,7 +19,7 @@ This document is the manifest's only binding one. Conventions below were verifie
 ## Class discovery and autoloading
 
 - Add a new page as a class in `src/ComfyUIOrganizer/Pages/` and a new AJAX action as a class in `src/ComfyUIOrganizer/Ajax/Methods/`. Do not register them by hand; `OrganizerApp` finds them by scanning those folders.
-- Keep non-page classes out of `Pages/` and non-method classes out of `Ajax/Methods/`: the page scan instantiates every class it finds there and requires a `BasePage` instance.
+- Keep non-page classes out of `Pages/`: the page scan instantiates every class it finds there and requires a `BasePage` instance. The AJAX scan registers only classes in `Ajax/Methods/` that implement `AjaxMethodInterface` and ignores the rest.
 - Run `composer dump-autoload` after adding, moving or renaming a class. Autoloading is classmap-based, and the `post-autoload-dump` hook (`Builder::postAutoload`) clears the class-discovery cache in `cache/`.
 - Give every AJAX method a unique `METHOD_NAME`, and return it from `getID()`.
 - Expose any AJAX method that the browser UI calls in the map built by `ImageCollection::injectJS()` and handle it in `js/ImageBrowser.js`; the JS side reads method names and payload keys from that map instead of hard-coding them.
@@ -29,10 +36,10 @@ This document is the manifest's only binding one. Conventions below were verifie
 
 ## Index integrity
 
-- Persist every change to indexed images through `ImageCollection::save()`. Mutating `ImageInfo` or `ImageProperties` marks the image as changed and sets its `modified` flag, and `save()` writes only changed entries.
+- Persist every change to indexed images through `ImageCollection::save()`. Mutating `ImageInfo` or `ImageProperties` marks the image as changed and sets its `modified` flag; what `save()` re-derives and what it writes is in its docblock.
 - Preserve the `modified` flag semantics: the indexer never re-analyzes an image whose index entry has `modified = true`. For such entries it updates only the image path, sidecar path and folder name.
 - Keep the favorite → gallery → website cascade: enabling "for website" enables "for gallery", and enabling "for gallery" enables "favorite". Disabling does not cascade.
-- Treat a regular/upscaled pair as one unit. Images that have an upscaled replacement are hidden in the browser; moving, deleting or flagging the upscaled image also acts on its low-resolution versions (`findLowResVersions()`), and `registerLowResImage()` merges flags and label between the pair.
+- Treat a regular/upscaled pair as one unit. Images that have an upscaled replacement are hidden in the browser; moving or deleting the upscaled image also acts on its low-resolution versions (`findLowResVersions()`), and registering a low-resolution image (`registerLowResImage()`) merges flags and label between the pair.
 - Link upscaled images automatically only for pairs: `detectUpscaledImages()` ignores any settings-hash group that does not contain exactly two images.
 - Refuse to overwrite on move: `moveToFolder()` throws `OrganizerException::ERROR_CANNOT_MOVE_FILE_EXISTS` when the target file exists, and copies before deleting so a failed save does not lose the image.
 - Validate folder names for moves with `^[A-Za-z0-9_-]+$` (`MoveImageMethod`).
@@ -45,55 +52,45 @@ This document is the manifest's only binding one. Conventions below were verifie
 
 ## Sidecar metadata module (`Metadata/`)
 
-- Treat `ImageMetadata` and its sub-objects (`FlowInfo`, `SamplerInfo`, `UpscaleInfo`, `LoRAUsage`) as immutable: no setters, `readonly` properties, no public mutable state. Build an `ImageMetadata` with named arguments only, so a field the format does not supply stays `null`.
-- Keep `null` meaning "the sidecar does not say" and keep it distinct from an empty value (`''`, `0`, `false`, `[]`). `getLoRAs()` returns `null` when the format cannot say and `[]` when there are none. `getFlow()`, `getSampler()` and `getUpscale()` are never `null`; their fields are.
-- Read sidecar values in a format only through the `BaseSidecarFormat` readers (`readString()`, `readInt()`, `readFloat()`, `readBool()`), not from the raw array. They return `null` for an absent key and for a value of another type, so no cast of `mixed` is needed. `readInt()` is strict (`5.0` yields `null`); `readFloat()` accepts ints and widens them.
-- Run any float that becomes a string through `normalizeFloat()`. It rounds to 4 decimals (`6.200000000000001` gives `'6.2'`); `-0.0` gives `'-0'`, values below 0.00005 collapse to `'0'`, and `NAN` / `INF` pass through unchanged.
-- Keep the seed a string (`getSeed(): ?string`): seeds can exceed `PHP_INT_MAX`.
+- Treat `ImageMetadata` and its sub-objects as immutable value objects, and keep `null` ("the sidecar does not say") distinct from an empty value. Their docblocks state the details.
+- Prefer the `BaseSidecarFormat` readers over reads from the raw array in a format, and run any float that becomes a string through `normalizeFloat()`. The readers' strictness and the rounding rules are in their docblocks.
 - Throw `MetadataException` from `SidecarFormatInterface::parse()`, not the base `OrganizerException`. Its codes are in the `183xxx` range; allocate new ones from it. Integer error and action constants of `MetadataException`, `OrganizerException` and `ImageIndexer` must stay pairwise distinct, and `180904` (the retired `ACTION_SKIP_NO_DATE`) stays unassigned; `MetadataExceptionTest::testErrorCodesAreUnique` reads them by reflection and fails on a clash.
-- Put a sidecar format in `Metadata/Formats/` and keep other classes out of that folder: `MetadataRegistry::create()` instantiates every `SidecarFormatInterface` class it finds there, by an uncached scan (it must work without the class-cache folder, which only `prepend.php` sets up). Do not register a format by hand; run `composer dump-autoload` after adding one. `detect()` and `parse()` take an already decoded `ArrayDataCollection` and must not read files.
-- Keep `detect()` cheap and free of side effects: `MetadataRegistry::resolve()` calls it for every format against every existing candidate, and keeps walking after the first match to report unrecognized candidates.
-- Reject a candidate whose root is not a JSON object before wrapping it in `ArrayDataCollection`, as `MetadataRegistry` does (`array_is_list()` on the decoded array); `detect()` never sees a scalar or list root. Unreadable or non-object candidates are "unrecognized", never an exception.
-- Keep `Metadata/` free of dependencies on the indexer, the browser and `ImageInfo`; it uses only `AppUtils`, `OrganizerException` and the `ImageProperties` key constants. `context.yaml` documents it as its own module and excludes `Metadata/` from Core.
+- Put a sidecar format in `Metadata/Formats/` as a concrete class implementing `SidecarFormatInterface`. Do not register a format by hand: `MetadataRegistry::create()` scans the folder, and `composer dump-autoload` makes a new class visible. `MetadataRegistryTest` pins that every class in the folder is a concrete format.
+- Keep `Metadata/` free of dependencies on the indexer, the browser and `ImageInfo`; it uses only `AppUtils`, `OrganizerException` and the `ImageProperties` key constants. `MetadataModuleDependenciesTest` enforces the import list. `context.yaml` documents the module on its own and excludes `Metadata/` from Core.
 - Keep `resolveCheckpoint()` and `parseText()` on `Formats\LegacySidecarFormat` as the only copies; the indexer has none. The per-image rules live only in `ImageAnalyzer::analyze()`, which `ImageIndexer::analyzeImages()` calls for every resolved sidecar. Do not re-add per-image logic or a `str_replace('.png', '.json', ...)` sidecar lookup to the indexer.
-- Keep legacy parity quirks: a model named `"0"` counts as missing (`empty()`), and only the first top-level key of a legacy sidecar is read.
-- Sidecar-derived strings in `ImageMetadata` (prompts, model, clip and LoRA names, `folderName`, `filePrefix`, raw data) are unsanitized. HTML-escape them at output, and never build file paths from `folderName` or `filePrefix`.
-- Structured bag mapping (`StructuredSidecarFormat`): all bag values are strings; booleans are stored as `'true'` / `'false'` (`ArrayDataCollection::getBool()` reads them back); `upscaleFactor` is written only when `upscale.isUpscaled === true`; `flowType` and `workflowVersion` are omitted when their source is absent. LoRA keys are written first, so a core key overrides a LoRA with the same ID, and a LoRA named like a core key is lost from the bag.
-- Derive the folder name with `basename(dirname($path))`, as `ImageAnalyzer` does, or use `dirname()` for sidecar candidates as `StructuredSidecarFormat` does; never `FileInfo::getFolder()`. `FolderInfo` throws for a folder name that looks like a file name (e.g. `SD1.5`). `ImageInfo::getSearchWords()` still uses `getFolder()->getName()` and may hit the same exception on such folders.
-- A structured sidecar has no model-name skip rule of its own: `parse()` leaves `getModelName()` `null` for a missing model, and the caller decides what to do.
-- Use `BaseSidecarFormat::isObjectSection()` for every "is this a JSON object" check in a format; an empty object counts as one, a list does not.
-- `MetadataRegistry` reads a candidate with `json_decode(getContents(), JSON_THROW_ON_ERROR)` rather than `JSONFile::getData()`, whose `: array` return type turns a scalar root into a `TypeError` that PHPStan level 9 flags as dead code to catch. Known gaps that now apply to every indexing run, since the indexer calls `resolve()`: no `is_file()` guard (a directory named like a candidate emits a warning), no UTF-8 BOM strip (a BOM-prefixed sidecar is unrecognized), no size cap.
-- `ImageIndexer` does not read sidecar files itself. It resolves each PNG through `MetadataRegistry::resolve()` and passes the `ResolvedSidecar` to `ImageAnalyzer`. The other consumers of `ImageMetadata` are `ImageInfo::getMetadata()` and `MetadataVerifier`.
-- Keep `MetadataVerifier` and `Builder::verifyMetadata()` read-only: no reference to `ImageIndex`, `ImageIndexEntry` or `ImageAnalyzer`, no read of `data/images.json`, no file writes. `verifyMetadata()` must return `bool`, not `int`: Composer maps a script callable's `false` to exit status 1 and ignores an integer.
-- Read extra sidecar data (anything the index does not store) through `ImageInfo::getMetadata()`, not by adding keys to `images.json`. It parses the stored sidecar path on first call, caches the result per instance, never writes to the index and never marks the image as changed; it throws `MetadataException` for a missing or unrecognized sidecar, so callers must handle that.
-- `ImageAnalyzer` takes an `ImageIndex` and an `OperationResult_Collection`, not `OrganizerApp`; keep it free of the application, the storage file and `data/`, so it stays testable. Result messages name only the image file name, never sidecar content or exception text.
-- Treat sidecar-derived index values as unsanitized text: a structured sidecar's `model.prettyName` becomes the checkpoint and `image.seriesName` the test name. Indexing writes them to `data/images.json` unchanged, so `ImageBrowser` and `ImageDetails` must HTML-escape checkpoint, test name, seed and folder name at output; today they echo some of these unescaped.
+- Keep the legacy sidecar path byte-identical to the retired indexer behaviour. its quirks are deliberate; the notes at `LegacySidecarFormat` and `ImageAnalyzer::analyze()` say which, and tests under `tests/` pin them where practical.
+- Treat every value taken from a sidecar (prompts, model, clip and LoRA names, folder name, file prefix, and the index values derived from them: checkpoint, test name, seed) as unsanitized text. HTML-escape it at output, and never build file paths from it.
+- Read extra sidecar data (anything the index does not store) through `ImageInfo::getMetadata()`, not by adding keys to `images.json`.
 
 ## Workflows and LoRA files
 
 - Match LoRAs to files by the official file name (the name given by the download site). Keep that name intact as a suffix when renaming local `.safetensors` files; the `PathFixer` matches the lowercase end of the local file name.
-- Limit `PathFixer` rewrites to `LoraLoaderModelOnly` nodes, first widget value. Back up the workflow (`.json.bak.<timestamp>`) before saving a change, and restore `{}` for empty `flags`, `config` and `properties` after writing, as ComfyUI requires objects there.
+- Limit `PathFixer` rewrites to the first widget value of `LoraLoaderModelOnly` nodes. The backup and object-restoration rules are in its docblock.
 - Mutate a decoded workflow only through `WorkflowData` (it keeps the whole document verbatim); do not loop over the raw decoded array by reference.
-- Put message templates passed to `PathFixerMessage` in trusted HTML only, and pass every untrusted value (workflow values, file names, LoRA IDs) as a `sprintf` argument: the constructor HTML-escapes string arguments. `WorkflowsPage` joins the messages into HTML without escaping them again, so a new message source must follow the same rule.
+- Pass every untrusted value (workflow values, file names, LoRA IDs) to `PathFixerMessage` as an argument, never inside the template. `WorkflowsPage` does not escape the messages again, so a new message source must follow the same rule; the escaping details are in the class docblock.
 - Read workflows from `<ComfyUI>/user/default/workflows`, not from this repository's `docs/workflows/`; the latter holds reference copies only.
 - Keep LoRA IDs unique across all JSON files under `data/loras/`; they are loaded into one collection.
-- Describe a LoRA in `data/loras/*.json` in one of two shapes: nested (a `models` object keyed by model name, each holding `file`, `source`, `triggerWords`) or flat (`model`, `file`, `source`, `triggerWords` on the entry itself). `LoRA::fromJSONEntry()` reads both; read LoRA values only through `LoRA` / `LoRAModel`, never from the raw arrays.
 
 ### Known gaps in the code (do not rely on)
 
-- **Unsupported `files` key:** `LoRA::fromJSONEntry()` reads only the singular `file` key per model. An entry that lists several files under a plural `files` array (`realPussyPeach` in `data/loras/nsfw.json`) gets no file for path fixing and draws a "no file specified" warning. Use one `file` per model, or extend `LoRAModel`.
+Each gap also has a `// TODO:` at its site; the entry here is the index agents are routed to.
+
+- **Unsupported `files` key:** `LoRA::fromJSONEntry()` reads only the singular `file` key per model, so an entry that lists several files under a plural `files` array would get no file for path fixing. No entry in `data/loras/` uses that key at present.
 - **Silent file-name collisions:** in `PathFixer::buildFileIndex()` two LoRAs sharing the same official file name overwrite each other in the known-file map without a warning.
-- **Upscale detection by name:** the file-name check calls `str_contains()` with its arguments reversed, so it effectively never matches. The defect is in `ImageAnalyzer::analyze()`, kept verbatim from the retired indexer code for byte-identical legacy indexing; `ImageAnalyzerTest::testUpscaleFlagCharacterisation` pins it. Upscaled status comes from the `upscaleFactor` property or from a dimension of at least 2000 px. Fixing the check needs its own plan, which also updates that test.
-- **Whole-file restoration in `fixPaths()`:** the `{}` restoration for empty `flags`, `config` and `properties` is a `str_replace` over the written file's text, so a matching sequence such as `"flags":[]` inside a string value would be rewritten as well.
-- **`PathFixer::fixPaths()` has no automated test:** it needs the LoRA collection and folder bootstrapped. `WorkflowData` and `PathFixerMessage` are covered by `tests/Workflows/`; verify `fixPaths()` end to end manually on a copy of a workflow.
-- **Parts without automated tests:** `ImageIndexer` (its per-image logic is covered through `ImageAnalyzer`, but the sidecar branching in `analyzeImages()` is not), `PathFixer::fixPaths()` and `ImageBrowser` need the application bootstrap and are untested; verify them manually through the UI and the Composer scripts.
-- **Corrupt PNG aborts a run:** `ImageHelper::getImageSize()` raises an uncaught `ImageHelper_Exception` for an unreadable PNG in `ImageAnalyzer::analyze()`. It is untested.
+- **Upscale detection by name:** the file-name check calls `str_contains()` with its arguments reversed, so it effectively never matches. The defect is in `ImageAnalyzer::analyze()`; `ImageAnalyzerTest::testUpscaleFlagCharacterisation` pins it. Fixing the check needs its own plan, which also updates that test.
+- **Whole-file restoration in `fixPaths()`:** the `{}` restoration is a `str_replace` over the written file's text, so every `flags`, `config` or `properties` key holding an empty array becomes an object, at any depth and not only on nodes.
+- **Candidate read in `MetadataRegistry`:** a UTF-8 BOM makes a sidecar unrecognized, a directory named like a candidate raises a PHP warning, and there is no `is_file()` guard or size cap. A characterisation test pins the BOM case.
+- **Unescaped sidecar-derived output:** `ImageBrowser` and `ImageDetails` echo some sidecar-derived values (checkpoint, test name, folder name) without HTML-escaping them.
+- **Parts without automated tests:** `ImageIndexer` (its per-image logic is covered through `ImageAnalyzer` and `filterNewFolders()` by its own test, but the sidecar branching in `analyzeImages()` is not), `PathFixer::fixPaths()` and `ImageBrowser` need the application bootstrap and are untested. Verify them manually through the UI and the Composer scripts; for `fixPaths()`, run it end to end on a copy of a workflow. `WorkflowData` and `PathFixerMessage` are covered by `tests/Workflows/`.
+- **Corrupt PNG aborts a run:** `ImageHelper::getImageSize()` raises an uncaught `ImageHelper_Exception` for an unreadable PNG in `ImageAnalyzer::analyze()`; a characterisation test pins it.
+- **PHPStan reports one error:** `ImageInfo::getWebsiteBadge()` tests `isForWebsite()` again inside an `if` that already tested it, which level 9 flags as `if.alwaysTrue`. The "free of errors" rule below is not met until it is fixed.
 
 ## Testing and static analysis
 
 - Put PHPUnit tests in `tests/` and run them through the `composer test*` scripts; PHPStan analyses `tests/` as well as `src/`. Tests are `final` classes extending `TestCase` in the namespace `Mistralys\ComfyUIOrganizer\Tests`, with sub-namespaces mirroring the `src/` folders (`Tests\LoRAs`, `Tests\Metadata`, `Tests\Workflows`); tests that touch files write to `sys_get_temp_dir()`, never to `data/`.
 - Tests that need image files (`ImageAnalyzerTest`) create a unique folder under `sys_get_temp_dir()` and remove it in `tearDown()`, generate PNGs with GD, and call `Console::setEnabled(false)` in `setUp()` and `Console::setEnabled(true)` in `tearDown()` so the indexer's console output stays out of the test run. They run without `OrganizerApp`.
 - Keep `composer analyze` (level 9, no baseline file) free of errors. Fix the cause rather than suppressing it: type arrays with PHPDoc value types, and do not add `@phpstan-ignore` comments.
+- Name a test that pins a known defect as a characterisation test (`...Characterisation`), as `testUpscaleFlagCharacterisation` does. When the defect is fixed, update the test in the same change.
 - `phpstan.neon` lists `config.dist.php` and `prepend.php` under `scanFiles` so PHPStan knows the `Config\APP_*`, `CACHE_FOLDER` and `OUTPUT_FOLDER` constants; add any new global constant file there.
 - Do not commit `phpstan-result.txt`, `.phpunit.cache/` or `.phpunit.result.cache`; all are git-ignored tool output.
 - `tests/fixtures/sidecars/` holds verbatim copies of real sidecars (plus one synthetic `workflow-export.json`) and the `*.expected-bag.json` oracles for the legacy format; `tests/fixtures/sidecars/README.md` lists the sources. Never edit, reformat or re-save them: they are CRLF, and `.gitattributes` marks `tests/fixtures/** -text` so Git does not normalize the line endings.

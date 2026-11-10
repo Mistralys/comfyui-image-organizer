@@ -19,6 +19,9 @@ use JsonException;
  * Formats are the classes in `Metadata/Formats/`, found by an
  * uncached folder scan, so that the registry works without the
  * class cache folder that only `prepend.php` sets up.
+ *
+ * The `Metadata/` module depends on nothing from the indexer, the browser or `ImageInfo`; it uses
+ * only `AppUtils`, `OrganizerException` and the `ImageProperties` key constants (see `MetadataModuleDependenciesTest`).
  */
 class MetadataRegistry
 {
@@ -43,7 +46,9 @@ class MetadataRegistry
     }
 
     /**
-     * Scans `Metadata/Formats/` for the format classes.
+     * Scans `Metadata/Formats/` for the format classes. A new format needs no registration; run
+     * `composer dump-autoload` so that the classmap holds it. A class there that does not implement
+     * the interface is silently ignored, so it would never become a format.
      *
      * @return self
      */
@@ -173,6 +178,15 @@ class MetadataRegistry
     }
 
     /**
+     * A root that is not an object (a scalar, `null`, a non-empty list) or unreadable JSON is
+     * "unrecognized", not an error. An empty object, like `[]` which decodes the same, is accepted
+     * here and left to `detect()`.
+     *
+     * TODO: Known limits that apply to every indexing run: a UTF-8 BOM before the JSON makes the file
+     * unrecognized (pinned by testBomPrefixedSidecarIsUnrecognizedKnownDefectCharacterisation); a directory
+     * named like a candidate raises a PHP warning here before it is reported as unrecognized; there is no
+     * `is_file()` guard and no size cap.
+     *
      * @param JSONFile $file
      * @return ArrayDataCollection|null `null` if the file is not readable JSON with an object at its root.
      */

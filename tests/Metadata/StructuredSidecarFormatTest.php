@@ -143,6 +143,25 @@ final class StructuredSidecarFormatTest extends TestCase
         $this->assertSame(array('one' => '0.5'), $metadata->getIndexProperties());
     }
 
+    /**
+     * Pins a known defect: LoRA weights and core keys share one bag, so a LoRA named
+     * like a core key is overwritten by it and lost from the bag.
+     */
+    public function testLoRANamedLikeCoreKeyIsLostKnownDefectCharacterisation() : void
+    {
+        $data = self::synthetic(array(
+            'image' => array('seed' => '42'),
+            'loras' => array('seed' => array('strength' => 0.5)),
+        ));
+
+        $metadata = $this->format->parse($data);
+        $loras = $metadata->getLoRAs();
+
+        $this->assertSame(array('seed' => '42'), $metadata->getIndexProperties());
+        $this->assertNotNull($loras);
+        $this->assertSame('seed', $loras[0]->getID());
+    }
+
     public function testNumericLoRAIDIsKeptAsString() : void
     {
         $data = self::synthetic(array('loras' => array('123' => array('strength' => 0.5))));

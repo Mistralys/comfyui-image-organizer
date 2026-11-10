@@ -14,8 +14,16 @@ use Mistralys\ComfyUIOrganizer\Metadata\MetadataRegistry;
 use Mistralys\X4\UI\Console;
 use function AppUtils\t;
 
+/**
+ * Orchestrates indexing runs. It reads no sidecar file itself: each PNG goes
+ * through {@see MetadataRegistry::resolve()} and the resulting sidecar to
+ * {@see ImageAnalyzer}, which holds all per-image logic.
+ */
 class ImageIndexer
 {
+    // The ACTION_SKIP_* codes are reported as warnings, so that countSuccesses() and
+    // countNotices(), read by ImageBrowser::handleRefreshFolder(), count only indexed and updated images.
+    // 180904 (ACTION_SKIP_NO_DATE) is retired and stays unassigned; MetadataExceptionTest pins it.
     public const int ACTION_UPDATE_PATHS = 180901;
     public const int ACTION_SKIP_NO_CHECKPOINT = 180902;
     public const int ACTION_IMAGE_INDEXED = 180903;
@@ -38,6 +46,10 @@ class ImageIndexer
         $this->analysisResults = new OperationResult_Collection($this);
     }
 
+    /**
+     * The only writer of `data/file_index.json`, which `image.php` resolves every request through.
+     * Moves and deletes done in the UI do not rewrite it, so it lags until the next run.
+     */
     public static function updateFileIndex(): void
     {
         Console::header('Updating image index file');
@@ -67,6 +79,8 @@ class ImageIndexer
         }
 
         Console::line1('Found existing image index file, loading data...');
+
+        // Backup before the run rewrites the index; this step must stay.
         $this->storageFile->copyTo($this->storageFile->getFolder().'/backup/images-'.Microtime::createNow()->format('Y-m-d-H-i-s').'.json');
         $this->images = ImageIndex::load($this->storageFile);
     }
@@ -93,6 +107,10 @@ class ImageIndexer
     private OperationResult_Collection $analysisResults;
 
     /**
+     * An image without any sidecar file is skipped with a console line only, and no result entry.
+     * One whose candidate files are all unrecognized also gets a warning.
+     * A resolved sidecar wins, even when other candidate files beside the image go unrecognized.
+     *
      * @param FileInfo[] $files
      * @return $this
      */

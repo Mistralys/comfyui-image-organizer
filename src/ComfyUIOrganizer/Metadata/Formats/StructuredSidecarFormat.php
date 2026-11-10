@@ -23,6 +23,7 @@ use Mistralys\ComfyUIOrganizer\Metadata\UpscaleInfo;
 class StructuredSidecarFormat extends BaseSidecarFormat
 {
     public const string FORMAT_ID = 'structured';
+    // Tried before the legacy format: a PNG with both sidecars resolves to the structured one.
     public const int PRIORITY = 100;
 
     private const string KEY_IMG_WIDTH = 'imgWidth';
@@ -69,6 +70,11 @@ class StructuredSidecarFormat extends BaseSidecarFormat
             && $this->isObjectSection($data, 'sampler');
     }
 
+    /**
+     * Never throws. The model name is `null` without a `model` section; whether that skips the
+     * image is up to the caller. `getDate()` is always `null`: the date rule lives in `ImageAnalyzer`.
+     * `getLoRAs()` is `null` without a `loras` section and `[]` for an empty one.
+     */
     public function parse(ArrayDataCollection $data) : ImageMetadata
     {
         $image = $this->readSection($data, 'image');
@@ -98,6 +104,7 @@ class StructuredSidecarFormat extends BaseSidecarFormat
         $loras = $this->parseLoRAs($data);
 
         // The LoRA keys come first, so that a LoRA named like a core key cannot override it.
+        // Known defect: the LoRA is then lost from the bag, see testLoRANamedLikeCoreKeyIsLostKnownDefectCharacterisation.
         $bag = array();
 
         foreach((array)$loras as $lora)
@@ -107,6 +114,8 @@ class StructuredSidecarFormat extends BaseSidecarFormat
             }
         }
 
+        // All bag values are strings, booleans as 'true' / 'false', which ArrayDataCollection::getBool() reads back.
+        // `upscaleFactor` is what ImageAnalyzer takes as "upscaled", so it is written only when isUpscaled is true.
         $values = array(
             ImageProperties::KEY_TEST_NAME => $testName,
             ImageProperties::KEY_TEST_NUMBER => $testNumber,

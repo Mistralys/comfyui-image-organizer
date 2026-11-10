@@ -20,6 +20,10 @@ abstract class BaseSidecarFormat implements SidecarFormatInterface
         return is_string($value) ? $value : null;
     }
 
+    /**
+     * Strict: a whole float such as `5.0` gives `null`, since a JSON writer never
+     * emits a float for an integer field (unlike {@see self::readFloat()}).
+     */
     protected function readInt(ArrayDataCollection $data, string $key) : ?int
     {
         $value = $data->getKey($key);
@@ -61,7 +65,9 @@ abstract class BaseSidecarFormat implements SidecarFormatInterface
     }
 
     /**
-     * Rounds away floating-point noise, e.g. `6.200000000000001` becomes `6.2`.
+     * Rounds away floating-point noise, e.g. `6.200000000000001` becomes `'6.2'`. Rounds to
+     * 4 decimals, so `-0.0` gives `'-0'` and a value below 0.00005 gives `'0'`; `NAN` and `INF`
+     * pass through. Every float that becomes a string goes through here.
      */
     protected function normalizeFloat(float|int $value) : string
     {

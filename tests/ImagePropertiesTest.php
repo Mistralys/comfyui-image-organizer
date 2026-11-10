@@ -7,6 +7,7 @@ namespace Mistralys\ComfyUIOrganizer\Tests;
 use Mistralys\ComfyUIOrganizer\ImageIndexEntry;
 use Mistralys\ComfyUIOrganizer\ImageInfo;
 use Mistralys\ComfyUIOrganizer\ImageProperties;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 final class ImagePropertiesTest extends TestCase
@@ -61,5 +62,74 @@ final class ImagePropertiesTest extends TestCase
     public function testIsPreviewFalse() : void
     {
         $this->assertFalse(self::createProperties(array(ImageProperties::KEY_IS_PREVIEW => 'false'))->isPreview());
+    }
+
+    /**
+     * @return array<string,array{0:mixed,1:int|null}>
+     */
+    public static function workflowVersionProvider() : array
+    {
+        return array(
+            'int' => array(31, 31),
+            'zero stays zero' => array(0, 0),
+            'numeric string' => array('32', 32),
+            'decimal string is truncated' => array('32.7', 32),
+            'exponent string is cast' => array('1e3', 1000),
+            'float is not accepted' => array(32.7, null),
+            'bool is not accepted' => array(true, null),
+            'array is not accepted' => array(array(32), null),
+            'empty string' => array('', null),
+        );
+    }
+
+    #[DataProvider('workflowVersionProvider')]
+    public function testWorkflowVersionTypeRules(mixed $stored, ?int $expected) : void
+    {
+        $props = self::createProperties(array(ImageProperties::KEY_WORKFLOW_VERSION => $stored));
+
+        $this->assertSame($expected, $props->getWorkflowVersion());
+    }
+
+    public function testFlowVersionKeyIsNotAFallback() : void
+    {
+        $this->assertNull(self::createProperties(array('flowVersion' => 32))->getWorkflowVersion());
+    }
+
+    public function testEnablingForWebsiteCascadesToGalleryAndFavorite() : void
+    {
+        $props = self::createProperties(array());
+
+        $props->setForWebsite(true);
+
+        $this->assertTrue($props->isForWebsite());
+        $this->assertTrue($props->isForGallery());
+        $this->assertTrue($props->isFavorite());
+    }
+
+    public function testEnablingForGalleryCascadesToFavoriteOnly() : void
+    {
+        $props = self::createProperties(array());
+
+        $props->setForGallery(true);
+
+        $this->assertTrue($props->isForGallery());
+        $this->assertTrue($props->isFavorite());
+        $this->assertFalse($props->isForWebsite());
+    }
+
+    public function testDisablingDoesNotCascade() : void
+    {
+        $props = self::createProperties(array());
+        $props->setForWebsite(true);
+
+        $props->setForWebsite(false);
+
+        $this->assertFalse($props->isForWebsite());
+        $this->assertTrue($props->isForGallery());
+
+        $props->setForGallery(false);
+
+        $this->assertFalse($props->isForGallery());
+        $this->assertTrue($props->isFavorite());
     }
 }

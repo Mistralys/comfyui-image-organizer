@@ -48,6 +48,10 @@ class ImageCollection extends BaseStringPrimaryCollection
         return $this->getAutoDefault();
     }
 
+    /**
+     * Deletes the image, its sidecar, thumbnail and all linked low-resolution versions.
+     * The index removal is persisted by the {@see self::save()} at the end.
+     */
     public function deleteImage(ImageInfo $image) : void
     {
         unset($this->items[$image->getID()]);
@@ -65,6 +69,10 @@ class ImageCollection extends BaseStringPrimaryCollection
         $this->save();
     }
 
+    /**
+     * Re-derives the index entry of every image whose data changed, keeping the unknown
+     * keys of the stored entry, then writes the whole index, not only the changed entries.
+     */
     public function save() : void
     {
         foreach($this->getAll() as $image) {
@@ -92,6 +100,10 @@ class ImageCollection extends BaseStringPrimaryCollection
     /** @var array<string, ImageInfo> */
     private array $missing = array();
 
+    /**
+     * Hands the AJAX method names to `js/ImageBrowser.js`. A method the browser UI calls must be
+     * listed here and handled there. Each `METHOD_NAME` is the method's ID and must be unique.
+     */
     public function injectJS(UserInterface $ui, string $baseURL) : string
     {
         $objName = 'IB'.JSHelper::nextElementID();
@@ -181,6 +193,9 @@ class ImageCollection extends BaseStringPrimaryCollection
         return strnatcasecmp($a->getImageFile()->getPath(), $b->getImageFile()->getPath());
     }
 
+    /**
+     * @return ImageInfo|null `null` when the image ID is absent, not an MD5 hash, or not in the collection.
+     */
     public function getFromRequest() : ?ImageInfo
     {
         $id = Request::getInstance()->registerParam(self::REQUEST_PARAM_IMAGE_ID)->setMD5()->getString();

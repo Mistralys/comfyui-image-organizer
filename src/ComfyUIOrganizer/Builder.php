@@ -56,9 +56,11 @@ class Builder
     }
 
     /**
-     * Read-only census of the sidecars of all PNGs in the image folder.
+     * Read-only census of the sidecars of all PNGs in the image folder, found without
+     * `OrganizerApp::create()` or any access to `data/`.
      *
-     * @return bool `false` when a sidecar failed to parse, which Composer reports as a non-zero exit status.
+     * @return bool Must stay `bool`: Composer maps a script callable's `false` to exit status 1 and ignores an
+     *              integer. `false` when a sidecar failed to parse.
      */
     public static function verifyMetadata(): bool
     {

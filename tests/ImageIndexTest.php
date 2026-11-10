@@ -39,6 +39,24 @@ final class ImageIndexTest extends TestCase
         }
     }
 
+    public function testEntryIsKeyedByItsOwnIdNotByTheOuterKey() : void
+    {
+        $index = ImageIndex::fromArray(array('outer' => self::entryData('inner')));
+
+        $this->assertSame(array('inner'), array_keys($index->getEntries()));
+        $this->assertSame(array('inner'), array_keys($index->toArray()));
+        $this->assertFalse($index->has('outer'));
+    }
+
+    public function testNumericIdBecomesIntegerArrayKey() : void
+    {
+        $index = ImageIndex::fromArray(array('x' => self::entryData('123')));
+
+        // Via JSON, as the key types are declared as strings.
+        $this->assertSame('[123]', json_encode(array_keys($index->getEntries())));
+        $this->assertNotNull($index->get('123'));
+    }
+
     public function testSetGetRemoveHas() : void
     {
         $index = ImageIndex::fromArray(array('a' => self::entryData('a'), 'b' => self::entryData('b')));

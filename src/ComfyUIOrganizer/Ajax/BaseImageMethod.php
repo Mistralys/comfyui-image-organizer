@@ -64,6 +64,9 @@ abstract class BaseImageMethod extends BaseAjaxMethod
     }
 
     /**
+     * Re-reads the image to attach its flags, so an action that deletes the image must call
+     * `$this->methods->sendSuccess()` instead, as `DeleteImageMethod` does.
+     *
      * @param array<string, mixed> $payload
      */
     protected function sendSuccess(string $message = '', array $payload = array()): never

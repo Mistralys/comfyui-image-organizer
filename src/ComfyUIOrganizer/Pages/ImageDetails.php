@@ -141,6 +141,7 @@ class ImageDetails extends BasePage
 
         ksort($loras);
 
+        // TODO: The test name, checkpoint and folder name come from sidecars and go into the grids unescaped, which render strings as HTML.
         $this->renderProperties(
             t('Image Properties'),
             array(

@@ -165,6 +165,7 @@ class ImageInfo implements StringPrimaryRecordInterface
      *
      * @param string $folderName
      * @return $this
+     * @throws OrganizerException {@see OrganizerException::ERROR_CANNOT_MOVE_FILE_EXISTS} if either target file exists; nothing is overwritten.
      */
     public function moveToFolder(string $folderName) : self
     {
@@ -305,6 +306,12 @@ class ImageInfo implements StringPrimaryRecordInterface
         );
     }
 
+    /**
+     * Called on the upscaled image when a low-resolution image is linked to it. Merges the
+     * favorite, gallery and website flags and the label between it and all its low-resolution
+     * versions, in both directions; flags are only ever enabled. A pair is also one unit for
+     * moving and deleting, but a flag set later is not propagated.
+     */
     public function registerLowResImage(ImageInfo $image) : void
     {
         $this->syncProperties();
@@ -455,6 +462,7 @@ class ImageInfo implements StringPrimaryRecordInterface
 
     private ?ImageMetadata $metadata = null;
 
+    // TODO: Neither the browser nor any page calls this yet; only ImageInfoTest does.
     /**
      * Parses the sidecar on first access and keeps the result for this
      * instance. Reading it never touches the index or the changed flag.

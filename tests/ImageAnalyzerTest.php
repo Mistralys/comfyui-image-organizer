@@ -7,6 +7,7 @@ namespace Mistralys\ComfyUIOrganizer\Tests;
 use AppUtils\ArrayDataCollection;
 use AppUtils\FileHelper\FileInfo;
 use AppUtils\FileHelper\JSONFile;
+use AppUtils\ImageHelper_Exception;
 use AppUtils\Microtime;
 use AppUtils\OperationResult;
 use AppUtils\OperationResult_Collection;
@@ -462,6 +463,46 @@ final class ImageAnalyzerTest extends TestCase
 
         $this->assertSame('', $noSeed[ImageProperties::KEY_TEST_NAME]);
         $this->assertSame('', $noSeed[ImageProperties::KEY_SEED]);
+    }
+
+    /**
+     * `FileInfo::getFolder()` throws for a dotted folder name such as `SD1.5` when that
+     * folder does not exist on disk; the name is taken from the path instead.
+     */
+    public function testCompletePropertiesTakesDottedFolderNameFromPathNotFolderInfo() : void
+    {
+        $image = FileInfo::factory($this->workDir.'/SD1.5/3-castle-seed99-2.png');
+
+        $bag = ImageAnalyzer::completeProperties(array(), $image);
+
+        $this->assertSame('SD1.5', $bag[ImageProperties::KEY_FOLDER_NAME]);
+    }
+
+    /**
+     * Pins a known defect: the size lookup is not guarded, so one unreadable PNG
+     * aborts the analysis instead of being skipped with a warning.
+     */
+    public function testUnreadablePngAbortsAnalysisKnownDefectCharacterisation() : void
+    {
+        $path = $this->workDir.'/'.self::FOLDER_NAME.'/1-x-seed1-1.png';
+        file_put_contents($path, 'not a png');
+
+        $this->expectException(ImageHelper_Exception::class);
+
+        // getimagesize() raises a notice for the unreadable file before the exception is thrown.
+        set_error_handler(static fn() : bool => true);
+
+        try
+        {
+            $this->analyzer->analyze(FileInfo::factory($path), $this->resolveFixture('structured-flux-v32.json'));
+        }
+        finally
+        {
+            restore_error_handler();
+
+            $this->assertSame(0, $this->index->count());
+            $this->assertSame(0, $this->results->countResults());
+        }
     }
 
     /**

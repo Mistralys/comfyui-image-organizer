@@ -15,13 +15,18 @@ class PathFixerMessage implements StringableInterface
 
     private string $type;
     private string $message;
+
+    /**
+     * `$message` is a trusted HTML template and is not escaped. String arguments are HTML-escaped here,
+     * as they carry untrusted workflow, file or LoRA data: pass them as arguments, never in the
+     * template, and never pre-escaped.
+     */
     public function __construct(string $type, string|StringableInterface $message, string|int|float ...$args)
     {
         $this->type = $type;
         $this->message = (string)$message;
 
         if(!empty($args)) {
-            // The message is rendered as HTML; arguments carry untrusted workflow/file data.
             $escaped = array_map(
                 static fn(string|int|float $arg) : string|int|float => is_string($arg) ? htmlspecialchars($arg, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') : $arg,
                 $args

@@ -92,6 +92,9 @@ class ImageIndexEntry
     }
 
     /**
+     * Lenient: a missing field takes its default (`''`, `false`, `0`, `[]`), so a legacy entry
+     * without `label` or `modified` gains them in the next written index, a one-time large diff.
+     *
      * @param array<int|string,mixed> $data
      * @return self
      */
@@ -124,6 +127,7 @@ class ImageIndexEntry
 
     /**
      * Known keys in the order of {@see ImageInfo::serialize()}, followed by the unknown keys.
+     * The merge would renumber integer-like unknown keys; real index data has none.
      *
      * @return array<string,mixed>
      */

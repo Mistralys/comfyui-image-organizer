@@ -28,6 +28,7 @@ class ImageProperties
     public const string KEY_FACEFIX = 'isFacefix';
     public const string KEY_WEBSITE_IMAGE_ID = 'websiteImageID';
     public const string KEY_MODEL_NAME = 'modelName';
+    // The key the legacy sidecar's `custom_text` uses.
     public const string KEY_VAE_NAME = 'VAEName';
     public const string KEY_CLIP_NAMES = 'clipNames';
     public const string KEY_FLOW_TYPE = 'flowType';
@@ -95,6 +96,10 @@ class ImageProperties
         return $this->data->getInt(self::KEY_IMG_BATCH_NR);
     }
 
+    /**
+     * LoRA weights are stored in the bag under the LoRA ID, so a key counts as a LoRA
+     * only when it equals a known ID.
+     */
     public function getLoRASummary() : string
     {
         $loraIDs = LoRAsCollection::getInstance()->getIDs();
@@ -139,6 +144,10 @@ class ImageProperties
         return $this->setKey(self::KEY_FAVORITE, $enabled);
     }
 
+    /**
+     * Enabling "for website" also enables "for gallery", which in turn enables "favorite".
+     * Disabling does not cascade.
+     */
     public function setForWebsite(bool $enabled) : self
     {
         if($enabled) {
@@ -236,13 +245,19 @@ class ImageProperties
         return $this->data->getBool(self::KEY_FACEFIX);
     }
 
+    /**
+     * Only the structured sidecar writes `flowType` and `isPreview`, so legacy images give `null` and `false`.
+     */
     public function getFlowType() : ?string
     {
         return $this->data->getStringN(self::KEY_FLOW_TYPE);
     }
 
     /**
-     * @return int|null `null` when the version is absent or empty.
+     * Accepts an int or a numeric string, cast to int (`'32.7'` gives `32`, `'1e3'` gives `1000`).
+     * One key, `workflowVersion`, serves both sidecar formats; there is no `flowVersion` key or fallback.
+     *
+     * @return int|null `null` when the value is absent or of any other type, a float included.
      */
     public function getWorkflowVersion() : ?int
     {
