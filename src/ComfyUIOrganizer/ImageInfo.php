@@ -515,10 +515,6 @@ class ImageInfo implements StringPrimaryRecordInterface
 
     public function getWebsiteBadge() : string
     {
-        if(!$this->prop()->isForWebsite()) {
-            return '';
-        }
-
         if(!empty($this->prop()->getWebsiteImageID())) {
             $statusClass = 'success';
             $statusIcon = '✓';
@@ -536,16 +532,16 @@ class ImageInfo implements StringPrimaryRecordInterface
         OutputBuffering::start();
 
         ?>
-        <span class="badge bg-primary badge-toggle badge-for-website toggle-<?php if($this->prop()->isForWebsite()) { echo 'enabled'; } else { echo 'disabled'; } ?>" 
+        <span class="badge-toggle badge-for-website toggle-<?php if($this->prop()->isForWebsite()) { echo 'enabled'; } else { echo 'disabled'; } ?>"><span class="badge bg-primary"
               style="margin-right: 0;"
               title="<?php pt('This image is marked to be used on the website.') ?>"
         >
             <?php echo mb_strtoupper(t('Website')) ?>
-        </span><span class="badge bg-<?php echo $statusClass ?> badge-toggle" 
+        </span><span class="badge bg-<?php echo $statusClass ?>"
                 title="<?php echo $statusTitle ?>"
         >
             <?php echo $statusIcon ?>
-        </span>
+        </span></span>
         <?php
 
 
