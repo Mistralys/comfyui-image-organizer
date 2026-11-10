@@ -14,6 +14,7 @@ use Mistralys\ComfyUIOrganizer\Ajax\BaseImageMethod;
 use Mistralys\ComfyUIOrganizer\Ajax\Methods\CopyToOutputMethod;
 use Mistralys\ComfyUIOrganizer\Ajax\Methods\SendToWebsiteMethod;
 use Mistralys\ComfyUIOrganizer\Ajax\Methods\DeleteImageMethod;
+use Mistralys\ComfyUIOrganizer\Ajax\Methods\DeleteImagesMethod;
 use Mistralys\ComfyUIOrganizer\Ajax\Methods\FavoriteImageMethod;
 use Mistralys\ComfyUIOrganizer\Ajax\Methods\MoveImageMethod;
 use Mistralys\ComfyUIOrganizer\Ajax\Methods\SetCardSizeMethod;
@@ -53,6 +54,77 @@ class ImageCollection extends BaseStringPrimaryCollection
      */
     public function deleteImage(ImageInfo $image) : void
     {
+        $this->deleteImages(array($image));
+    }
+
+    /**
+     * Like {@see self::deleteImage()} for several images, but persists the index once.
+     *
+     * @param ImageInfo[] $images
+     */
+    public function deleteImages(array $images) : void
+    {
+        foreach($images as $image) {
+            $this->removeImageFiles($image);
+        }
+
+        $this->save();
+
+        $ids = array();
+        foreach($images as $image) {
+            $ids[] = $image->getID();
+        }
+
+        $this->updateFileIndexEntries(array(), $ids);
+    }
+
+    /**
+     * Rebuilds `data/file_index.json` from all images, through which `image.php` resolves every request.
+     */
+    public function writeFileIndex() : void
+    {
+        $index = array();
+
+        foreach($this->getAll() as $image) {
+            $index[$image->getID()] = $this->buildFileIndexEntry($image);
+        }
+
+        OrganizerApp::create()->getFileIndexFile()->putData($index);
+    }
+
+    /**
+     * Patches only the given entries of `data/file_index.json`, instead of rebuilding it.
+     * Call it after the file paths of an image changed. Falls back to a full rebuild
+     * when the file does not exist yet.
+     *
+     * @param ImageInfo[] $upserts Images to add or update.
+     * @param string[] $removedIDs IDs of images to drop.
+     */
+    public function updateFileIndexEntries(array $upserts, array $removedIDs = array()) : void
+    {
+        $entries = array();
+        foreach($upserts as $image) {
+            $entries[$image->getID()] = $this->buildFileIndexEntry($image);
+        }
+
+        if(!FileIndex::patch(OrganizerApp::create()->getFileIndexFile(), $entries, $removedIDs)) {
+            $this->writeFileIndex();
+        }
+    }
+
+    /**
+     * @return array<string,string>
+     */
+    private function buildFileIndexEntry(ImageInfo $image) : array
+    {
+        return array(
+            ImageIndexer::INDEX_IMAGE_FILE => $image->getImageFile()->getPath(),
+            ImageIndexer::INDEX_THUMBNAIL_FILE => $image->getThumbnailFile()->getPath(),
+        );
+    }
+
+    private function removeImageFiles(ImageInfo $image) : void
+    {
         unset($this->items[$image->getID()]);
 
         $siblings = $image->getSiblingFiles();
@@ -66,8 +138,6 @@ class ImageCollection extends BaseStringPrimaryCollection
         }
 
         $this->index->remove($image->getID());
-
-        $this->save();
     }
 
     /**
@@ -119,6 +189,9 @@ class ImageCollection extends BaseStringPrimaryCollection
             $baseURL,
             JSONConverter::var2json(array(
                 'deleteImage' => DeleteImageMethod::METHOD_NAME,
+                'deleteImages' => DeleteImagesMethod::METHOD_NAME,
+                'payloadImageIDs' => DeleteImagesMethod::REQUEST_PARAM_IMAGE_IDS,
+                'payloadDeleted' => DeleteImagesMethod::RESPONSE_DELETED,
                 'favoriteImage' => FavoriteImageMethod::METHOD_NAME,
                 'moveImage' => MoveImageMethod::METHOD_NAME,
                 'setCardSize' => SetCardSizeMethod::METHOD_NAME,

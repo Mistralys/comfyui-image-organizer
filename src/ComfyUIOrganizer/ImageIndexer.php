@@ -46,26 +46,18 @@ class ImageIndexer
     }
 
     /**
-     * The only writer of `data/file_index.json`, which `image.php` resolves every request through.
-     * Moves and deletes done in the UI do not rewrite it, so it lags until the next run.
+     * Rebuilds `data/file_index.json`, which `image.php` resolves every request through.
+     * Moves and deletes in the UI update it themselves; this run repairs any drift.
      */
     public static function updateFileIndex(): void
     {
         Console::header('Updating image index file');
 
-        $app = OrganizerApp::create();
-        $index = array();
+        $collection = OrganizerApp::create()->createImageCollection();
 
-        foreach ($app->createImageCollection()->getAll() as $image) {
-            $index[$image->getID()] = array(
-                self::INDEX_IMAGE_FILE => $image->getImageFile()->getPath(),
-                self::INDEX_THUMBNAIL_FILE => $image->getThumbnailFile()->getPath(),
-            );
-        }
+        Console::line1('Writing index file with [%d] entries.', count($collection->getAll()));
 
-        Console::line1('Writing index file with [%d] entries.', count($index));
-
-        $app->getFileIndexFile()->putData($index);
+        $collection->writeFileIndex();
 
         Console::line1('ALL DONE!');
         Console::nl();

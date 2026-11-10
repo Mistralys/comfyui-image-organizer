@@ -35,7 +35,7 @@ The Composer package `type` is `tool`, `minimum-stability` is `dev` with `prefer
 ## Architecture
 
 - **Application skeleton:** `OrganizerApp` extends the framework's `X4Application` and is used as a process-wide singleton via `OrganizerApp::create()`. The framework constructor starts a PHP session when running under a web server (the CLI gets an in-memory array), which the browser page uses for UI state.
-- **Page + AJAX pattern:** each UI page is a class in `Pages/`; each AJAX action is a class in `Ajax/Methods/`. Both sets are discovered by scanning their folders (`ClassHelper::findClassesInRepository`), not by explicit registration. AJAX calls are GET requests against the current page URL with an `ajax=<MethodName>` parameter.
+- **Page + AJAX pattern:** each UI page is a class in `Pages/`; each AJAX action is a class in `Ajax/Methods/`. Both sets are discovered by scanning their folders (`ClassHelper::findClassesInRepository`), not by explicit registration. AJAX calls are GET requests against the current page URL with an `ajax=<MethodName>` parameter (`DeleteImagesMethod` is sent by POST, as its ID list can exceed URL limits).
 - **Collection / record pattern:** `ImageCollection`, `LoRAsCollection` and `WorkflowsCollection` extend `BaseStringPrimaryCollection`; their records (`ImageInfo`, `LoRA`, `WorkflowFile`) implement `StringPrimaryRecordInterface`.
 - **JSON-file storage:** the index (`data/images.json`) is loaded wholesale into `ImageCollection`, mutated through `ImageInfo`/`ImageProperties`, and rewritten by `ImageCollection::save()`.
 - **CLI build tasks:** `Builder` exposes static methods wired to Composer scripts; they bootstrap the app through `prepend.php` and delegate to `ImageIndexer`.

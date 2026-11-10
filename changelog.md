@@ -1,5 +1,9 @@
 ## Unreleased
 
+- Browser: Moving or deleting images now patches only the affected entries of the image lookup file immediately; before, moved images failed to load until the next indexing run.
+
+- Browser: Deleting the selected images is now a single request instead of one per image, with a progress message; the selection is kept if the request fails.
+
 - Upscaling: An upscaled image is now a file beside its original with the suffix `_upscaled` (`x_00001_.png` and `x_00001_upscaled.png`). It needs no sidecar, is never indexed, and inherits the original's metadata.
 - Upscaling: The browser shows the original card with an "Upscaled" badge; the details page, "Copy to output" and the image delivery use the upscaled file. The "Upscaling" filter shows images that have one.
 - Upscaling: Moving or deleting an image now also moves or deletes its upscaled, PSD, JPG and website image files.

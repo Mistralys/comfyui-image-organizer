@@ -6,6 +6,9 @@ class ImageBrowser
      * @param {String} pageURL
      * @param {Object} ajaxMethodInfo
      * @param {String} ajaxMethodInfo.deleteImage
+     * @param {String} ajaxMethodInfo.deleteImages
+     * @param {String} ajaxMethodInfo.payloadImageIDs
+     * @param {String} ajaxMethodInfo.payloadDeleted
      * @param {String} ajaxMethodInfo.favoriteImage
      * @param {String} ajaxMethodInfo.moveImage
      * @param {String} ajaxMethodInfo.setCardSize
@@ -285,11 +288,42 @@ class ImageBrowser
 
     HandleDeleteResponse(image)
     {
+        this.removeImage(image);
+
+        UserInterface.ShowStatus('The image has been deleted successfully.');
+    }
+
+    /**
+     * @param {ImageHandler} image
+     */
+    removeImage(image)
+    {
         delete this.images[image.GetID()];
 
         image.RemoveFromDOM();
+    }
 
-        UserInterface.ShowStatus('The image has been deleted successfully.');
+    /**
+     * @param {Object} response
+     * @param {Number} total Number of images requested for deletion.
+     */
+    HandleDeleteImagesResponse(response, total)
+    {
+        const deletedIDs = response[this.ajaxMethodInfo.payloadDeleted];
+
+        for(const imageID of deletedIDs) {
+            const image = this.GetImage(imageID);
+            if(image !== null) {
+                this.removeImage(image);
+            }
+        }
+
+        let message = deletedIDs.length + ' image(s) deleted successfully.';
+        if(deletedIDs.length < total) {
+            message = deletedIDs.length + ' of ' + total + ' images deleted; the rest were not found.';
+        }
+
+        UserInterface.ShowStatus(message);
     }
 
     /**
@@ -298,8 +332,9 @@ class ImageBrowser
      * @param {String} action
      * @param {Function} successHandler
      * @param {Object|null} params
+     * @param {Boolean} usePost Sends the parameters in the request body instead of the URL.
      */
-    SendRequest(image, action, successHandler, params=null)
+    SendRequest(image, action, successHandler, params=null, usePost=false)
     {
         if(params === null) {
             params = {};
@@ -309,16 +344,22 @@ class ImageBrowser
             params[this.ajaxMethodInfo.imageID] = image.GetID();
         }
 
-        params['ajax'] = action;
-
-        const urlParams = new URLSearchParams(params);
-
         // check if pageURL contains a '?', if not, add it
         if (!this.pageURL.includes('?')) {
             this.pageURL += '?';
         }
 
-        const endpoint = this.pageURL + '&' + urlParams.toString();
+        let endpoint;
+        let fetchOptions = {};
+
+        if(usePost) {
+            // Only the action goes in the URL; the parameters can be too long for it.
+            endpoint = this.pageURL + '&' + new URLSearchParams({'ajax': action}).toString();
+            fetchOptions = {method: 'POST', body: new URLSearchParams(params)};
+        } else {
+            params['ajax'] = action;
+            endpoint = this.pageURL + '&' + new URLSearchParams(params).toString();
+        }
 
         console.log('AJAX | ['+action+'] | Sending request.');
         console.log('AJAX | ['+action+'] | Endpoint ['+endpoint+']');
@@ -327,7 +368,7 @@ class ImageBrowser
             console.log('AJAX | [' + action + '] | Image [' + image.GetID() + ']');
         }
 
-        fetch(endpoint)
+        fetch(endpoint, fetchOptions)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok: ' + response.statusText);
@@ -344,6 +385,7 @@ class ImageBrowser
             })
             .catch(error => {
                 console.error('Error:', error);
+                UserInterface.ShowStatus('The request failed. See the browser console for details.');
             });
     }
 
@@ -402,11 +444,21 @@ class ImageBrowser
 
     DeleteSelected()
     {
-        for(const imageID in this.imageSelection) {
-            const image = this.imageSelection[imageID];
-            this.HandleImageSelected(image, false);
-            this.DeleteImage(imageID);
+        const imageIDs = Object.keys(this.imageSelection);
+        if(imageIDs.length === 0) {
+            return;
         }
+
+        UserInterface.ShowStatus('Deleting ' + imageIDs.length + ' image(s)...');
+
+        // The selection is kept until the server confirms, so that a failed request can be retried.
+        this.SendRequest(
+            null,
+            this.ajaxMethodInfo.deleteImages,
+            response => this.HandleDeleteImagesResponse(response, imageIDs.length),
+            {[this.ajaxMethodInfo.payloadImageIDs]: imageIDs.join(',')},
+            true
+        );
     }
 
     SelectAll()

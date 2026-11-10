@@ -201,7 +201,9 @@ class ImageInfo implements StringPrimaryRecordInterface
         $this->imageFile = $newImageFile;
         $this->sidecarFile = $newSidecarFile;
 
-        OrganizerApp::create()->createImageCollection()->save();
+        $collection = OrganizerApp::create()->createImageCollection();
+        $collection->save();
+        $collection->updateFileIndexEntries(array($this));
 
         // Do this last, so that the image is not deleted if the save fails.
         $oldImage->delete();
