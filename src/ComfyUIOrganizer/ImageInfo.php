@@ -25,6 +25,7 @@ use Mistralys\ComfyUIOrganizer\Pages\ImageDetails;
 use Mistralys\X4\UI\Page\BasePage;
 use Mistralys\X4\UI\UserInterface;
 use function AppLocalize\t;
+use function AppLocalize\pt;
 use const Mistralys\ComfyUIOrganizer\Config\APP_WEBROOT_URL;
 
 class ImageInfo implements StringPrimaryRecordInterface
@@ -573,6 +574,26 @@ class ImageInfo implements StringPrimaryRecordInterface
         if($this->getPSDFile()->exists()) {
             ?>
             <span class="badge text-bg-success"><?php echo mb_strtoupper(t('Edited')) ?></span>
+            <?php
+        }
+
+        return OutputBuffering::get();
+    }
+
+    public function getWebsiteBadge() : string
+    {
+        OutputBuffering::start();
+
+        if($this->prop()->isForWebsite()) {
+            ?>
+            <span class="badge bg-primary badge-toggle badge-for-website toggle-<?php if($this->prop()->isForWebsite()) { echo 'enabled'; } else { echo 'disabled'; } ?>" 
+                  title="<?php pt('This image is marked to be used on the website.') ?>"
+            >
+                <?php echo mb_strtoupper(t('Website')) ?>
+                <?php 
+                    if($this->getWebsiteImage()->exists()) { echo '✓'; } else { echo '✗'; }
+                ?>
+            </span>
             <?php
         }
 
