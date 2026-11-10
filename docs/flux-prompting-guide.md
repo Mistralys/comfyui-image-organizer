@@ -66,6 +66,13 @@ Use one or two strong effects. Too many make the image unfocused.
 
 Be specific when it matters: `a young woman with curly red hair` renders more consistently than `a woman`. When there are several subjects, describe how they relate in full sentences: who faces whom, who is in focus, who is asleep.
 
+The points below come from iterating on a single scene (see [Worked example: iterating on a scene](#worked-example-iterating-on-a-scene)). They have not been tested beyond that scene.
+
+- **Give every must-have element its own sentence.** An element mentioned only as a short clause in a list can be dropped entirely. In the cavern example, statues and crystals listed as clauses did not appear; a detailed sentence for each made them appear.
+- **Say what the thing physically is, and state count and placement.** A role word such as `guardians` can be misread (in the example, as faces hanging from the ceiling). `One life-size carved stone statue of a human woman in each alcove, standing on a plinth, hands folded` is unambiguous.
+- **State relative scale when it matters.** If size is not given, the model chooses it. Use a reference: `about the height of the statues`, `twice as tall as a person`.
+- **Describe a new object part by part** (for a tree: trunk, branches, leaves, and what each is made of). This keeps it from blending into similar elements nearby, such as crystals on a wall.
+
 ### Style
 
 Name the style concretely and mention it early when it is central to the result. "The grainy texture of mid-20th-century color film" says more than "vintage".
@@ -80,6 +87,16 @@ Name the style concretely and mention it early when it is central to the result.
 | Vintage | `80s vintage photo`, `2000s digicam`, `polaroid`, `sepia tone` |
 
 For photographs, name the camera, lens or film stock instead of writing "professional photo", then describe what that look does to the image: `visible grain`, `a warm color cast`, `slight chromatic aberration at the edges`.
+
+### Natural versus built settings
+
+Material and origin words steer a setting toward looking grown or constructed. In the cavern example, `circular`, `symmetrical` and `arched` produced a built hall with smooth walls and a skylight. `Vast natural cavern`, `irregular`, `raw rock`, `craggy`, `hewn into the rock` and `chisel marks` produced a natural cave with carved alcoves.
+
+| For a natural look | For a built look |
+|---|---|
+| `natural cavern`, `irregular rock walls`, `uneven vaulted ceiling` | `hall`, `chamber with smooth plastered walls` |
+| `raw rock`, `craggy`, `weathered` | `masonry`, `polished`, `cut stone blocks` |
+| `hewn into the rock`, `chisel marks` | `built`, `architectural`, `symmetrical`, `ordered rows of arches` |
 
 ### Camera and lens
 
@@ -98,6 +115,8 @@ For photographs, name the camera, lens or film stock instead of writing "profess
 Example: `Shot on Hasselblad X2D, 80mm lens, f/2.8, natural lighting`.
 
 If a result keeps pulling back further than you want, state the subject and its framing first and move environmental details later.
+
+The viewpoint also decides what is visible. In the cavern example, a view from the center of the room hid the alcoves around the edge; `wide shot from a low angle near the entrance, looking across the chamber` showed them.
 
 ### Lighting
 
@@ -180,6 +199,8 @@ If an unwanted element keeps appearing:
 - Add detail to the replacement (material, color, what it is doing) so it takes up the space.
 - Give it context so it belongs in the scene: `a deserted beach at dawn, before the first swimmers arrive`.
 
+Features you do not mention can be invented. In the cavern example the model added a sky opening in the ceiling; describing the intended feature (`a solid rock ceiling hung with stalactites`) replaced it.
+
 ## Text in images
 
 For each block of text, state three things:
@@ -203,6 +224,9 @@ Tips:
 - Quality tags ("masterpiece", "highly detailed", "ultrarealistic") used in place of concrete description.
 - Negative phrasing ("no hat", "not blurry") instead of a positive description.
 - Stacking many effects, or mixing styles that do not belong together.
+- Listing important elements as short clauses, so they are dropped (see [Subject and relationships](#subject-and-relationships)).
+- Role or abstract words (`guardians`, `peaceful`) in place of a physical description of what the thing is.
+- Words such as `symmetrical`, `circular` or `arched` in a scene meant to look natural (see [Natural versus built settings](#natural-versus-built-settings)).
 
 ## Worked example
 
@@ -227,6 +251,30 @@ What changed:
 - The weight syntax was removed; the subject is stated first in plain language.
 - The negative terms were dropped. "Blurry" is handled by sharp-subject wording and "extra fingers" has no direct positive equivalent here.
 - Keywords were turned into sentences in the order image type, subject, setting, light, framing.
+
+## Worked example: iterating on a scene
+
+A fantasy cavern prompt, revised over four generations. The images were judged by eye, with no controlled comparison.
+
+**First prompt (abridged)**
+
+```text
+Fantasy digital concept art of a circular room in a crystal cavern. At the center stands a stone pedestal with a large crystal egg. Crystals grow out of the walls and glow from within. Peaceful female stone guardians stand in alcoves around the walls. Pastel pink and purple palette.
+```
+
+Result: the alcoves, egg and pedestal appeared. The guardians and crystals did not, and faces hung from the ceiling.
+
+**Changes and effects**
+
+1. The guardians and crystals each got a detailed sentence (life-size stone statues of human women, one per alcove, robed, hands folded; large faceted crystal clusters between the alcoves). The ceiling was described as solid rock. Statues and crystals appeared, and the faces went away.
+2. The wording changed from `circular` and `symmetrical` to `vast natural cavern`, `raw rock`, `hewn into the rock` and `chisel marks`, and the viewpoint moved to a low angle near the entrance. The result looked like a natural cave with the alcoves visible.
+3. The egg sentence was replaced by a translucent crystal tree described part by part (trunk, branches, large leaves). The rest of the prompt was left unchanged.
+
+## Iterating on a prompt
+
+- Change one element at a time and keep the rest of a working prompt as it is.
+- When an element is missing or misread, rewrite its description before adding more words elsewhere.
+- When an unwanted feature appears, describe what should be there instead.
 
 ## Further reading
 
