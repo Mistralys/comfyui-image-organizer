@@ -101,7 +101,6 @@ class ImageBrowser extends BaseOrganizerPage
     {
         $results = new ImageIndexer(OrganizerApp::create())
             ->indexFolder($this->activeFolder)
-            //->detectUpscaledInFolder($this->activeFolder)
             ->getAnalysisResults();
 
         $this->redirectWithSuccessMessage(
@@ -441,11 +440,6 @@ class ImageBrowser extends BaseOrganizerPage
             return false;
         }
 
-        // Skip images that have an upscaled version, we only want to display the upscaled images.
-        if($image->prop()->getUpscaledImage() !== null) {
-            return false;
-        }
-
         return true;
     }
 
@@ -645,17 +639,6 @@ class ImageBrowser extends BaseOrganizerPage
                     <?php pt('Set label...'); ?>
                 </a>
             </li>
-            <?php if(!$image->isUpscaled()) { ?>
-            <li>
-                <a href="#"
-                   onclick="<?php echo $this->objName ?>.SetUpscaledID('<?php echo $image->getID() ?>');return false;"
-                   class="dropdown-item"
-                >
-                    <?php echo Icon::typeSolid('expand') ?>
-                    <?php pt('Set upscaled ID...'); ?>
-                </a>
-            </li>
-        <?php } ?>
             <li class="toggle-for-gallery">
                 <a href="#"
                    onclick="<?php echo $this->objName ?>.ToggleForGallery('<?php echo $image->getID() ?>');return false;"

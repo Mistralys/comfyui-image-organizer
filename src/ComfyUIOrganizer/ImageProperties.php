@@ -18,7 +18,6 @@ class ImageProperties
     public const string KEY_FAVORITE = 'favorite';
     public const string KEY_FOR_WEBSITE = 'forWebsite';
     public const string KEY_FOR_GALLERY = 'forGallery';
-    public const string KEY_UPSCALED_IMAGE = 'upscaledImage';
     public const string KEY_CFG = 'imgCFG';
     public const string KEY_PROMPT_NEGATIVE = 'promptNegative';
     public const string KEY_PROMPT_POSITIVE = 'promptPositive';
@@ -37,11 +36,9 @@ class ImageProperties
 
     private ArrayDataCollection $data;
     private Closure $modifiedCallback;
-    private ImageInfo $image;
 
-    public function __construct(ImageInfo $image, ArrayDataCollection $data, Closure $modifiedCallback)
+    public function __construct(ArrayDataCollection $data, Closure $modifiedCallback)
     {
-        $this->image = $image;
         $this->data = $data;
         $this->modifiedCallback = $modifiedCallback;
     }
@@ -164,49 +161,6 @@ class ImageProperties
         }
 
         return $this->setKey(self::KEY_FOR_GALLERY, $enabled);
-    }
-
-    private ?ImageInfo $upscaledImage = null;
-    private bool $upscaledImageSet = false;
-
-    public function getUpscaledImage() : ?ImageInfo
-    {
-        if($this->upscaledImageSet) {
-            return $this->upscaledImage;
-        }
-
-        $this->upscaledImageSet = true;
-
-        $id = $this->data->getString(self::KEY_UPSCALED_IMAGE);
-        $collection = OrganizerApp::create()->createImageCollection();
-
-        if(!empty($id) && $collection->idExists($id)) {
-            $this->upscaledImage = $collection->getByID($id);
-        }
-
-        return $this->upscaledImage;
-    }
-
-    /**
-     * Sets the upscaled image for this image.
-     *
-     * > NOTE: The upscaled image will also inherit this
-     * > image's favorite status and gallery status if they
-     * > are enabled for this image.
-     *
-     * @param ImageInfo $image
-     * @return self
-     */
-    public function setUpscaledImage(ImageInfo $image) : self
-    {
-        $this->upscaledImageSet = false;
-        $this->upscaledImage = null;
-
-        $this->setKey(self::KEY_UPSCALED_IMAGE, $image->getID());
-
-        $image->registerLowResImage($this->image);
-
-        return $this;
     }
 
     private function setKey(string $name, mixed $value) : self

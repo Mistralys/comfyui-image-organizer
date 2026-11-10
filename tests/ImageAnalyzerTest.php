@@ -151,7 +151,6 @@ final class ImageAnalyzerTest extends TestCase
             $sidecarPath,
             $date,
             'stored-checkpoint',
-            false,
             $modified,
             $label,
             array('width' => 1, 'height' => 1),
@@ -200,7 +199,6 @@ final class ImageAnalyzerTest extends TestCase
         $this->assertSame($this->hashOf($image), $entry->getID());
         $this->assertSame($image->getPath(), $entry->getImageFile());
         $this->assertSame($sidecar->getSidecar()->getPath(), $entry->getSidecarFile());
-        $this->assertFalse($entry->isUpscaled());
         $this->assertFalse($entry->isModified());
         $this->assertSame(array('width' => 8, 'height' => 8), $entry->getImageSize());
 
@@ -503,29 +501,6 @@ final class ImageAnalyzerTest extends TestCase
             $this->assertSame(0, $this->index->count());
             $this->assertSame(0, $this->results->countResults());
         }
-    }
-
-    /**
-     * Pins the upscale heuristics as they are today, including the swapped
-     * arguments of `str_contains()` that make the file name check dead.
-     *
-     * Plan `2026-10-07-structured-sidecar-metadata` keeps this behavior on
-     * purpose. The follow-up plan that fixes the check must update this test:
-     * a file name containing "upscale" will then mark the image upscaled.
-     */
-    public function testUpscaleFlagCharacterisation() : void
-    {
-        $byFactor = $this->createPng('1-x-seed1-1.png', 1);
-        $this->analyzer->analyze($byFactor, $this->resolveFixture('structured-upscaled.json', 'a.json'));
-        $this->assertTrue($this->index->get($this->hashOf($byFactor))?->isUpscaled());
-
-        $bySize = $this->createPng('2-x-seed1-1.png', 2, 2000, 10);
-        $this->analyzer->analyze($bySize, $this->resolveFixture('structured-v31-early.json', 'b.json'));
-        $this->assertTrue($this->index->get($this->hashOf($bySize))?->isUpscaled());
-
-        $byName = $this->createPng('3-upscale-seed1-1.png', 3);
-        $this->analyzer->analyze($byName, $this->resolveFixture('structured-v31-early.json', 'c.json'));
-        $this->assertFalse($this->index->get($this->hashOf($byName))?->isUpscaled());
     }
 
     public function testResultMessagesContainNoSidecarContent() : void

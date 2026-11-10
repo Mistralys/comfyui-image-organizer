@@ -21,7 +21,6 @@ class ImageIndexEntry
         ImageInfo::KEY_SIDECAR_FILE,
         ImageInfo::KEY_DATE,
         ImageInfo::KEY_CHECKPOINT,
-        ImageInfo::KEY_UPSCALED,
         ImageInfo::KEY_IMAGE_SIZE,
         ImageInfo::KEY_MODIFIED,
         ImageInfo::KEY_LABEL,
@@ -33,7 +32,6 @@ class ImageIndexEntry
     private string $sidecarFile;
     private string $date;
     private string $checkpoint;
-    private bool $upscaled;
     private bool $modified;
     private string $label;
 
@@ -58,7 +56,6 @@ class ImageIndexEntry
      * @param string $sidecarFile
      * @param string $date ISO date string.
      * @param string $checkpoint
-     * @param bool $upscaled
      * @param bool $modified
      * @param string $label
      * @param array{width:int,height:int} $imageSize
@@ -71,7 +68,6 @@ class ImageIndexEntry
         string $sidecarFile,
         string $date,
         string $checkpoint,
-        bool $upscaled,
         bool $modified,
         string $label,
         array $imageSize,
@@ -83,7 +79,6 @@ class ImageIndexEntry
         $this->sidecarFile = $sidecarFile;
         $this->date = $date;
         $this->checkpoint = $checkpoint;
-        $this->upscaled = $upscaled;
         $this->modified = $modified;
         $this->label = $label;
         $this->imageSize = $imageSize;
@@ -116,7 +111,6 @@ class ImageIndexEntry
             $collection->getString(ImageInfo::KEY_SIDECAR_FILE),
             $collection->getString(ImageInfo::KEY_DATE),
             $collection->getString(ImageInfo::KEY_CHECKPOINT),
-            $collection->getBool(ImageInfo::KEY_UPSCALED),
             $collection->getBool(ImageInfo::KEY_MODIFIED),
             $collection->getString(ImageInfo::KEY_LABEL),
             array('width' => $size->getInt('width'), 'height' => $size->getInt('height')),
@@ -140,7 +134,6 @@ class ImageIndexEntry
                 ImageInfo::KEY_SIDECAR_FILE => $this->sidecarFile,
                 ImageInfo::KEY_DATE => $this->date,
                 ImageInfo::KEY_CHECKPOINT => $this->checkpoint,
-                ImageInfo::KEY_UPSCALED => $this->upscaled,
                 ImageInfo::KEY_IMAGE_SIZE => $this->imageSize,
                 ImageInfo::KEY_MODIFIED => $this->modified,
                 ImageInfo::KEY_LABEL => $this->label,
@@ -195,7 +188,6 @@ class ImageIndexEntry
             $source->sidecarFile,
             $source->date,
             $source->checkpoint,
-            $source->upscaled,
             $source->modified,
             $source->label,
             $source->imageSize,
@@ -227,11 +219,6 @@ class ImageIndexEntry
     public function getCheckpoint() : string
     {
         return $this->checkpoint;
-    }
-
-    public function isUpscaled() : bool
-    {
-        return $this->upscaled;
     }
 
     public function isModified() : bool

@@ -179,6 +179,7 @@ class ImageDetails extends BasePage
                 t('Folder') => $serialized->getString(ImageProperties::KEY_FOLDER_NAME),
                 t('Image file') => $this->renderMandatoryFile($this->image->getImageFile()),
                 t('Sidecar file') => $this->renderMandatoryFile($this->image->getSidecarFile()),
+                t('Upscaled file') => $this->renderOptionalFile($this->image->getUpscaledFile()),
                 t('PSD File') => $this->renderOptionalFile($this->image->getPSDFile()),
                 t('JPG File') => $this->renderOptionalFile($this->image->getJPGFile()),
                 t('JPG Specifications') => '<i>'.t('Original size, JPG format (%1$s)', t('Export quality: %1$s', 6)).'</i>'

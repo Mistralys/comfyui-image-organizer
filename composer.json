@@ -33,7 +33,8 @@
   "scripts": {
     "build": "Mistralys\\ComfyUIOrganizer\\Builder::build",
     "index": "Mistralys\\ComfyUIOrganizer\\Builder::index",
-    "detect-upscaled": "Mistralys\\ComfyUIOrganizer\\Builder::detectUpscaled",
+    "migrate-upscaled": "Mistralys\\ComfyUIOrganizer\\Builder::migrateUpscaled",
+    "migrate-upscaled-apply": "Mistralys\\ComfyUIOrganizer\\Builder::migrateUpscaledApply",
     "clean-folders": "Mistralys\\ComfyUIOrganizer\\Builder::cleanFolders",
     "update-file-index": "Mistralys\\ComfyUIOrganizer\\Builder::updateFileIndex",
     "verify-metadata": "Mistralys\\ComfyUIOrganizer\\Builder::verifyMetadata",

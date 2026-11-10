@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Mistralys\ComfyUIOrganizer;
 
-use AppUtils\ConvertHelper;
 use AppUtils\FileHelper\FileInfo;
 use AppUtils\FileHelper\FolderInfo;
 use AppUtils\FileHelper\JSONFile;
@@ -90,11 +89,25 @@ class ImageIndexer
      */
     public function findAllImages() : array
     {
-        return $this->app->getImageFolder()->createFileFinder()
+        return self::filterOriginals($this->app->getImageFolder()->createFileFinder()
             ->includeExtension('png')
             ->makeRecursive()
             ->getFiles()
-            ->typeANY();
+            ->typeANY());
+    }
+
+    /**
+     * Drops the `_upscaled.png` versions, which belong to an image and are never indexed themselves.
+     *
+     * @param FileInfo[] $files
+     * @return FileInfo[]
+     */
+    public static function filterOriginals(array $files) : array
+    {
+        return array_values(array_filter(
+            $files,
+            static fn(FileInfo $file) : bool => !ImageInfo::isUpscaledFileName($file->getName())
+        ));
     }
 
     public function indexAll(): self
@@ -170,93 +183,6 @@ class ImageIndexer
         return $this->analysisResults;
     }
 
-    public function detectUpscaledInFolder(string $folderName) : self
-    {
-        return $this->detectUpscaledImages($folderName);
-    }
-
-    public function detectUpscaledImages(?string $folderName=null) : self
-    {
-        Console::header('Upscaled images detection');
-
-        $collection = new ImageCollection($this->app->getStorageFile());
-
-        foreach($this->detectSettingHashes($collection, $folderName) as $hash => $images)
-        {
-            // We can only handle pairs of images: One regular and one upscaled.
-            // Other more complex cases must be handled manually, as the choice
-            // is not obvious.
-            if(count($images) !== 2) {
-                continue;
-            }
-
-            Console::line1('Hash match', $hash);
-
-            $regular = null;
-            $upscaled = null;
-
-            foreach($images as $image) {
-                if(!$image->isUpscaled()) {
-                    $regular = $image;
-                } else {
-                    $upscaled = $image;
-                }
-
-                Console::line2(
-                    'Image ID [%s] | Size [%dx%d] | Upscaled [%s] | Facefix [%s]',
-                    $image->getImageFile()->getBaseName(),
-                    $image->getImageSize()['width'], $image->getImageSize()['height'],
-                    ConvertHelper::boolStrict2string($image->isUpscaled(), true),
-                    ConvertHelper::boolStrict2string($image->prop()->isFacefix(), true)
-                );
-            }
-
-            if($regular && $upscaled)
-            {
-                Console::line2('OK | Linking upscaled image [%s] to regular image [%s].', $upscaled->getImageFile()->getBaseName(), $regular->getImageFile()->getBaseName());
-                $regular->prop()->setUpscaledImage($upscaled);
-            } else {
-                Console::line2('SKIP | Could not determine which image is the upscaled one, skipping.');
-            }
-        }
-
-        $collection->save();
-
-        return $this;
-    }
-
-    /**
-     * Groups images by their settings hash.
-     * @return array<string,ImageInfo[]>
-     */
-    private function detectSettingHashes(ImageCollection $collection, ?string $folderName=null) : array
-    {
-        $hashes = array();
-
-        foreach($collection->getAll() as $image)
-        {
-            if($folderName !== null && $image->prop()->getFolderName() !== $folderName) {
-                continue;
-            }
-
-            // Skip images that are already marked as upscaled or already have an upscaled image assigned.
-            if($image->prop()->getUpscaledImage() !== null) {
-                continue;
-            }
-
-            $hash = $image->getSettingsHash();
-            if(!isset($hashes[$hash])) {
-                $hashes[$hash] = array();
-            }
-
-            $hashes[$hash][] = $image;
-        }
-
-        Console::line1('Found [%d] unique image settings hashes.', count($hashes));
-
-        return $hashes;
-    }
-
     public function cleanUpFolders() : self
     {
         Console::header('Cleaning up empty folders');
@@ -286,10 +212,10 @@ class ImageIndexer
             return array();
         }
 
-        return $folder->createFileFinder()
+        return self::filterOriginals($folder->createFileFinder()
             ->includeExtension('png')
             ->getFiles()
-            ->typeANY();
+            ->typeANY());
     }
 
     public function indexFolder(string $folderName) : self

@@ -37,9 +37,14 @@ class ImageInfo implements StringPrimaryRecordInterface
     public const string KEY_DATE = 'date';
     public const string KEY_LABEL = 'label';
     public const string KEY_SIDECAR_FILE = 'sidecarFile';
-    public const string KEY_UPSCALED = 'upscaled';
     public const string KEY_IMAGE_SIZE = 'imageSize';
     public const string KEY_MODIFIED = 'modified';
+
+    /**
+     * Name suffix of the upscaled version of an image, which sits beside the image.
+     * Such a file has no sidecar and is never indexed; see {@see self::resolveUpscaledPath()}.
+     */
+    public const string UPSCALED_SUFFIX = '_upscaled';
 
     private FileInfo $imageFile;
     private Microtime $date;
@@ -47,7 +52,6 @@ class ImageInfo implements StringPrimaryRecordInterface
     private ImageProperties $properties;
     private string $id;
     private JSONFile $sidecarFile;
-    private bool $upscaled;
 
     /**
      * @var array{width:int, height:int}
@@ -61,7 +65,6 @@ class ImageInfo implements StringPrimaryRecordInterface
      * @param JSONFile $sidecarFile
      * @param Microtime $date
      * @param string $checkpoint
-     * @param bool $upscaled
      * @param bool $modified
      * @param string $label
      * @param array{width:int, height:int} $imageSize
@@ -73,7 +76,6 @@ class ImageInfo implements StringPrimaryRecordInterface
         JSONFile $sidecarFile,
         Microtime $date,
         string $checkpoint,
-        bool $upscaled,
         bool $modified,
         string $label,
         array $imageSize,
@@ -84,11 +86,10 @@ class ImageInfo implements StringPrimaryRecordInterface
         $this->sidecarFile = $sidecarFile;
         $this->imageSize = $imageSize;
         $this->date = $date;
-        $this->upscaled = $upscaled;
         $this->label = $label;
         $this->modified = $modified;
         $this->checkpoint = $checkpoint;
-        $this->properties = new ImageProperties($this, $properties, $this->onPropertiesModified(...));
+        $this->properties = new ImageProperties($properties, $this->onPropertiesModified(...));
     }
 
     public function prop() : ImageProperties
@@ -160,12 +161,12 @@ class ImageInfo implements StringPrimaryRecordInterface
     }
 
     /**
-     * Moves the image and sidecar file to the specified folder,
-     * and updates the properties to reflect the new folder name.
+     * Moves the image, its sidecar file and its {@see self::getSiblingFiles()} to the specified
+     * folder, and updates the properties to reflect the new folder name.
      *
      * @param string $folderName
      * @return $this
-     * @throws OrganizerException {@see OrganizerException::ERROR_CANNOT_MOVE_FILE_EXISTS} if either target file exists; nothing is overwritten.
+     * @throws OrganizerException {@see OrganizerException::ERROR_CANNOT_MOVE_FILE_EXISTS} if any target file exists; nothing is overwritten.
      */
     public function moveToFolder(string $folderName) : self
     {
@@ -178,8 +179,18 @@ class ImageInfo implements StringPrimaryRecordInterface
         $newImageFile = $this->resolveTargetFile($targetFolder, $this->imageFile);
         $newSidecarFile = ClassHelper::requireObjectInstanceOf(JSONFile::class, $this->resolveTargetFile($targetFolder, $this->sidecarFile));
 
+        // Resolved before anything is copied, so a clash leaves everything in place.
+        $siblingMoves = array();
+        foreach($this->getSiblingFiles() as $sibling) {
+            $siblingMoves[] = array($sibling, $this->resolveTargetFile($targetFolder, $sibling));
+        }
+
         $this->imageFile->copyTo($newImageFile);
         $this->sidecarFile->copyTo($newSidecarFile);
+
+        foreach($siblingMoves as list($oldSibling, $newSibling)) {
+            $oldSibling->copyTo($newSibling);
+        }
 
         // Update the folder name in the properties.
         $this->prop()->setFolderName($folderName);
@@ -196,86 +207,16 @@ class ImageInfo implements StringPrimaryRecordInterface
         $oldImage->delete();
         $oldSidecar->delete();
 
-        // Also move all the low-resolution versions of this image
-        // in case this is an upscaled image. We do this because
-        // the low-resolution versions are not shown in the UI.
-        foreach ($this->findLowResVersions() as $lowResImage) {
-            $lowResImage->moveToFolder($folderName);
+        foreach($siblingMoves as list($oldSibling)) {
+            $oldSibling->delete();
         }
 
         return $this;
     }
 
     /**
-     * Retrieves a hash that represents the settings that were
-     * used to generate this image, and which can be shared
-     * across sizes (regular / upscaled...).
-     *
-     * The name, folder, date and other non-generation-related
-     * properties are not included in this hash.
-     *
-     * @return string
+     * Copies the upscaled version of the image when there is one, otherwise the image itself.
      */
-    public function getSettingsHash() : string
-    {
-        return md5($this->getSettingsAsText());
-    }
-
-    /**
-     * Compiles a text representation of the settings
-     * that were used to generate this image.
-     *
-     * @return string
-     */
-    private function getSettingsAsText() : string
-    {
-        $props = $this->prop();
-
-        $mandatory = array(
-            $this->getCheckpoint(),
-            $props->getSeed(),
-            (string)$props->getCFG(),
-            $props->getPromptPositive(),
-            $props->getSampler(),
-            (string)$props->getSamplerSteps(),
-            $props->getScheduler(),
-        );
-
-        // If any mandatory value is empty, return the unique image ID to avoid mixups.
-        if (array_any($mandatory, fn($value) => $value === '')) {
-            return $this->getID();
-        }
-
-        $optional = array(
-            $props->getPromptNegative(),
-            $props->getLoRASummary()
-        );
-
-        return implode('$$', array_merge($mandatory, $optional));
-    }
-
-    /**
-     * Returns a list of low-resolution versions of this image.
-     * @return ImageInfo[]
-     */
-    public function findLowResVersions() : array
-    {
-        if(!$this->isUpscaled()) {
-            return array();
-        }
-
-        $id = $this->getID();
-        $result = array();
-        foreach(OrganizerApp::create()->createImageCollection()->getAll() as $image) {
-            $upscaled = $image->prop()->getUpscaledImage();
-            if($upscaled !== null && $upscaled->getID() === $id) {
-                $result[] = $image;
-            }
-        }
-
-        return $result;
-    }
-
     public function copyToOutput() : void
     {
         $outputFile = FileInfo::factory(sprintf(
@@ -288,7 +229,9 @@ class ImageInfo implements StringPrimaryRecordInterface
             $outputFile->delete();
         }
 
-        $this->imageFile->copyTo($outputFile);
+        $source = $this->isUpscaled() ? $this->getUpscaledFile() : $this->imageFile;
+
+        $source->copyTo($outputFile);
     }
 
     public function getOutputFileName() : string
@@ -304,58 +247,6 @@ class ImageInfo implements StringPrimaryRecordInterface
             $this->prop()->getTestNumber(),
             $this->prop()->getBatchNumber()
         );
-    }
-
-    /**
-     * Called on the upscaled image when a low-resolution image is linked to it. Merges the
-     * favorite, gallery and website flags and the label between it and all its low-resolution
-     * versions, in both directions; flags are only ever enabled. A pair is also one unit for
-     * moving and deleting, but a flag set later is not propagated.
-     */
-    public function registerLowResImage(ImageInfo $image) : void
-    {
-        $this->syncProperties();
-    }
-
-    /**
-     * Synchronizes the properties of this image with all
-     * low-resolution versions of this image.
-     *
-     * @return void
-     */
-    private function syncProperties() : void
-    {
-        $thisFavorite = $this->prop()->isFavorite();
-        $thisForGallery = $this->prop()->isForGallery();
-        $thisForWebsite = $this->prop()->isForWebsite();
-        $thisLabel = $this->getLabel();
-
-        foreach($this->findLowResVersions() as $lowResImage)
-        {
-            if ($thisFavorite) {
-                $lowResImage->prop()->setFavorite(true);
-            } else if ($lowResImage->prop()->isFavorite()) {
-                $this->prop()->setFavorite(true);
-            }
-
-            if ($thisForGallery) {
-                $lowResImage->prop()->setForGallery(true);
-            } else if ($lowResImage->prop()->isForGallery()) {
-                $this->prop()->setForGallery(true);
-            }
-
-            if(!empty($thisLabel)) {
-                $lowResImage->setLabel($thisLabel);
-            } else if(!empty($lowResImage->getLabel())) {
-                $this->setLabel($lowResImage->getLabel());
-            }
-
-            if($thisForWebsite) {
-                $lowResImage->prop()->setForWebsite(true);
-            } else if ($lowResImage->prop()->isForWebsite()) {
-                $this->prop()->setForWebsite(true);
-            }
-        }
     }
 
     /**
@@ -380,7 +271,6 @@ class ImageInfo implements StringPrimaryRecordInterface
             JSONFile::factory($entry->getSidecarFile()),
             Microtime::createFromString($entry->getDate()),
             $entry->getCheckpoint(),
-            $entry->isUpscaled(),
             $entry->isModified(),
             $entry->getLabel(),
             $entry->getImageSize(),
@@ -399,7 +289,6 @@ class ImageInfo implements StringPrimaryRecordInterface
             $this->sidecarFile->getPath(),
             $this->date->getISODate(),
             $this->checkpoint,
-            $this->upscaled,
             $this->modified,
             $this->label,
             $this->imageSize,
@@ -420,9 +309,45 @@ class ImageInfo implements StringPrimaryRecordInterface
         return $this->id;
     }
 
+    /**
+     * Whether the upscaled version of the image exists on disk; read live, never stored.
+     */
     public function isUpscaled(): bool
     {
-        return $this->upscaled;
+        return $this->getUpscaledFile()->exists();
+    }
+
+    public function getUpscaledFile() : FileInfo
+    {
+        return FileInfo::factory(self::resolveUpscaledPath($this->imageFile->getPath()));
+    }
+
+    /**
+     * `x_00001_.png` gives `x_00001_upscaled.png`, `x.png` gives `x_upscaled.png`.
+     */
+    public static function resolveUpscaledPath(string $imagePath) : string
+    {
+        return dirname($imagePath).'/'.rtrim(pathinfo($imagePath, PATHINFO_FILENAME), '_').self::UPSCALED_SUFFIX.'.png';
+    }
+
+    public static function isUpscaledFileName(string $fileName) : bool
+    {
+        return str_ends_with(strtolower($fileName), self::UPSCALED_SUFFIX.'.png');
+    }
+
+    /**
+     * The files that belong to the image beside its PNG and sidecar, as far as they exist:
+     * the upscaled version, the PSD and JPG edits and the website image.
+     * They move and get deleted with the image.
+     *
+     * @return FileInfo[]
+     */
+    public function getSiblingFiles() : array
+    {
+        return array_values(array_filter(
+            array($this->getUpscaledFile(), $this->getPSDFile(), $this->getJPGFile(), $this->getWebsiteImage()),
+            static fn(FileInfo $file) : bool => $file->exists()
+        ));
     }
 
     public function getImageFile(): FileInfo
@@ -590,20 +515,39 @@ class ImageInfo implements StringPrimaryRecordInterface
 
     public function getWebsiteBadge() : string
     {
+        if(!$this->prop()->isForWebsite()) {
+            return '';
+        }
+
+        if(!empty($this->prop()->getWebsiteImageID())) {
+            $statusClass = 'success';
+            $statusIcon = '✓';
+            $statusTitle = t('The image has been copied to the website.');
+        } else if($this->getWebsiteImage()->exists()) {
+            $statusClass = 'warning';
+            $statusIcon = '↑';
+            $statusTitle = t('Ready to copy to the website, dedicated image exists.');
+        } else {
+            $statusClass = 'danger';
+            $statusIcon = '✗';
+            $statusTitle = t('No dedicated image exists yet for the website.');
+        }
+
         OutputBuffering::start();
 
-        if($this->prop()->isForWebsite()) {
-            ?>
-            <span class="badge bg-primary badge-toggle badge-for-website toggle-<?php if($this->prop()->isForWebsite()) { echo 'enabled'; } else { echo 'disabled'; } ?>" 
-                  title="<?php pt('This image is marked to be used on the website.') ?>"
-            >
-                <?php echo mb_strtoupper(t('Website')) ?>
-                <?php 
-                    if($this->getWebsiteImage()->exists()) { echo '✓'; } else { echo '✗'; }
-                ?>
-            </span>
-            <?php
-        }
+        ?>
+        <span class="badge bg-primary badge-toggle badge-for-website toggle-<?php if($this->prop()->isForWebsite()) { echo 'enabled'; } else { echo 'disabled'; } ?>" 
+              style="margin-right: 0;"
+              title="<?php pt('This image is marked to be used on the website.') ?>"
+        >
+            <?php echo mb_strtoupper(t('Website')) ?>
+        </span><span class="badge bg-<?php echo $statusClass ?> badge-toggle" 
+                title="<?php echo $statusTitle ?>"
+        >
+            <?php echo $statusIcon ?>
+        </span>
+        <?php
+
 
         return OutputBuffering::get();
     }

@@ -111,15 +111,6 @@ class ImageAnalyzer
         // TODO: An unreadable PNG makes this throw an ImageHelper_Exception that nothing catches, which aborts the whole run; pinned by testUnreadablePngAbortsAnalysisKnownDefectCharacterisation.
         $size = ImageHelper::getImageSize($imageFile->getPath());
 
-        // TODO: str_contains() has swapped arguments, so the file name check never matches. Kept for byte-identical legacy indexing; pinned by testUpscaleFlagCharacterisation.
-        $isUpscaled = isset($props['upscaleFactor']) || str_contains('upscale', $imageFile->getBaseName());
-
-        if($isUpscaled === false && ($size->getWidth() >= 2000 || $size->getHeight() >= 2000)) {
-            // If the image is larger than 2000x2000 pixels, we assume it is an upscaled image.
-            // This is a heuristic to avoid false positives.
-            $isUpscaled = true;
-        }
-
         $generated = $metadata->getDate();
 
         if($generated !== null) {
@@ -138,7 +129,6 @@ class ImageAnalyzer
             $sidecarPath,
             $date,
             $metadata->getModelName() ?? '',
-            $isUpscaled,
             false,
             '',
             array('width' => $size->getWidth(), 'height' => $size->getHeight()),

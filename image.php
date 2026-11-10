@@ -28,10 +28,17 @@ if(!isset($files[$imageID])) {
 $sourcePath = $files[$imageID][ImageIndexer::INDEX_IMAGE_FILE];
 
 // If a JPG variant of a PNG image exists, use that instead,
-// because this will be the edited version.
+// because this will be the edited version. Failing that, the full
+// image is the upscaled version when there is one; thumbnails stay
+// based on the original.
 $jpg = str_replace('.png', '.jpg', $sourcePath);
 if(file_exists($jpg)) {
     $sourcePath = $jpg;
+} elseif(!$request->getBool('thumbnail')) {
+    $upscaled = ImageInfo::resolveUpscaledPath($sourcePath);
+    if(file_exists($upscaled)) {
+        $sourcePath = $upscaled;
+    }
 }
 
 $sourceImage = FileInfo::factory($sourcePath);

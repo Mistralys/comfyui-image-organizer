@@ -19,7 +19,6 @@ class Builder
 
         new ImageIndexer(OrganizerApp::create())
             ->indexAll()
-            ->detectUpscaledImages()
             ->cleanUpFolders();
     }
 
@@ -32,20 +31,47 @@ class Builder
             ->cleanUpFolders();
     }
 
-    public static function detectUpscaled(): void
-    {
-        self::init();
-
-        new ImageIndexer(OrganizerApp::create())
-            ->detectUpscaledImages();
-    }
-
     public static function cleanFolders(): void
     {
         self::init();
 
         new ImageIndexer(OrganizerApp::create())
             ->cleanUpFolders();
+    }
+
+    /**
+     * One-off, with {@see UpscaledPairsMigration}: reports what the migration would do and changes nothing.
+     */
+    public static function migrateUpscaled(): void
+    {
+        self::runUpscaledMigration(false);
+    }
+
+    /**
+     * One-off, with {@see UpscaledPairsMigration}: converts the old upscaled pairs and refreshes the file index.
+     */
+    public static function migrateUpscaledApply(): void
+    {
+        self::runUpscaledMigration(true);
+    }
+
+    private static function runUpscaledMigration(bool $apply): void
+    {
+        self::init();
+
+        Console::header($apply ? 'Migrating upscaled image pairs' : 'Migrating upscaled image pairs (dry run)');
+
+        $result = new UpscaledPairsMigration(OrganizerApp::create()->getStorageFile())->run($apply);
+
+        Console::nl();
+        Console::line1('Migrated: %d | Skipped: %d | Stale links dropped: %d', $result['migrated'], $result['skipped'], $result['staleLinks']);
+
+        if(!$apply) {
+            Console::line1('Dry run, nothing was changed. Use `composer migrate-upscaled-apply` to apply.');
+            return;
+        }
+
+        ImageIndexer::updateFileIndex();
     }
 
     public static function updateFileIndex(): void
@@ -68,12 +94,12 @@ class Builder
 
         Console::header('Verifying image metadata');
 
-        $images = FolderInfo::factory(APP_IMAGE_FOLDER)
+        $images = ImageIndexer::filterOriginals(FolderInfo::factory(APP_IMAGE_FOLDER)
             ->createFileFinder()
             ->includeExtension('png')
             ->makeRecursive()
             ->getFiles()
-            ->typeANY();
+            ->typeANY());
 
         Console::line1('Found [%d] image files.', count($images));
 

@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Mistralys\ComfyUIOrganizer\Tests;
 
+use AppUtils\FileHelper\FileInfo;
 use Mistralys\ComfyUIOrganizer\ImageIndexEntry;
 use Mistralys\ComfyUIOrganizer\ImageInfo;
 use Mistralys\ComfyUIOrganizer\Metadata\Formats\LegacySidecarFormat;
 use Mistralys\ComfyUIOrganizer\Metadata\Formats\StructuredSidecarFormat;
 use Mistralys\ComfyUIOrganizer\Metadata\MetadataException;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 final class ImageInfoTest extends TestCase
@@ -38,14 +40,13 @@ final class ImageInfoTest extends TestCase
 
         $this->assertSame(
             array(
-                'id', 'imageFile', 'sidecarFile', 'date', 'checkpoint', 'upscaled',
+                'id', 'imageFile', 'sidecarFile', 'date', 'checkpoint',
                 'imageSize', 'modified', 'label', 'properties'
             ),
             array_keys($payload)
         );
         $this->assertSame('abc', $payload['id']);
         $this->assertSame('model.safetensors', $payload['checkpoint']);
-        $this->assertFalse($payload['upscaled']);
         $this->assertFalse($payload['modified']);
         $this->assertSame('', $payload['label']);
         $this->assertSame(array('width' => 512, 'height' => 768), $payload['imageSize']);
@@ -63,6 +64,62 @@ final class ImageInfoTest extends TestCase
 
         $this->assertSame(array(), $entry->getExtra());
         $this->assertArrayNotHasKey('forGallery', $entry->toArray());
+    }
+
+    /**
+     * @return array<string,array{0:string,1:string}>
+     */
+    public static function upscaledPathProvider() : array
+    {
+        return array(
+            'ComfyUI counter name' => (
+                array('C:/out/Cave/43-refining-seed5-nr1_00001_.png', 'C:/out/Cave/43-refining-seed5-nr1_00001_upscaled.png')
+            ),
+            'name without counter' => array('C:/out/Cave/001.png', 'C:/out/Cave/001_upscaled.png'),
+        );
+    }
+
+    #[DataProvider('upscaledPathProvider')]
+    public function testResolveUpscaledPath(string $imagePath, string $expected) : void
+    {
+        $this->assertSame($expected, ImageInfo::resolveUpscaledPath($imagePath));
+        $this->assertTrue(ImageInfo::isUpscaledFileName(basename($expected)));
+        $this->assertFalse(ImageInfo::isUpscaledFileName(basename($imagePath)));
+    }
+
+    public function testUpscaledFileAndSiblingsAreFoundOnDisk() : void
+    {
+        $folder = sys_get_temp_dir().'/comfyui-info-'.uniqid('', true);
+        mkdir($folder);
+
+        try
+        {
+            $data = self::sampleData();
+            $data['imageFile'] = $folder.'/1-x-seed1-nr1_00001_.png';
+            $create = static fn() : ImageInfo => ImageInfo::fromEntry(ImageIndexEntry::fromArray($data));
+
+            $before = $create();
+            $this->assertFalse($before->isUpscaled());
+            $this->assertSame(0, count($before->getSiblingFiles()));
+
+            touch($folder.'/1-x-seed1-nr1_00001_upscaled.png');
+            touch($folder.'/1-x-seed1-nr1_00001_.jpg');
+
+            $after = $create();
+            $this->assertTrue($after->isUpscaled());
+            $this->assertSame(
+                array('1-x-seed1-nr1_00001_upscaled.png', '1-x-seed1-nr1_00001_.jpg'),
+                array_map(static fn(FileInfo $file) : string => $file->getName(), $after->getSiblingFiles())
+            );
+        }
+        finally
+        {
+            foreach((array)glob($folder.'/*') as $file) {
+                unlink((string)$file);
+            }
+
+            rmdir($folder);
+        }
     }
 
     private static function imageWithSidecar(string $sidecarPath) : ImageInfo

@@ -21,7 +21,7 @@ Triggered by `composer build` / `index` (via `Builder`), by the Index Manager pa
 ```
 Builder::build() | Builder::index() | IndexManagerPage (refresh) | ImageBrowser (refresh a folder)
   → ImageIndexer::indexAll() / indexFolder()
-      → findAllImages() / findFolderImages()         (*.png under OrganizerApp::getImageFolder())
+      → findAllImages() / findFolderImages()         (*.png under OrganizerApp::getImageFolder(), minus the `_upscaled.png` files)
       → load data/images.json into an ImageIndex (a backup copy is taken first; a non-array entry throws ERROR_INVALID_INDEX_ENTRY)
       → one ImageAnalyzer per run (built after the load, which replaces the index object)
       → for each PNG: MetadataRegistry::resolve(png) → SidecarResolution
@@ -32,7 +32,7 @@ Builder::build() | Builder::index() | IndexManagerPage (refresh) | ImageBrowser 
               → ID already indexed with modified = true: ImageIndexEntry::syncLocation() updates only image path, sidecar path, folder name
               → otherwise: format->parse() the sidecar (ERROR_NO_MODEL_NAME: ACTION_SKIP_NO_CHECKPOINT warning;
                 any other MetadataException: ACTION_SKIP_INVALID_SIDECAR warning; the image is left out either way),
-                complete the index-property bag from the file name / folder, read the image size, decide "upscaled",
+                complete the index-property bag from the file name / folder, read the image size,
                 take the date from the sidecar (legacy) or the PNG's modification time (structured), and store a new ImageIndexEntry
                 (the checkpoint is ImageMetadata::getModelName() ?? ''); an entry already stored under the ID is replaced by
                 withKnownFieldsFrom(), so its unknown keys survive
@@ -45,12 +45,17 @@ The skip results are warnings, so `ImageBrowser::handleRefreshFolder()`, which r
 
 "Discover new folders" (`ImageIndexer::indexNewFolders()`) feeds `analyzeImages()` only the PNGs of immediate image subfolders whose name matches no `folder` property in `data/images.json`; it does nothing, and writes nothing, when there is none. A folder whose images were all skipped (no sidecar) has no index entry and is scanned again on the next run.
 
-Upscaled-image detection (`detectUpscaledImages`, run by `build` and the Index Manager):
+Upscaled versions are not part of indexing: `ImageInfo::getUpscaledFile()` derives `<name>_upscaled.png` from the image path and `ImageInfo::isUpscaled()` checks it on disk each time it is asked.
+
+One-off pair migration (`composer migrate-upscaled` for a dry run, `composer migrate-upscaled-apply`):
 
 ```
-ImageCollection → group images by ImageInfo::getSettingsHash()
-  → groups of exactly two images (one regular, one upscaled)
-      → regular ImageProperties::setUpscaledImage(upscaled) → ImageCollection::save()
+UpscaledPairsMigration::run()
+  → for each entry with an `upscaledImage` property whose target is indexed
+      → copy the upscaled PNG, and its PSD / JPG / website image, next to the regular image under the sibling names
+      → drop the link from the regular entry; carry over a website image ID the regular entry lacks
+  → apply only: back up data/images.json, remove the upscaled entries, save the index,
+    then delete the old upscaled PNGs, sidecars and copied siblings; Builder rebuilds data/file_index.json
 ```
 
 Metadata census (`composer verify-metadata`, run by hand; separate from indexing):
@@ -76,7 +81,7 @@ index.php → OrganizerApp::create()->createUI(...)->display()
          (entries whose image file is gone are set aside as "missing", not displayed)
       → ImageCollection::injectJS()            (loads the JS files, emits AJAX method names + payload keys)
       → filters / folder / card size resolved from request parameters, remembered in the session (via SessionState)
-  → ImageBrowser::_render() → one card per image that has no upscaled replacement
+  → ImageBrowser::_render() → one card per image (the "Upscaling" filter keeps those with an upscaled file)
        thumbnail <img> → image.php?imageID=<id>&thumbnail=yes
 ```
 
@@ -85,7 +90,7 @@ Image delivery:
 ```
 image.php?imageID=<id>[&thumbnail=yes]
   → OrganizerApp::getFileIndexFile() lookup (404 if the ID is absent)
-  → a sibling .jpg replaces the .png source when it exists
+  → a sibling .jpg replaces the .png source when it exists; otherwise a full-size (non-thumbnail) request is served from the `_upscaled.png` sibling when it exists
   → thumbnail: created with ImageInfo::createThumbnail() when missing or older than the source
   → ImageHelper::displayImage()
 ```
@@ -120,11 +125,10 @@ ImageBrowser.js (class ImageBrowser).SendRequest()
 
 Action-specific behavior:
 
-- **Move** (`MoveImageMethod`): `ImageInfo::moveToFolder()` copies image and sidecar into a sibling folder, saves the collection, then deletes the originals; linked low-resolution versions follow.
-- **Delete** (`DeleteImageMethod`): `ImageCollection::deleteImage()` removes image, sidecar, thumbnail, index entry and linked low-resolution versions.
-- **Set upscaled** (`SetUpscaledImageMethod`): `ImageProperties::setUpscaledImage()`; `ImageInfo::registerLowResImage()` then merges favorite/gallery/website/label flags between the pair.
+- **Move** (`MoveImageMethod`): `ImageInfo::moveToFolder()` copies image, sidecar and `getSiblingFiles()` into a sibling folder, saves the collection, then deletes the originals.
+- **Delete** (`DeleteImageMethod`): `ImageCollection::deleteImage()` removes image, sidecar, thumbnail, sibling files and index entry.
 - **Send to website** (`SendToWebsiteMethod`): requires the `_websiteImage.png` sibling; POSTs base64 image plus properties (checkpoint, sampler/scheduler, steps, CFG, seed, LoRA summary, prompt) to the configured website API, then stores the returned image ID in `ImageProperties::setWebsiteImageID()`. `ImageDetails` can invoke `sendRequest()` directly, outside AJAX.
-- **Copy to output** (`CopyToOutputMethod`): `ImageInfo::copyToOutput()` writes `<label or id>-<test number>-<batch number>.png` into `output-images/`, replacing an existing file.
+- **Copy to output** (`CopyToOutputMethod`): `ImageInfo::copyToOutput()` writes the upscaled file when there is one, otherwise the image, as `<label or id>-<test number>-<batch number>.png` into `output-images/`, replacing an existing file.
 - **Copy path** (client-side only, no AJAX): the "More" menu item carries the absolute image path in `data-path` (rendered by `ImageBrowser::renderImageMenu()`); `ImageBrowser.CopyPath()` writes it to the clipboard and shows a status message.
 - **Card size** (`SetCardSizeMethod`): stores the size in the session through `ImageBrowser::setCardSize()` (which uses `SessionState`); does not involve an image.
 

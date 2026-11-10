@@ -20,7 +20,6 @@ use Mistralys\ComfyUIOrganizer\Ajax\Methods\SetCardSizeMethod;
 use Mistralys\ComfyUIOrganizer\Ajax\Methods\SetForGalleryMethod;
 use Mistralys\ComfyUIOrganizer\Ajax\Methods\SetForWebsiteMethod;
 use Mistralys\ComfyUIOrganizer\Ajax\Methods\SetLabelMethod;
-use Mistralys\ComfyUIOrganizer\Ajax\Methods\SetUpscaledImageMethod;
 use Mistralys\X4\UI\UserInterface;
 
 /**
@@ -49,22 +48,24 @@ class ImageCollection extends BaseStringPrimaryCollection
     }
 
     /**
-     * Deletes the image, its sidecar, thumbnail and all linked low-resolution versions.
+     * Deletes the image, its sidecar, thumbnail and sibling files (see {@see ImageInfo::getSiblingFiles()}).
      * The index removal is persisted by the {@see self::save()} at the end.
      */
     public function deleteImage(ImageInfo $image) : void
     {
         unset($this->items[$image->getID()]);
 
+        $siblings = $image->getSiblingFiles();
+
         $image->getImageFile()->delete();
         $image->getSidecarFile()->delete();
         $image->getThumbnailFile()->delete();
 
-        $this->index->remove($image->getID());
-
-        foreach($image->findLowResVersions() as $lowResVersion) {
-            $this->deleteImage($lowResVersion);
+        foreach($siblings as $sibling) {
+            $sibling->delete();
         }
+
+        $this->index->remove($image->getID());
 
         $this->save();
     }
@@ -119,7 +120,6 @@ class ImageCollection extends BaseStringPrimaryCollection
             JSONConverter::var2json(array(
                 'deleteImage' => DeleteImageMethod::METHOD_NAME,
                 'favoriteImage' => FavoriteImageMethod::METHOD_NAME,
-                'setUpscaledImage' => SetUpscaledImageMethod::METHOD_NAME,
                 'moveImage' => MoveImageMethod::METHOD_NAME,
                 'setCardSize' => SetCardSizeMethod::METHOD_NAME,
                 'setForGallery' => SetForGalleryMethod::METHOD_NAME,

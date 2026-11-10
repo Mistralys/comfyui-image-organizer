@@ -17,7 +17,7 @@ the images, from the checkpoint to LoRAs that were used, their weights, and more
 - See the settings behind each image on its own details page: checkpoint, sampler, steps, seed, LoRAs with their weights, and more.
 - Flag images as favorites, for the gallery or for the website, and give them labels.
 - Move images to other folders, delete them, or copy them to an output folder, from the browser.
-- Link an image to its upscaled version, so the pair is handled together.
+- See the upscaled version of an image next to it: a file with the suffix `_upscaled` is treated as part of its image.
 - Look up your LoRA collection in a filterable overview.
 - Fix the LoRA paths in your ComfyUI workflows after moving or renaming LoRA files.
 - Optionally send images and their settings to a personal website.
@@ -82,6 +82,21 @@ recognizes is reported as a skipped image during indexing, by file name only.
 Structured sidecars also carry the flow metadata of the workflow run, such as whether the
 image is a preview render. The legacy format is indexed exactly as before.
 
+### Upscaled images
+
+An upscaled image is not indexed on its own and needs no sidecar. Place it beside the
+original image with the suffix `_upscaled`; the Organizer then shows the original card
+with an "Upscaled" badge, serves the upscaled file as the full-size image, and moves or
+deletes it together with the original.
+
+| Original | Upscaled version |
+|----------|------------------|
+| `43-refining-seed591657868797463-nr1_00001_.png` | `43-refining-seed591657868797463-nr1_00001_upscaled.png` |
+| `001.png` | `001_upscaled.png` |
+
+The image's settings are those of the original. Nothing needs refreshing: the file is
+found on disk whenever the image is shown.
+
 ### Image property collection
 
 The `custom_text` property string of the legacy format uses a custom text-based syntax
@@ -123,9 +138,10 @@ The following Composer scripts are available:
 
 | Script | What it does |
 |--------|--------------|
-| `composer build` | Indexes all images, detects upscaled versions and cleans up empty folders. |
+| `composer build` | Indexes all images and cleans up empty folders. |
 | `composer index` | Indexes all images and cleans up empty folders. |
-| `composer detect-upscaled` | Detects upscaled versions of indexed images. |
+| `composer migrate-upscaled` | One-off: reports how the old, index-linked upscaled pairs would be converted to `_upscaled` files. Changes nothing. |
+| `composer migrate-upscaled-apply` | One-off: converts those pairs and rebuilds the file index. A backup of `data/images.json` is written to `data/backup/` first. |
 | `composer clean-folders` | Cleans up empty image folders. |
 | `composer update-file-index` | Rebuilds the file index used to serve images and thumbnails. |
 | `composer verify-metadata` | Reads the sidecar of every image and reports how many use each format, plus the images without a sidecar, with an unrecognized sidecar, without a model name, or with a sidecar that fails to parse. Changes nothing; exits with an error only if a sidecar fails to parse. |

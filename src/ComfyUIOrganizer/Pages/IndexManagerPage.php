@@ -15,7 +15,6 @@ class IndexManagerPage extends BaseOrganizerPage
 {
     public const string URL_NAME = 'index-manager';
     public const string REQUEST_PARAM_CLEAN_FOLDERS = 'cleanFolders';
-    public const string REQUEST_PARAM_DETECT_UPSCALED = 'detectUpscaled';
     public const string REQUEST_PARAM_REFRESH = 'refresh';
     public const string REQUEST_PARAM_DISCOVER_FOLDERS = 'discoverFolders';
     private string $output;
@@ -64,13 +63,6 @@ class IndexManagerPage extends BaseOrganizerPage
             $this->message = t('New folders have been successfully discovered.');
         }
 
-        if($this->getRequest()->getBool(self::REQUEST_PARAM_DETECT_UPSCALED)) {
-            OutputBuffering::start();
-            new ImageIndexer(OrganizerApp::create())->detectUpscaledImages();
-            $this->output = OutputBuffering::get();
-            $this->message = t('Upscaled images have been successfully detected.');
-        }
-
         if($this->getRequest()->getBool(self::REQUEST_PARAM_CLEAN_FOLDERS)) {
             OutputBuffering::start();
             new ImageIndexer(OrganizerApp::create())->cleanUpFolders();
@@ -103,14 +95,6 @@ class IndexManagerPage extends BaseOrganizerPage
                 </a>
                 <br>
                 <?php pt('Indexes only the image folders that are not in the index yet. Much faster than a full refresh.'); ?>
-            </p>
-            <p>
-
-                <a href="<?php echo OrganizerApp::create()->url()->indexManager(array(self::REQUEST_PARAM_DETECT_UPSCALED => 'yes')) ?>" class="btn btn-secondary">
-                    <?php echo t('Auto-detect upscaled'); ?>
-                </a>
-                <br>
-                <?php pt('Auto-detects upscaled versions of images when there is a single regular and upscaled image with the same generation settings.'); ?>
             </p>
             <p>
 

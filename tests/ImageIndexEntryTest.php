@@ -33,7 +33,6 @@ final class ImageIndexEntryTest extends TestCase
 
         $this->assertFalse($entry->isModified());
         $this->assertSame('', $entry->getLabel());
-        $this->assertFalse($entry->isUpscaled());
         $this->assertSame('abc', $entry->getID());
         $this->assertSame(array('width' => 512, 'height' => 768), $entry->getImageSize());
     }
@@ -44,15 +43,24 @@ final class ImageIndexEntryTest extends TestCase
 
         $this->assertSame(
             array(
-                'id', 'imageFile', 'sidecarFile', 'date', 'checkpoint', 'upscaled',
+                'id', 'imageFile', 'sidecarFile', 'date', 'checkpoint',
                 'imageSize', 'modified', 'label', 'properties', 'forGallery'
             ),
             array_keys($result)
         );
         $this->assertTrue($result['forGallery']);
-        $this->assertFalse($result['upscaled']);
         $this->assertFalse($result['modified']);
         $this->assertSame('', $result['label']);
+    }
+
+    public function testRetiredUpscaledKeyIsKeptAsUnknownKey() : void
+    {
+        $data = self::sampleData();
+        $data['upscaled'] = true;
+
+        $result = ImageIndexEntry::fromArray($data)->toArray();
+
+        $this->assertTrue($result['upscaled']);
     }
 
     public function testWithKnownFieldsFromKeepsUnknownKeys() : void

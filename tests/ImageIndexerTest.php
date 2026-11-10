@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mistralys\ComfyUIOrganizer\Tests;
 
+use AppUtils\FileHelper\FileInfo;
 use Mistralys\ComfyUIOrganizer\ImageIndex;
 use Mistralys\ComfyUIOrganizer\ImageIndexer;
 use PHPUnit\Framework\TestCase;
@@ -57,5 +58,19 @@ final class ImageIndexerTest extends TestCase
             array('A', 'B'),
             ImageIndexer::filterNewFolders(array('A', 'B'), new ImageIndex())
         );
+    }
+
+    public function testFilterOriginalsDropsUpscaledFiles() : void
+    {
+        $files = array(
+            FileInfo::factory('C:/out/A/1-x-seed1-nr1_00001_.png'),
+            FileInfo::factory('C:/out/A/1-x-seed1-nr1_00001_upscaled.png'),
+            FileInfo::factory('C:/out/A/2-y-seed2-nr1_00001_.png'),
+            FileInfo::factory('C:/out/A/2-y-seed2-nr1_00001_UPSCALED.png'),
+        );
+
+        $names = array_map(static fn(FileInfo $file) : string => $file->getName(), ImageIndexer::filterOriginals($files));
+
+        $this->assertSame(array('1-x-seed1-nr1_00001_.png', '2-y-seed2-nr1_00001_.png'), $names);
     }
 }
