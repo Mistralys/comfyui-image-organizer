@@ -6,7 +6,7 @@
 - **Extensions:** `ext-mbstring`, `ext-curl` (declared in `composer.json`). Thumbnail creation and image-size reading go through `ImageHelper` from the transitive `application-utils-image` package.
 - **Server:** a local webserver serving the project folder (the URL is set by `APP_WEBROOT_URL` in `config.php`); `index.php` and `image.php` are the web entry points. No database.
 - **Persistence:** JSON files under `data/`, plus generated JPEG thumbnails under `cache/`.
-- **Generated and git-ignored paths:** `vendor/`, `cache/`, `config.php`, `data/images.json`, `data/file_index.json`, `data/backup/`, the PNG files in `output-images/`, `phpstan-result.txt` (written by `composer analyze-save`) `.phpunit.cache/` and `.phpunit.result.cache`. Files under `data/loras/` are read at runtime whether tracked or created locally.
+- **Generated and git-ignored paths:** `vendor/`, `cache/`, `config.php`, `data/images.json`, `data/file_index.json`, `data/backup/`, the PNG files in `output-images/`, `phpstan-result.txt` (written by `composer analyze-save`) `.phpunit.cache/` and `.phpunit.result.cache`. Files under `data/loras/` are read at runtime whether tracked or created locally. What each folder is for is in [folder-overview.md](folder-overview.md).
 - **Frontend:** server-rendered HTML with inline PHP templates; plain JavaScript classes (no bundler) loaded from `js/`; Bootstrap 5 and Font Awesome come from `vendor/` via the UI framework.
 
 ## Dependencies
@@ -47,7 +47,6 @@ The Composer package `type` is `tool`, `minimum-stability` is `dev` with `prefer
 - **Testing:** PHPUnit 12, configured in `phpunit.xml` (bootstrap `vendor/autoload.php`, one test suite named `default` over `tests/`, coverage source `src/`). `tests/` mirrors the `src/` folders and covers the parts that run without the application bootstrap; the parts that do not are listed under the known gaps in [constraints.md](constraints.md).
 - **Static analysis:** PHPStan at level 9, configured in `phpstan.neon` (includes the `phpstan-phpunit` extension; analyses `src` and `tests`; scans `config.dist.php` and `prepend.php` for constants).
 - **CI:** none is configured in the repository.
-- **Context documentation:** the CTX Generator, configured by `context.yaml` at the project root, writes bundled context documents to `.context/` (folder structure, README/AGENTS/changelog, the manifest, Composer configuration, entry points, and per-module architecture for the core, Ajax, LoRAs, Pages, Workflows and frontend code).
 - **IDE:** a `.idea/` folder is present in the working tree; it is not part of the application.
 
 ## Integrations

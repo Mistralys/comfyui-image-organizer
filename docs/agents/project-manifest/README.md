@@ -8,7 +8,8 @@ A navigational map of the codebase for AI agent sessions. It describes where thi
 
 | Document | Contents |
 |---|---|
-| [tech-stack.md](tech-stack.md) | Runtime, dependencies, framework base, architectural pattern, tooling |
+| [tech-stack.md](tech-stack.md) | Runtime, dependencies, framework base, architectural pattern, tooling, generated and git-ignored paths |
+| [folder-overview.md](folder-overview.md) | What each top-level and `src/` folder is for, and which are generated or runtime data; not a file tree |
 | [architecture.md](architecture.md) | Module map and who calls whom across the classes in `src/ComfyUIOrganizer/`; points to the source for signatures and per-method contracts |
 | [data-flows.md](data-flows.md) | Main paths through the system: indexing, browsing, AJAX actions, workflow path fixing |
 | [constraints.md](constraints.md) | Conventions and gotchas that bind changes to the code, including where contracts and rationale are written — the only imperative document |
@@ -16,10 +17,11 @@ A navigational map of the codebase for AI agent sessions. It describes where thi
 
 `curation-log.md` covers standing decisions as well as verification history; open it first when a section looks deliberately absent or oddly arranged.
 
-There is no file-tree document: the project is CTX-enabled, and the generated `.context/project-folder-structure.md` holds the directory structure. The generated and git-ignored paths are listed in [tech-stack.md](tech-stack.md).
+There is no file-tree document: `folder-overview.md` explains what each folder is for instead of listing files. The generated and git-ignored paths are listed in [tech-stack.md](tech-stack.md).
 
 ## Where to Start
 
+- Finding where something lives, or deciding where a new file belongs: `folder-overview.md`, then the module map in `architecture.md`.
 - Changing how images are discovered or what is stored per image: `data-flows.md` (Indexing), then the indexing, index-data and metadata rows of the module map in `architecture.md`, then `ImageIndexer`, `ImageAnalyzer`, `ImageInfo` and `ImageProperties` in the source.
 - Adding a page or an AJAX action: `constraints.md` (auto-registration rules), then the web-layer collaboration in `architecture.md`.
 - Anything involving LoRA data or workflow path fixing: `constraints.md` (Workflows and LoRA files), then the LoRAs and Workflows rows of `architecture.md`.
@@ -31,4 +33,3 @@ There is no file-tree document: the project is CTX-enabled, and the generated `.
 - `README.md` (project root) — user-facing description, including the sidecar text-property syntax and LoRA path-fixing requirements.
 - `changelog.md` (project root) — release history.
 - `config.dist.php` — documented template for the git-ignored `config.php`.
-- `context.yaml` and `.context/` — CTX Generator configuration and its generated context documents (folder structure, manifest bundle, per-module architecture).

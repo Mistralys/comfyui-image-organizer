@@ -8,10 +8,18 @@ Written by the Manifest Curator only; no other agent edits this file.
 
 | Date | Decision | Rationale |
 |---|---|---|
-| 2026-10-07 | The manifest has no `file-tree.md`. | The project is CTX-enabled (`context.yaml` at the root); the CTX Generator already produces the directory structure in `.context/project-folder-structure.md`, so a hand-maintained tree would duplicate it. The user approved removal. The list of generated and git-ignored paths, the one fact unique to the old tree, now lives in `tech-stack.md`. |
+| 2026-10-07 | The manifest has no `file-tree.md`. | A hand-maintained file tree goes stale on every added or renamed file. The user approved its removal on 2026-10-07 (then because the CTX Generator produced the folder structure); the CTX tooling has since been removed (see 2026-11-10 below) and the decision to keep the file-tree dropped stands. The list of generated and git-ignored paths, the one fact unique to the old tree, lives in `tech-stack.md`. |
+| 2026-11-10 | The CTX Generator tooling is removed from the project (`context.yaml` and `.context/` are deleted and will not return), and the manifest carries no CTX references. `folder-overview.md` replaces the CTX-generated folder structure: it explains what each folder is for and marks generated, git-ignored and runtime-data folders, without listing files or counts. | The user removed the tooling. A role-per-folder overview stays correct as files come and go, where a tree does not, and root `AGENTS.md` routes "where does something live" questions to it. |
 | 2026-11-10 | The manifest has no signature listing: `api-surface.md` was retired and replaced by `architecture.md` (module map plus who calls whom). Contracts, rationale and "watch out" notes of a single class or method live as docblocks or comments at the code site, as tests where practical, and as `// TODO:` comments for defects; `constraints.md` carries a section stating this convention. | Signatures are derivable from the source and go stale fastest. A contract kept in a separate file is not seen, or updated, by an agent editing the method, whereas a docblock is read and changed in the same diff. Cross-class flow has no single home in the code and changes slowly, so it stays a document. The user approved the file name `architecture.md` and the convention. |
 
 ## History
+
+### 2026-11-10 · Update · Curator v1.10.1
+
+**Scope:** CTX removal and the new `folder-overview.md`: the `README.md` index, `tech-stack.md` (generated-paths line, tooling list), the `Metadata/` entry of `constraints.md`, and a search of the whole project outside `vendor/` for `context.yaml`, `.context` and CTX. The folder overview was checked against the real directory tree, `.gitignore`, `prepend.php` and the folder-scan sites; the rest of the manifest was not re-verified.
+**Commit:** db7fc86 (working tree uncommitted: `AGENTS.md` modified, `context.yaml` deleted, untracked `data/loras/nsfw.json` and `docs/prompt-examples/`). The only commit since the previous entry's 2b666ba is db7fc86, which holds the docblock and test additions that entry already covered.
+**Changes:** Created `folder-overview.md` and indexed it in `README.md`; removed the CTX note, related-files entry and tooling bullet; replaced the "no file-tree because CTX" note with a pointer to `folder-overview.md`; added a "finding where something lives" start point; dropped the `context.yaml` sentence from `constraints.md`; reworded the 2026-10-07 Standing Decision and added the CTX-removal decision.
+**Notes:** The reverted-decision search found no revert commits. History entries below still mention CTX; they record what was true at the time and are not rewritten. `.context/` was never in the generated-paths list of `tech-stack.md`, so that list needed no removal.
 
 ### 2026-11-10 · Update · Curator v1.10.1
 

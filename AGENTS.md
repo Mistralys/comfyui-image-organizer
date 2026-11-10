@@ -12,12 +12,12 @@ The project manifest lives in `docs/agents/project-manifest/`. It is the canonic
 | Document | Path | Purpose |
 |----------|------|---------|
 | Manifest Index | `docs/agents/project-manifest/README.md` | Entry point: project summary, document list, where to start for common tasks |
-| Tech Stack | `docs/agents/project-manifest/tech-stack.md` | Runtime, dependencies, framework base, architectural pattern, tooling, generated and git-ignored paths, CTX tooling |
+| Tech Stack | `docs/agents/project-manifest/tech-stack.md` | Runtime, dependencies, framework base, architectural pattern, tooling, generated and git-ignored paths |
+| Folder Overview | `docs/agents/project-manifest/folder-overview.md` | What each top-level and `src/` folder is for, and which are generated or git-ignored; not a file tree |
 | Architecture | `docs/agents/project-manifest/architecture.md` | Module map of `src/ComfyUIOrganizer/` and who calls whom; signatures and per-method contracts are in the source |
 | Data Flows | `docs/agents/project-manifest/data-flows.md` | Main paths through the system: indexing, browsing, AJAX actions, workflow path fixing |
 | Constraints | `docs/agents/project-manifest/constraints.md` | Binding conventions and gotchas, including known defects in the code and where contracts and rationale are written |
 | Curation Log | `docs/agents/project-manifest/curation-log.md` | Standing decisions about how the manifest is arranged, and the history of curation passes |
-| Folder Structure (CTX-generated) | `.context/project-folder-structure.md` | Directory structure; generated from `context.yaml`, not part of the manifest and never edited by hand |
 | README | `README.md` | User-facing description, including the sidecar text-property syntax |
 | Changelog | `changelog.md` | Release history |
 | FLUX Prompting Guide | `docs/flux-prompting-guide.md` | Reference for writing prompts for FLUX.1 Dev in local ComfyUI; not part of the manifest and independent of the application code |
@@ -40,7 +40,7 @@ When a change is made to the codebase, the documents below must be updated in th
 |---|---|
 | Class, method, or constant added, removed, or its contract changed | The docblock or one-line comment at the site, in the same diff; the manifest lists no signatures |
 | Class or module added, removed, or its collaborators changed | `architecture.md` |
-| File or folder added, moved, or renamed | Regenerate the CTX output in `.context/`; `tech-stack.md` if the change affects generated or git-ignored paths |
+| Folder added, moved, renamed, or its purpose changed | `folder-overview.md`; `tech-stack.md` if the change affects generated or git-ignored paths |
 | Indexing, browsing, AJAX, or workflow-fixing behavior changed | `data-flows.md` |
 | Dependency, runtime requirement, Composer script, or tooling changed | `tech-stack.md`, `composer.json` |
 | Convention introduced or changed, or a known defect fixed or discovered | `constraints.md` |
@@ -52,7 +52,7 @@ When a change is made to the codebase, the documents below must be updated in th
 
 ## 3. Efficiency Rules — Search Smart
 
-- **Finding files?** Check `.context/project-folder-structure.md` FIRST.
+- **Finding where something lives?** Check `folder-overview.md` FIRST, then list the folder you need.
 - **Looking for which class does what, or who calls whom?** Check `architecture.md` FIRST.
 - **Looking for a class or method signature or contract?** Read the docblock in the source; the manifest does not carry it.
 - **Understanding how a feature flows through the system?** Check `data-flows.md` FIRST.
