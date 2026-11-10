@@ -111,4 +111,25 @@ class ImageIndex
     {
         return count($this->entries);
     }
+
+    /**
+     * Names of the image folders that have at least one entry.
+     *
+     * @return string[]
+     */
+    public function getFolderNames() : array
+    {
+        $names = array();
+
+        foreach($this->entries as $entry)
+        {
+            $name = $entry->getProperties()[ImageProperties::KEY_FOLDER_NAME] ?? null;
+
+            if(is_string($name) && $name !== '') {
+                $names[$name] = $name;
+            }
+        }
+
+        return array_values($names);
+    }
 }

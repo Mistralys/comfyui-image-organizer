@@ -1,3 +1,9 @@
+## Unreleased
+
+- Index Manager: Added "Discover new folders", which indexes only image folders that have no image in the index yet, instead of a full refresh.
+
+- Browser: Added a "Copy path" item to the image "More" menu; it copies the image's absolute path to the clipboard and confirms it.
+
 ## 1.2.0 - Structured sidecar metadata
 
 **The indexer now reads the structured `-meta.json` sidecars the workflows write,
@@ -8,6 +14,7 @@ next to the legacy ones.** Legacy images are indexed exactly as before.
 - Indexing: A JSON file that no format recognizes is reported as a skipped image instead of aborting the run.
 - Indexing: The per-image logic moved into `ImageAnalyzer` and is now covered by tests.
 - Tools: Added `composer verify-metadata`, a read-only census of every image's sidecar.
+- LoRAs: The overview shows the optional `description` of each LoRA in a new last column.
 
 ## 1.1.0 - Typed data and PHPStan level 9
 

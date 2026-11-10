@@ -17,6 +17,7 @@ class IndexManagerPage extends BaseOrganizerPage
     public const string REQUEST_PARAM_CLEAN_FOLDERS = 'cleanFolders';
     public const string REQUEST_PARAM_DETECT_UPSCALED = 'detectUpscaled';
     public const string REQUEST_PARAM_REFRESH = 'refresh';
+    public const string REQUEST_PARAM_DISCOVER_FOLDERS = 'discoverFolders';
     private string $output;
     private string $message = '';
 
@@ -56,6 +57,13 @@ class IndexManagerPage extends BaseOrganizerPage
             $this->message = t('The index has been successfully refreshed.');
         }
 
+        if($this->getRequest()->getBool(self::REQUEST_PARAM_DISCOVER_FOLDERS)) {
+            OutputBuffering::start();
+            new ImageIndexer(OrganizerApp::create())->indexNewFolders();
+            $this->output = OutputBuffering::get();
+            $this->message = t('New folders have been successfully discovered.');
+        }
+
         if($this->getRequest()->getBool(self::REQUEST_PARAM_DETECT_UPSCALED)) {
             OutputBuffering::start();
             new ImageIndexer(OrganizerApp::create())->detectUpscaledImages();
@@ -88,6 +96,13 @@ class IndexManagerPage extends BaseOrganizerPage
                 </a>
                 <br>
                 <?php pt('Rebuilds the image index to detect changes on disk.'); ?>
+            </p>
+            <p>
+                <a href="<?php echo OrganizerApp::create()->url()->indexManager(array(self::REQUEST_PARAM_DISCOVER_FOLDERS => 'yes')) ?>" class="btn btn-primary">
+                    <?php echo t('Discover new folders'); ?>
+                </a>
+                <br>
+                <?php pt('Indexes only the image folders that are not in the index yet. Much faster than a full refresh.'); ?>
             </p>
             <p>
 

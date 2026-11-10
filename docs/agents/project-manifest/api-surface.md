@@ -53,13 +53,15 @@ public function findAllImages(): array                      // recursive *.png s
 public function findFolderImages(string $folderName): array // *.png in one image subfolder
 public function indexAll(): self
 public function indexFolder(string $folderName): self
+public function indexNewFolders(): self                     // indexes only image subfolders with no image in the index yet
+public static function filterNewFolders(array $subFolderNames, ImageIndex $index): array // names with no entry in the index
 public function detectUpscaledImages(?string $folderName = null): self
 public function detectUpscaledInFolder(string $folderName): self
 public function cleanUpFolders(): self                      // deletes empty image subfolders
 public function getAnalysisResults(): OperationResult_Collection
 ```
 
-The indexer is a thin orchestrator. It holds `MetadataRegistry::getInstance()`, the loaded index as an `ImageIndex` (private) and the run's `OperationResult_Collection`. In `analyzeImages()` (private, behind `indexAll()` and `indexFolder()`) it loads the index, builds one `ImageAnalyzer` for the run, and resolves each PNG through `MetadataRegistry::resolve()`:
+The indexer is a thin orchestrator. It holds `MetadataRegistry::getInstance()`, the loaded index as an `ImageIndex` (private) and the run's `OperationResult_Collection`. In `analyzeImages()` (private, behind `indexAll()`, `indexFolder()` and `indexNewFolders()`) it loads the index, builds one `ImageAnalyzer` for the run, and resolves each PNG through `MetadataRegistry::resolve()`:
 
 - Resolved sidecar: `ImageAnalyzer::analyze()` decides what happens to the image. `analyze()` throws `OrganizerException::ERROR_CANNOT_HASH_IMAGE_FILE` when the MD5 of an image file cannot be computed.
 - No resolved sidecar, but unrecognized candidate files: a console skip line and an `ACTION_SKIP_UNRECOGNIZED_SIDECAR` warning. The message names only the image file name. No exception escapes the loop for such a file (e.g. a workflow export beside the PNG).
@@ -243,6 +245,7 @@ public function set(ImageIndexEntry $entry): self         // adds, or replaces t
 public function remove(string $id): self
 public function getEntries(): array                       // array<string,ImageIndexEntry>
 public function count(): int
+public function getFolderNames(): array                     // string[]: folders with at least one entry (the `folder` property)
 ```
 
 `fromArray()` keys each entry by the entry's own `id` value and ignores the outer JSON key, so an entry stored under a key that differs from its `id` is written back under its `id`. Numeric IDs become integer array keys.
@@ -326,7 +329,7 @@ All expose `URL_NAME` (the `page` request parameter value) and implement the `Ba
 |---|---|---|---|
 | `ImageBrowser` | `BaseOrganizerPage` | `image-browser` | `REQUEST_PARAM_UPSCALED`, `_FAVORITES`, `_GALLERY`, `_WEBSITE`, `_FOLDER_NAME`, `_REMOVE_MISSING`; `CARD_SIZE_*` (s, m, l, xl); `RESULT_REFRESHED = 181001`. Static `getCardSizes(): array`, `setCardSize(string $size): void` |
 | `ImageDetails` | `BasePage` | `image-details` | `REQUEST_PARAM_RESET_WSIMGID`, `REQUEST_PARAM_SEND_TO_WEBSITE` |
-| `IndexManagerPage` | `BaseOrganizerPage` | `index-manager` | `REQUEST_PARAM_CLEAN_FOLDERS`, `_DETECT_UPSCALED`, `_REFRESH` |
+| `IndexManagerPage` | `BaseOrganizerPage` | `index-manager` | `REQUEST_PARAM_CLEAN_FOLDERS`, `_DETECT_UPSCALED`, `_REFRESH`, `_DISCOVER_FOLDERS` |
 | `LoRAOverviewPage` | `BaseOrganizerPage` | `loras` | — (filter parameter `category_filter`) |
 | `WorkflowsPage` | `BaseOrganizerPage` | `workflows` | `REQUEST_PARAM_FIX_PATHS = 'fix-paths'`, `COL_LABEL`, `COL_MODIFIED` |
 

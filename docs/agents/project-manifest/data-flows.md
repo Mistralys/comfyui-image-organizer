@@ -16,7 +16,7 @@ Descriptive paths through the system. Every type named here is listed in [api-su
 
 ## 1. Indexing
 
-Triggered by `composer build` / `index` (via `Builder`), by the Index Manager page (`IndexManagerPage`), or by the browser's per-folder refresh (`ImageBrowser`).
+Triggered by `composer build` / `index` (via `Builder`), by the Index Manager page (`IndexManagerPage`: full refresh or "discover new folders"), or by the browser's per-folder refresh (`ImageBrowser`).
 
 ```
 Builder::build() | Builder::index() | IndexManagerPage (refresh) | ImageBrowser (refresh a folder)
@@ -42,6 +42,8 @@ Builder::build() | Builder::index() | IndexManagerPage (refresh) | ImageBrowser 
 ```
 
 The skip results are warnings, so `ImageBrowser::handleRefreshFolder()`, which reads `countSuccesses()` and `countNotices()`, reports legacy images as before. The per-image decisions live in `ImageAnalyzer`, which works without `OrganizerApp` and is covered by PHPUnit; `ImageIndexer::analyzeImages()` itself is not.
+
+"Discover new folders" (`ImageIndexer::indexNewFolders()`) feeds `analyzeImages()` only the PNGs of immediate image subfolders whose name matches no `folder` property in `data/images.json`; it does nothing, and writes nothing, when there is none. A folder whose images were all skipped (no sidecar) has no index entry and is scanned again on the next run.
 
 Upscaled-image detection (`detectUpscaledImages`, run by `build` and the Index Manager):
 

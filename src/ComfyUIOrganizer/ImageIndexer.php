@@ -278,4 +278,56 @@ class ImageIndexer
     {
         return $this->analyzeImages($this->findFolderImages($folderName));
     }
+
+    /**
+     * Indexes only the image subfolders that have no image in the index yet.
+     * A folder whose images were all skipped stays "new" and is scanned again.
+     */
+    public function indexNewFolders() : self
+    {
+        Console::header('Discovering new folders');
+
+        $subFolderNames = array();
+
+        foreach($this->app->getImageFolder()->getSubFolders() as $folder) {
+            $subFolderNames[] = $folder->getName();
+        }
+
+        $files = array();
+
+        foreach(self::filterNewFolders($subFolderNames, $this->loadStoredIndex()) as $name)
+        {
+            Console::line1('Found new folder [%s].', $name);
+
+            foreach($this->findFolderImages($name) as $file) {
+                $files[] = $file;
+            }
+        }
+
+        if($files === array()) {
+            Console::line1('No new folders with images found.');
+            Console::nl();
+            return $this;
+        }
+
+        return $this->analyzeImages($files);
+    }
+
+    /**
+     * @param string[] $subFolderNames
+     * @return string[] The names without an entry in the index.
+     */
+    public static function filterNewFolders(array $subFolderNames, ImageIndex $index) : array
+    {
+        return array_values(array_diff($subFolderNames, $index->getFolderNames()));
+    }
+
+    private function loadStoredIndex() : ImageIndex
+    {
+        if(!$this->storageFile->exists()) {
+            return new ImageIndex();
+        }
+
+        return ImageIndex::load($this->storageFile);
+    }
 }
