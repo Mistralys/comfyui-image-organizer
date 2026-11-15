@@ -1,5 +1,16 @@
 ## Unreleased
 
+- LoRAs: Registration now accepts `--id`, `--label` and `--description` for custom entry metadata, with matching dry-run output and agent-skill instructions. Explicit ID conflicts fail without renaming; model-variant merges keep existing entry metadata.
+
+- LoRAs: Added `php tools\add_lora.php` to import Civitai metadata from a URL and filename, with category selection, model-specific variant merging, an ID prompt for same-model conflicts, and a dry-run option.
+- LoRAs: Imports from a local path now also copy the file into ComfyUI, with configurable folder suggestions, destination selection and `--destination` for agents. Identical files are reused; conflicting files are never overwritten, and new copies are rolled back if registry saving fails.
+- LoRAs: The `FLUX` folder alias is Dev-only (`Flux.1 D`); Schnell no longer receives Dev's destination suggestions. Base models come from the selected variant's metadata, not author descriptions.
+- Agents: Added the `add-lora` skill for importing a LoRA with the CLI, resolving category and model-variant choices, and verifying the saved entry.
+
+- Sidecars: A legacy sidecar can now hold its prompts in a `prompt` object (`positive`, `negative`) inside the date entry; a prompt in `custom_text` wins.
+- Indexing: Re-indexing now adds sidecar properties that an already modified image entry lacks (for example prompts added to a sidecar later); stored values are never overwritten.
+- Details page: The prompts are HTML-escaped and keep their line breaks.
+
 - Browser: Moving or deleting images now patches only the affected entries of the image lookup file immediately; before, moved images failed to load until the next indexing run.
 
 - Browser: Deleting the selected images is now a single request instead of one per image, with a progress message; the selection is kept if the request fails.
