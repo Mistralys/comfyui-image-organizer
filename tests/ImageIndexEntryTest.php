@@ -131,6 +131,17 @@ final class ImageIndexEntryTest extends TestCase
         $this->assertSame('Keep', $entry->getLabel());
     }
 
+    public function testAddMissingPropertiesKeepsStoredValues() : void
+    {
+        $data = self::sampleData();
+        $data['properties'] = array('seed' => '42', 'empty' => '');
+        $entry = ImageIndexEntry::fromArray($data);
+
+        $this->assertTrue($entry->addMissingProperties(array('seed' => '1', 'empty' => 'x', 'new' => 'y')));
+        $this->assertSame(array('seed' => '42', 'empty' => '', 'new' => 'y'), $entry->getProperties());
+        $this->assertFalse($entry->addMissingProperties(array('seed' => '1', 'new' => 'z')));
+    }
+
     public function testSyncLocationFillsEmptyFolderName() : void
     {
         $data = self::sampleData();

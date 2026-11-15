@@ -19,6 +19,7 @@ the images, from the checkpoint to LoRAs that were used, their weights, and more
 - Move images to other folders, delete them, or copy them to an output folder, from the browser.
 - See the upscaled version of an image next to it: a file with the suffix `_upscaled` is treated as part of its image.
 - Look up your LoRA collection in a filterable overview.
+- Import LoRA reference entries from a Civitai URL and filename using an interactive CLI.
 - Fix the LoRA paths in your ComfyUI workflows after moving or renaming LoRA files.
 - Optionally send images and their settings to a personal website.
 
@@ -73,7 +74,7 @@ not only by its name. Two formats are supported:
 | Format | File name | Content |
 |--------|-----------|---------|
 | Structured | `<image name>-meta.json`, or `<image name>-meta_<counter>.json` when the image name ends in a counter such as `_00001_`; previews use `-preview-meta.json` | Sections for image, prompt, model, sampler, upscale, LoRAs and flow. |
-| Legacy | `<image name>.json` | A single date-keyed entry with the `custom_text` property string and the checkpoint. |
+| Legacy | `<image name>.json` | A single date-keyed entry with the `custom_text` property string and the checkpoint. An optional `prompt` object with `positive` and `negative` texts supplies the prompts when `custom_text` has none. |
 
 When several candidates exist for an image, the structured file wins. A ComfyUI workflow
 export saved next to an image is not a sidecar and is ignored; a JSON file that no format
@@ -145,6 +146,125 @@ The following Composer scripts are available:
 | `composer clean-folders` | Cleans up empty image folders. |
 | `composer update-file-index` | Rebuilds the file index used to serve images and thumbnails. |
 | `composer verify-metadata` | Reads the sidecar of every image and reports how many use each format, plus the images without a sidecar, with an unrecognized sidecar, without a model name, or with a sidecar that fails to parse. Changes nothing; exits with an error only if a sidecar fails to parse. |
+
+### Adding a LoRA from Civitai
+
+To delegate an import to an agent, use the [Add LoRA skill](.github/skills/add-lora/SKILL.md)
+and provide the Civitai URL and filename or local path. It guides the agent through
+category and destination selection, variant conflicts, a dry run and verification.
+
+From the project folder, pass the Civitai model URL and either a filename or a full
+local path. Quote both arguments, especially when they contain spaces:
+
+```powershell
+php tools\add_lora.php "https://civitai.com/models/832858/anime-art?modelVersionId=1376386" "C:\Users\newsl\Downloads\Anime Art V3.safetensors"
+```
+
+The tool fetches the name, base model and trigger words from Civitai. It generates
+a camelCase ID and lists the existing categories from all LoRA registry files.
+Choose a category by number or enter a name, including a new category name.
+Only the filename is stored in the registry. A filename alone is a registry-only
+import and need not exist locally. Supplying a local path additionally copies
+that file into the configured ComfyUI installation; a missing or unreadable path
+is an error. The source is kept, never moved or uploaded. No model file is downloaded.
+
+- New entries go into `data/loras/loras.json`.
+- When the ID already exists for a different base model (for example SDXL versus
+  FLUX), the new model variant is added to that entry in its original registry
+  file. Its label, category, description and existing variants are kept; there
+  is no category or ID prompt (copying can still prompt for a destination).
+- If that ID already has the same base model, the tool prompts for a different
+  ID and suggests one suffixed with the Civitai version ID. It never replaces
+  the existing variant. For the example above, you can enter `animeArtV3`.
+  With an explicit `--id`, a conflict fails instead of prompting for another ID.
+- An already registered filename (case-insensitive) or Civitai version is an error,
+  even when found in another registry file.
+
+The URL's `modelVersionId` selects the exact version. Without it, the tool uses
+the first (latest) version returned by Civitai. The stored source URL always pins
+the selected version. The selected variant's `baseModel` metadata (the page's
+Details section) is authoritative; author descriptions may discuss other variants
+and are not used to determine it. In this installation, `Flux.1 D` always means
+`FLUX`; this alias is exclusively Flux.1 Dev, not Schnell or other Flux versions.
+
+Add `--dry-run` to fetch, validate and preview without changing registries or copying files.
+Use `--category=Styles` to skip the category prompt, or `--help` for usage.
+Run the PHP command directly: Composer subprocesses do not reliably forward
+standard input to interactive prompts on Windows.
+
+New entries leave the existing JSON text untouched. Merging a model variant
+preserves unknown JSON values but reformats the registry file. Writes use a
+temporary file and refuse to replace a file changed since it was loaded.
+API, input and write errors exit with status 1; success and help exit with status 0.
+The Civitai API must be publicly accessible; authentication is not supported.
+
+#### Custom entry metadata
+
+Override the generated ID and/or Civitai label, and optionally add a description:
+
+```powershell
+php tools\add_lora.php "https://civitai.com/models/832858/anime-art?modelVersionId=1376386" "Anime Art V3.safetensors" --id=animeArtV3 "--label=Anime Art V3" "--description=Pastel anime style; suggested strength 0.8." --category=Styles --dry-run
+```
+
+All three options are independent. Without `--id`, the ID is generated from
+Civitai's original name, even when `--label` is supplied. Without `--label`, the
+Civitai name is used. Without `--description`, a new entry has no description.
+Descriptions are user notes, not a way to override authoritative base-model metadata.
+They are displayed in previews and saved under the entry's `description` key.
+
+IDs must start with a letter and contain only letters and numbers; custom labels
+must not be empty. ID and label outer whitespace is trimmed; description text
+is preserved. A custom ID does not bypass duplicate filename/version checks.
+
+These options register a new entry, not edit an existing one. When adding a
+different-base-model variant to an existing ID, its existing label and description
+are kept. Conflicting explicit label/description values are rejected: choose a
+new ID for a separate entry or omit the conflicting overrides to merge.
+
+#### Copying the downloaded file
+
+The destination root is `APP_COMFYUI_FOLDER` from `config.php`, followed by
+`models\loras`. Registry categories and storage folder names are independent.
+The CLI suggests these existing folders and prompts for confirmation or another
+folder, selected by number or relative path:
+
+| Category | FLUX | SDXL |
+|----------|------|------|
+| Styles | `FLUX\ArtStyles` | `SDXL\ArtStyles` |
+| Scifi | `FLUX\Scifi` | `SDXL\SciFi` |
+| Fantasy | `FLUX\Fantasy` | `SDXL\Fantasy` |
+| Characters | `FLUX\Characters` | Choose a folder |
+| Details | Choose a folder | `SDXL\Detailers` |
+| NSFW / XXX | `FLUX\NSFW` | `SDXL\zzNSFW` |
+
+FLUX means `FLUX` / `Flux.1 D` (Dev only); SDXL includes
+`SDXL 1.0`, `SDXL 0.9`, `SDXL Lightning` and `SDXL Hyper`. Unknown models, including
+other Flux variants, receive no automatic suggestion. Choose a destination explicitly.
+If a suggested folder does not exist, the CLI reports it and asks for an existing
+folder instead. No folders are created or renamed.
+
+Set the optional `APP_LORA_CATEGORY_FOLDERS` constant in `config.php` to override
+individual suggestions; [config.dist.php](config.dist.php) contains an example.
+Overrides merge with the defaults. For merged variants, the existing registry
+category supplies the suggestion.
+
+Agents and unattended commands can skip the folder prompt:
+
+```powershell
+php tools\add_lora.php "https://civitai.com/models/832858/anime-art?modelVersionId=1376386" "C:\Users\newsl\Downloads\Anime Art V3.safetensors" --category=Styles --destination=FLUX\ArtStyles --dry-run
+```
+
+`--destination` is an existing folder relative to the LoRA root, not a filename
+or an absolute path. Parent traversal and folders resolving outside the root are
+rejected. It requires a source path; omit it for registry-only imports.
+
+The file keeps its original basename. Existing destination files are reused only
+when size and SHA-256 match; different contents are never overwritten. A new
+copy is staged and verified before being published with an atomic no-overwrite
+hard link, then the registry is saved. The destination filesystem must support
+hard links (such as NTFS). A failed registry save removes only that operation's
+new, unchanged copy; reused files and the downloaded source are never deleted.
+A rollback or cleanup failure is reported explicitly.
 
 ### LoRA path fixing
 

@@ -19,7 +19,8 @@ use Mistralys\ComfyUIOrganizer\Metadata\UpscaleInfo;
 /**
  * The legacy sidecar: a JSON file whose first top-level key is the
  * generation date, holding the generation properties, among them a
- * `custom_text` string with `-name:value` pairs.
+ * `custom_text` string with `-name:value` pairs, and optionally a `prompt`
+ * object (`positive`, `negative`) as a fallback for the prompts.
  */
 class LegacySidecarFormat extends BaseSidecarFormat
 {
@@ -78,7 +79,8 @@ class LegacySidecarFormat extends BaseSidecarFormat
     }
 
     /**
-     * `getIndexProperties()` is the parsed `custom_text` bag, untouched, so that legacy indexing stays
+     * `getIndexProperties()` is the parsed `custom_text` bag, plus the prompts of the `prompt` object where
+     * `custom_text` has none, so that legacy indexing stays
      * byte-identical; the bag carries seed, CFG and size, while their typed getters stay `null`.
      * Parity quirk: a model named `"0"` counts as empty.
      *
@@ -100,7 +102,7 @@ class LegacySidecarFormat extends BaseSidecarFormat
         }
 
         $properties = ArrayDataCollection::create($entry);
-        $bag = $this->parseText($properties->getString('custom_text'));
+        $bag = $this->addPromptSection($this->parseText($properties->getString('custom_text')), $entry);
 
         $modelName = self::resolveCheckpoint(
             $properties->getKey('checkpoint'),
@@ -163,6 +165,41 @@ class LegacySidecarFormat extends BaseSidecarFormat
         }
 
         return $fallback;
+    }
+
+    /**
+     * Adds the prompts of an optional `prompt` object (`positive`, `negative`) to the bag, for
+     * sidecars that were repaired by hand; a prompt already in `custom_text` wins.
+     *
+     * @param array<string,string> $bag
+     * @param array<mixed> $entry
+     * @return array<string,string>
+     */
+    private function addPromptSection(array $bag, array $entry) : array
+    {
+        $section = $entry['prompt'] ?? null;
+
+        if(!is_array($section)) {
+            return $bag;
+        }
+
+        $prompts = ArrayDataCollection::create($section);
+
+        $map = array(
+            ImageProperties::KEY_PROMPT_POSITIVE => 'positive',
+            ImageProperties::KEY_PROMPT_NEGATIVE => 'negative'
+        );
+
+        foreach($map as $bagKey => $sectionKey)
+        {
+            $value = $this->readString($prompts, $sectionKey);
+
+            if($value !== null && !isset($bag[$bagKey])) {
+                $bag[$bagKey] = $value;
+            }
+        }
+
+        return $bag;
     }
 
     /**

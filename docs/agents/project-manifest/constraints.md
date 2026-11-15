@@ -37,7 +37,7 @@ This document is the manifest's only binding one. Conventions below were verifie
 ## Index integrity
 
 - Persist every change to indexed images through `ImageCollection::save()`. Mutating `ImageInfo` or `ImageProperties` marks the image as changed and sets its `modified` flag; what `save()` re-derives and what it writes is in its docblock.
-- Preserve the `modified` flag semantics: the indexer never re-analyzes an image whose index entry has `modified = true`. For such entries it updates only the image path, sidecar path and folder name.
+- Preserve the `modified` flag semantics: the indexer never re-analyzes an image whose index entry has `modified = true`. For such entries it updates the image path, sidecar path and folder name, and adds sidecar properties the entry lacks (`ImageIndexEntry::addMissingProperties()`); a stored value is never overwritten.
 - Keep the favorite → gallery → website cascade: enabling "for website" enables "for gallery", and enabling "for gallery" enables "favorite". Disabling does not cascade.
 - Keep the upscaled version of an image as a sibling file, not as an indexed image: `<name without trailing underscores>_upscaled.png` beside the original (`ImageInfo::resolveUpscaledPath()`). It has no sidecar, `ImageIndexer::filterOriginals()` keeps it out of indexing and the metadata census, and its metadata is the original's. Read whether it exists through `ImageInfo::isUpscaled()`; nothing about it is stored in the index.
 - Treat the files in `ImageInfo::getSiblingFiles()` (upscaled, PSD, JPG, website image) as part of the image: they move and are deleted with it. A new sibling kind belongs in that list.- Refuse to overwrite on move: `moveToFolder()` throws `OrganizerException::ERROR_CANNOT_MOVE_FILE_EXISTS` when the target file exists, and copies before deleting so a failed save does not lose the image.
@@ -69,6 +69,10 @@ This document is the manifest's only binding one. Conventions below were verifie
 - Pass every untrusted value (workflow values, file names, LoRA IDs) to `PathFixerMessage` as an argument, never inside the template. `WorkflowsPage` does not escape the messages again, so a new message source must follow the same rule; the escaping details are in the class docblock.
 - Read workflows from `<ComfyUI>/user/default/workflows`, not from this repository's `docs/workflows/`; the latter holds reference copies only.
 - Keep LoRA IDs unique across all JSON files under `data/loras/`; they are loaded into one collection.
+- Route CLI registry writes through `LoRAFile`: new entries preserve existing JSON text; model-variant merges preserve unknown JSON values, existing entry metadata and other variants. `CivitaiImporter` rejects duplicate filenames/versions across all registry files, merges different base models under an existing ID, and requires a different ID for same-base-model conflicts.
+- Registration ID, label and description overrides apply to new entries. An explicit ID is never silently replaced or interactively renamed; conflicts fail. A model-variant merge rejects differing explicit label/description values rather than overwriting existing entry metadata or ignoring user input.
+- Keep registry categories separate from storage folders. `LoRAInstaller` derives the root from the configured ComfyUI folder, accepts only existing destinations inside it, and copies explicit local paths while leaving basename-only imports registry-only. Never overwrite different file contents, delete a reused file on rollback, or silently route an unknown model family to FLUX/SDXL. Dry runs must write neither registries nor model files.
+- Determine a LoRA's base model exclusively from the selected Civitai variant's metadata, never author descriptions. In this installation `Flux.1 D` maps to the registry's `FLUX` alias; Schnell and other Flux variants must not be treated as Dev.
 
 ### Known gaps in the code (do not rely on)
 

@@ -26,13 +26,14 @@ The root holds the web and CLI entry points and the configuration files; everyth
 | `src/` | source | All PHP application code, in one namespaced module tree under `ComfyUIOrganizer/`; see below. |
 | `js/` | source | Plain JavaScript classes for the browser UI, loaded directly with no bundler. |
 | `css/` | source | The application stylesheet; the Bootstrap and Font Awesome styles come from `vendor/`. |
-| `tests/` | source | PHPUnit tests. The layout mirrors `src/ComfyUIOrganizer/`; `fixtures/` holds the sample sidecar files the metadata tests parse. |
+| `tests/` | source | PHPUnit tests and the Python validator CLI tests. The PHP test layout mirrors `src/ComfyUIOrganizer/`; `fixtures/` holds the sample sidecar files the metadata tests parse. |
+| `tools/` | source | Standalone CLI entry points: the interactive PHP Civitai LoRA importer and the Python FLUX prompt length validator. |
 | `docs/` | source | Documentation and reference material; see below. |
 | `data/` | runtime data | Persistence for the application; see below. |
 | `cache/` | generated | Thumbnails created on demand for the image browser. Git-ignored. |
 | `output-images/` | runtime data | Target of the "copy to output" action, which places a selected image here under its output file name. The PNG files are git-ignored. |
 | `vendor/` | generated | Composer dependencies, including the X4 UI framework and its Bootstrap assets. Git-ignored; never edited. |
-| `.github/` | source | Agent skills (`skills/`), among them the FLUX prompt-generation skill. Independent of the application code. |
+| `.github/` | source | Agent skills (`skills/`): FLUX prompt generation and Civitai LoRA import through the existing CLI. Skill instructions are independent of the application code. |
 | `.idea/` | IDE settings | IDE project settings; not part of the application. |
 
 Further root-level items — `.git/`, `.gitignore`, `.gitattributes` and the PHPUnit result cache — are repository and tooling housekeeping. The git-ignored paths in full are listed in [tech-stack.md](tech-stack.md).
@@ -44,7 +45,7 @@ Further root-level items — `.git/`, `.gitignore`, `.gitattributes` and the PHP
 | `data/images.json` | runtime data | The image index: one record per image, written by indexing and by UI actions. Git-ignored. |
 | `data/file_index.json` | runtime data | Lookup file written by indexing, through which `image.php` resolves every request. Git-ignored. |
 | `data/backup/` | runtime data | Timestamped copies of the image index, taken before an indexing run rewrites it. Git-ignored. |
-| `data/loras/` | source / runtime data | Hand-written LoRA reference files, one JSON file per set. Read at runtime whether tracked or created locally. |
+| `data/loras/` | source / runtime data | LoRA reference files, hand-written or maintained by the Civitai CLI importer, one JSON file per set. Read at runtime whether tracked or created locally. |
 
 How these files are written is in [data-flows.md](data-flows.md).
 
@@ -67,7 +68,7 @@ The root of the module tree holds the application core and the indexing and imag
 |---|---|
 | `Ajax/` | Base class for browser actions on one image. |
 | `Ajax/Methods/` | One class per AJAX action; discovered by a folder scan, not registered by hand. |
-| `LoRAs/` | LoRA reference data: the classes that load and group the files in `data/loras/`. |
+| `LoRAs/` | LoRA reference data: loading, grouping, Civitai metadata import, registry writing for `data/loras/`, and transactional installation of local model files into ComfyUI. |
 | `Metadata/` | Sidecar handling: locating a sidecar and parsing it into a format-independent result. |
 | `Metadata/Formats/` | One class per supported sidecar format; discovered by a folder scan. |
 | `Pages/` | One class per UI page; discovered by a folder scan. |

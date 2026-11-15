@@ -6,11 +6,11 @@ Descriptive paths through the system. Every type named here appears in the modul
 
 | Store | Written by | Read by | Shape |
 |---|---|---|---|
-| ComfyUI output folder (`*.png` + sidecar) | ComfyUI ("Save Image Extended" node) | `ImageIndexer`, through `MetadataRegistry` | Legacy sidecar (`<name>.json`): one top-level key (a date string) whose value holds `checkpoint`, `custom_text` and other fields. Structured sidecar (`<name>-meta.json` or `<name>-meta_<nr>.json`): `image`, `prompt` and `sampler` objects plus optional `model`, `flow`, `upscale`, `loras`. A workflow export (`nodes` and `links`) may sit beside a PNG; it is never indexed |
+| ComfyUI output folder (`*.png` + sidecar) | ComfyUI ("Save Image Extended" node) | `ImageIndexer`, through `MetadataRegistry` | Legacy sidecar (`<name>.json`): one top-level key (a date string) whose value holds `checkpoint`, `custom_text` and other fields (an optional `prompt` object supplies the prompts when `custom_text` has none). Structured sidecar (`<name>-meta.json` or `<name>-meta_<nr>.json`): `image`, `prompt` and `sampler` objects plus optional `model`, `flow`, `upscale`, `loras`. A workflow export (`nodes` and `links`) may sit beside a PNG; it is never indexed |
 | `data/images.json` | `ImageIndexer`, `ImageCollection::save()` | `ImageCollection`, `ImageIndexer` | Object keyed by image ID; each value is the output of `ImageInfo::serialize()` (`ImageIndexEntry::toArray()`), plus any unknown keys the stored entry carried. Both writers go through `ImageIndex`, which writes every entry. Legacy entries that lack `label` or `modified` gain explicit defaults (`""` / `false`) on the first save, so that save produces a one-time, large diff |
 | `data/file_index.json` | `ImageCollection::writeFileIndex()` (indexing), `updateFileIndexEntries()` (move, delete) | `image.php` | Object keyed by image ID with `imageFile` and `thumbnailFile` paths |
 | `data/backup/images-<timestamp>.json` | `ImageIndexer` (before each analysis run) | manual recovery | Copy of `images.json` |
-| `data/loras/**/*.json` | author, by hand | `LoRAsCollection` | Object keyed by LoRA ID; each entry is either nested (a `models` object keyed by model name, each with `file`, `source`, `triggerWords`) or flat (a single model described by the entry itself) |
+| `data/loras/**/*.json` | author or `CivitaiImporter` through `LoRAFile` | `LoRAsCollection`, `CivitaiImporter` | Object keyed by LoRA ID; each entry is either nested (a `models` object keyed by model name, each with `file`, `source`, `triggerWords`) or flat (a single model described by the entry itself) |
 | `cache/<id>-540.jpg` | `ImageInfo::createThumbnail()` (called by `image.php`) | `image.php` | JPEG thumbnail |
 | `output-images/` | `ImageInfo::copyToOutput()` | author | Copied PNG |
 
@@ -29,7 +29,7 @@ Builder::build() | Builder::index() | IndexManagerPage (refresh) | ImageBrowser 
           → no sidecar resolved, no candidate file: console "no sidecar" line only
           → sidecar resolved (a structured -meta.json wins over a legacy .json and a workflow export): ImageAnalyzer::analyze(png, sidecar)
               → ID = MD5 of the PNG file (ERROR_CANNOT_HASH_IMAGE_FILE when the hash cannot be computed)
-              → ID already indexed with modified = true: ImageIndexEntry::syncLocation() updates only image path, sidecar path, folder name
+              → ID already indexed with modified = true: ImageIndexEntry::syncLocation() updates image path, sidecar path, folder name; addMissingProperties() adds sidecar properties the entry lacks
               → otherwise: format->parse() the sidecar (ERROR_NO_MODEL_NAME: ACTION_SKIP_NO_CHECKPOINT warning;
                 any other MetadataException: ACTION_SKIP_INVALID_SIDECAR warning; the image is left out either way),
                 complete the index-property bag from the file name / folder, read the image size,
@@ -134,6 +134,30 @@ Action-specific behavior:
 - **Card size** (`SetCardSizeMethod`): stores the size in the session through `ImageBrowser::setCardSize()` (which uses `SessionState`); does not involve an image.
 
 ## 4. LoRA reference and workflow path fixing
+
+```
+php tools/add_lora.php <Civitai URL> <filename-or-path>
+  → prepend.php → CivitaiImporter + LoRAInstaller (no OrganizerApp)
+  → explicit local path: require an existing readable source; basename: registry-only
+  → URL modelVersionId → public version API; absent → model API's first version → version API
+  → typed LoRA / LoRAModel (supplied basename, pinned source URL, API name/base model/trainedWords)
+  → optional --id / --label / --description override new-entry metadata independently
+  → LoRAFile loads all registry files for duplicate filename/version checks and ID lookup
+      → same ID, different base model: merge into the existing file; keep its entry metadata
+      → same ID, same base model: CLI prompts for a different ID, or fails if --id was supplied
+      → merging rejects explicit label/description overrides that differ from existing entry metadata
+      → new ID: CLI lists categories and prompts (or uses --category); append to loras.json
+  → local source: LoRAInstaller selects an existing folder inside APP_COMFYUI_FOLDER/models/loras
+      → --destination override or CLI prompt with a model/category-based suggestion
+      → existing target: reuse only when size/SHA-256 match; different contents fail
+      → new target: stage and verify copy, publish without overwriting, then save registry
+      → failed registry save: remove only the new unchanged copy; never delete source/reused files
+  → --dry-run: preview destination and registry changes only; otherwise temporary-file registry write
+    and rename, rejecting stale target contents
+```
+
+New-entry appends preserve existing JSON text. Variant merges retain unknown JSON
+values and convert flat entries to nested models, but reformat the file.
 
 ```
 LoRAOverviewPage → LoRAsCollection::getInstance() → every *.json under data/loras/

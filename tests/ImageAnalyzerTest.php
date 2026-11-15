@@ -332,6 +332,9 @@ final class ImageAnalyzerTest extends TestCase
         $image = $this->createPng('x-seed1-nr1_00001_.png');
         $sidecar = $this->resolveFixture('structured-flux-v32.json');
 
+        $properties = $sidecar->getFormat()->parse($sidecar->getData())->getIndexProperties();
+        $properties[ImageProperties::KEY_FOLDER_NAME] = self::FOLDER_NAME;
+
         $stored = $this->makeEntry(
             $this->hashOf($image),
             $image->getPath(),
@@ -339,6 +342,73 @@ final class ImageAnalyzerTest extends TestCase
             '2025-05-05',
             true,
             'My label',
+            $properties
+        );
+        $this->index->set($stored);
+
+        $before = $stored->toArray();
+
+        $this->analyzer->analyze($image, $sidecar);
+
+        $this->assertSame(0, $this->results->countResults());
+        $this->assertSame($before, $this->onlyEntry()->toArray());
+    }
+
+    public function testModifiedEntryGainsMissingSidecarPropertiesOnly() : void
+    {
+        $image = $this->createPng('x-seed1-nr1_00001_.png');
+        $sidecar = $this->resolveContent(
+            array('01/09/2025 13:44:02' => array(
+                'checkpoint' => 'model',
+                'custom_text' => '-seed:111-promptPositive:`new prompt`-promptNegative:`new negative`'
+            )),
+            new LegacySidecarFormat()
+        );
+
+        $stored = $this->makeEntry(
+            $this->hashOf($image),
+            $image->getPath(),
+            $sidecar->getSidecar()->getPath(),
+            '2025-05-05',
+            true,
+            'My label',
+            array(
+                ImageProperties::KEY_FOLDER_NAME => self::FOLDER_NAME,
+                ImageProperties::KEY_SEED => 'stored-seed',
+                ImageProperties::KEY_PROMPT_NEGATIVE => 'stored negative',
+                ImageProperties::KEY_FAVORITE => true
+            )
+        );
+        $this->index->set($stored);
+
+        $this->analyzer->analyze($image, $sidecar);
+
+        $props = $this->onlyEntry()->getProperties();
+
+        $this->assertSame('new prompt', $props[ImageProperties::KEY_PROMPT_POSITIVE]);
+        $this->assertSame('stored negative', $props[ImageProperties::KEY_PROMPT_NEGATIVE]);
+        $this->assertSame('stored-seed', $props[ImageProperties::KEY_SEED]);
+        $this->assertTrue($props[ImageProperties::KEY_FAVORITE]);
+        $this->assertSame('stored-checkpoint', $this->onlyEntry()->getCheckpoint());
+        $this->assertTrue($this->results->containsCode(ImageIndexer::ACTION_UPDATE_PATHS));
+        $this->assertSame(1, $this->results->countResults());
+    }
+
+    public function testModifiedEntryWithUnparsableSidecarIsLeftAlone() : void
+    {
+        $image = $this->createPng('x-seed1-nr1_00001_.png');
+        $sidecar = $this->resolveContent(
+            array('01/09/2025 13:44:02' => array('custom_text' => '-promptPositive:`x`')),
+            new LegacySidecarFormat()
+        );
+
+        $stored = $this->makeEntry(
+            $this->hashOf($image),
+            $image->getPath(),
+            $sidecar->getSidecar()->getPath(),
+            '2025-05-05',
+            true,
+            '',
             array(ImageProperties::KEY_FOLDER_NAME => self::FOLDER_NAME)
         );
         $this->index->set($stored);

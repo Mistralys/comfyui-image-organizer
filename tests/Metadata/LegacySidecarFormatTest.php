@@ -200,6 +200,50 @@ final class LegacySidecarFormatTest extends TestCase
         $this->assertSame($bag[ImageProperties::KEY_PROMPT_NEGATIVE], $metadata->getNegativePrompt());
     }
 
+    public function testPromptSectionFillsTheBag() : void
+    {
+        $metadata = $this->format->parse(self::synthetic(array(
+            'checkpoint' => 'model',
+            'custom_text' => '-sampler:euler',
+            'prompt' => array('positive' => 'a (b:1.5), c-d', 'negative' => 'bad')
+        )));
+
+        $bag = $metadata->getIndexProperties();
+
+        $this->assertSame('a (b:1.5), c-d', $bag[ImageProperties::KEY_PROMPT_POSITIVE]);
+        $this->assertSame('bad', $bag[ImageProperties::KEY_PROMPT_NEGATIVE]);
+        $this->assertSame('a (b:1.5), c-d', $metadata->getPositivePrompt());
+        $this->assertSame('bad', $metadata->getNegativePrompt());
+    }
+
+    public function testCustomTextPromptWinsOverPromptSection() : void
+    {
+        $metadata = $this->format->parse(self::synthetic(array(
+            'checkpoint' => 'model',
+            'custom_text' => '-promptPositive:`from text`',
+            'prompt' => array('positive' => 'from section', 'negative' => 'neg section')
+        )));
+
+        $bag = $metadata->getIndexProperties();
+
+        $this->assertSame('from text', $bag[ImageProperties::KEY_PROMPT_POSITIVE]);
+        $this->assertSame('neg section', $bag[ImageProperties::KEY_PROMPT_NEGATIVE]);
+    }
+
+    public function testInvalidPromptSectionIsIgnored() : void
+    {
+        foreach(array('text', array('a', 'b'), array('positive' => 5)) as $section)
+        {
+            $metadata = $this->format->parse(self::synthetic(array(
+                'checkpoint' => 'model',
+                'custom_text' => '-sampler:euler',
+                'prompt' => $section
+            )));
+
+            $this->assertSame(array('sampler' => 'euler'), $metadata->getIndexProperties());
+        }
+    }
+
     public function testDetect() : void
     {
         foreach(array_keys(self::legacyFixtureProvider()) as $name) {
