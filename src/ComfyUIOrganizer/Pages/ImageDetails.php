@@ -166,8 +166,8 @@ class ImageDetails extends BasePage
                 t('Steps') => $this->image->prop()->getSamplerSteps(),
                 t('Guidance Scale') => $this->image->prop()->getCFG(),
                 t('Seed') => $this->image->prop()->getSeed(),
-                t('Prompt') => $this->image->prop()->getPromptPositive(),
-                t('Negative Prompt') => $this->image->prop()->getPromptNegative()
+                t('Prompt') => $this->renderMultiline($this->image->prop()->getPromptPositive()),
+                t('Negative Prompt') => $this->renderMultiline($this->image->prop()->getPromptNegative())
             )
         );
 
@@ -236,6 +236,11 @@ class ImageDetails extends BasePage
         }
 
         echo '<h3>'.$title.'</h3>'.$grid;
+    }
+
+    private function renderMultiline(string $text) : string
+    {
+        return nl2br(htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'), false);
     }
 
     private function renderOptionalFile(FileInfo $file) : string
