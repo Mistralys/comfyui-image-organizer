@@ -1123,5 +1123,53 @@
         "triggerWords": ["yen_w3"]
       }
     }
+  },
+  "animeArtAdel": {
+    "category": "Styles",
+    "label": "Anime art",
+    "models": {
+      "FLUX": {
+        "source": "https://civitai.com/models/832858?modelVersionId=1376386",
+        "file": "Anime Art V3.safetensors",
+        "triggerWords": [
+          "Anime art"
+        ]
+      }
+    }
+  },
+  "darkSideOfLight": {
+    "category": "Styles",
+    "label": "Dark Side of Light",
+    "models": {
+      "FLUX": {
+        "source": "https://civitai.com/models/1032948?modelVersionId=1245565",
+        "file": "Synesthesia.safetensors",
+        "triggerWords": []
+      }
+    }
+  },
+  "fantac": {
+    "category": "Fantasy",
+    "label": "FantaC",
+    "models": {
+      "Flux.1 S": {
+        "source": "https://civitai.com/models/1952181?modelVersionId=2209446",
+        "file": "FantaC.safetensors",
+        "triggerWords": [
+          "FTC"
+        ]
+      }
+    }
+  },
+  "retroAnimeFluxStyle": {
+    "category": "Styles",
+    "label": "Retro Anime Flux - Style",
+    "models": {
+      "FLUX": {
+        "source": "https://civitai.com/models/721039?modelVersionId=806265",
+        "file": "RetroAnimeFluxV1.safetensors",
+        "triggerWords": []
+      }
+    }
   }
 }
