@@ -2,18 +2,83 @@
 
 How to write image prompts for FLUX.1 Dev in a local ComfyUI workflow, such as the FLUX workflows this project organizes (see [workflows/readme.md](workflows/readme.md)).
 
+This guide covers FLUX.1 Dev only. FLUX.2 and FLUX 3 use different text encoders and are prompted differently.
+
 To convert an existing prompt automatically, use the `flux-prompt-generation` skill in `.github/skills/flux-prompt-generation/SKILL.md`.
 
 ## Scope and sources
 
-This guide is a synthesis of two sources:
+Guidance in this guide has one of four bases. Sections name theirs in a `Basis:` line.
+
+| Basis | Meaning |
+|---|---|
+| Verified in source | Read in the ComfyUI or Black Forest Labs (BFL) source code. Not tested on images |
+| Observed here | Seen while iterating on a scene in this project, judged by eye (see [Worked example: iterating on a scene](#worked-example-iterating-on-a-scene)) |
+| Community practice | Widely reported for FLUX.1 Dev. Not tested in this project |
+| FLUX 3 guide | BFL advice written for a newer model and assumed to carry over |
+
+The written sources are:
 
 - [PrompTessor: FLUX Prompt Generator](https://promptessor.com/flux-prompt-generator): a short technique list, a mistakes list and one worked example.
-- [Black Forest Labs (BFL) FLUX prompting guide](https://docs.bfl.ai/guides/prompting_summary): the official guide that the PrompTessor page cites as its source.
+- [BFL FLUX prompting guide](https://docs.bfl.ai/guides/prompting_summary): the official guide that the PrompTessor page cites as its source.
 
-The BFL guide is written for its hosted FLUX 3 Image model. The parts that describe general prompt writing (structure, lighting, camera terms, replacing negative prompts) are included here. Hosted-API features are left out: JSON and layout (bounding box) prompts, `aspect_ratio`/`resolution` request fields and multi-reference editing.
+The BFL guide is written for the hosted FLUX 3 Image model. That model rewrites the prompt before generating (prompt expansion) and uses a different text encoder. FLUX.1 Dev does neither, so the BFL advice is used selectively:
 
-The guidance below has not been tested against FLUX.1 Dev specifically. Treat it as a strong starting point and compare results in your own workflow.
+- **Included:** general writing advice (prose structure, describing light, replacing negative prompts, quoting text).
+- **Left out:** JSON and layout (bounding box) prompts, `aspect_ratio`/`resolution` request fields, multi-reference editing and hex color codes.
+- **Changed:** advice that depends on prompt expansion, such as starting from a very short prompt, and keyword-only camera and style terms.
+
+Most of this guide has not been tested on images. Treat it as a strong starting point and compare results in your own workflow.
+
+## How FLUX.1 Dev reads a prompt
+
+Basis: verified in source for the encoder and token facts; community practice for the rest.
+
+- **Two text encoders, one doing most of the work.** T5-XXL reads the whole prompt and supplies the content. CLIP-L supplies only a single summary vector (`comfy/text_encoders/flux.py`).
+- **T5 is a language model.** It reads sentences and the relationships in them (who holds what, what is behind what). This is why prose works better than a keyword list.
+- **The prompt is not rewritten.** The model receives your literal text. Whatever you leave unstated is filled with the model's defaults (see [FLUX.1 Dev defaults and how to counter them](#flux1-dev-defaults-and-how-to-counter-them)).
+- **Write a caption, not an instruction.** Describe the image as if it exists: `A grey cat sleeps on a sunlit windowsill`. Leave out `create an image of`, `make sure`, `I want` and `should`.
+- **Words are read literally.** A metaphor or a role word can be drawn as the thing it names (see the `guardians` example in [Subject and relationships](#subject-and-relationships)).
+
+### Token limits
+
+Basis: verified in source.
+
+| Encoder | Limit | In words |
+|---|---|---|
+| T5-XXL | BFL's reference code encodes at most 512 tokens (`load_t5` in `src/flux/util.py`). ComfyUI does not cut the prompt off, but text beyond 512 tokens is more than the model was built for | Roughly 350 to 400 English words |
+| CLIP-L | Only the first 77-token chunk contributes to the summary vector (`comfy/sd1_clip.py`) | Roughly the first 50 to 60 words |
+
+A prompt of normal length (see [Length](#length)) stays far below the T5 limit.
+
+### Prompt fields and guidance in ComfyUI
+
+Basis: verified in source for what the nodes do; community practice for the recommended values.
+
+- **`CLIPTextEncode`** sends the same text to both encoders. This is the simple default.
+- **`CLIPTextEncodeFlux`** has a `t5xxl` field, a `clip_l` field and a `guidance` value. Put the full prompt in `t5xxl`. In `clip_l`, repeat the prompt or write a one-sentence summary of subject and style. The effect of the `clip_l` text is small.
+- **Guidance is not CFG.** It is a value passed to the model (default 3.5, set in `CLIPTextEncodeFlux` or a `FluxGuidance` node). CFG stays at `1.0`.
+
+Guidance changes how a prompt is rendered, so a suggested value can accompany a prompt:
+
+| Guidance | Effect | Use for |
+|---|---|---|
+| 1.5 to 2.5 | More natural texture and light, looser prompt following | Candid photographs, painterly and hand-drawn styles |
+| 3.0 to 4.0 | The balanced default | Most prompts |
+| 4.0 to 5.0 | Stricter prompt following, more contrast and polish | Complex layouts, several subjects, text in the image |
+
+## Quick procedure
+
+A short order of work for writing or converting a prompt. The sections below explain each step.
+
+1. Separate what the request fixes (subject, style, mood) from what it leaves open.
+2. Open with the image type and medium.
+3. Write the subject sentence. Give every must-have element its own sentence.
+4. Add one concrete statement each for setting, light and framing.
+5. Check the model's defaults and counter the ones this image must not have (see [FLUX.1 Dev defaults and how to counter them](#flux1-dev-defaults-and-how-to-counter-them)).
+6. If the image shows people and variety is wanted, describe a specific person (see [Diversity in faces and people](#diversity-in-faces-and-people)).
+7. Reread and remove every phrase that does not describe something visible: instructions, negations, quality tags and mood words without a visible form.
+8. Check the length (see [Length](#length)).
 
 ## How FLUX prompts differ from SDXL prompts
 
@@ -23,8 +88,10 @@ The guidance below has not been tested against FLUX.1 Dev specifically. Treat it
 | A negative prompt | No negative prompt. Describe what you want to see instead (see [Working without negative prompts](#working-without-negative-prompts)) |
 | Quality tags such as "masterpiece", "best quality" | Leave them out. Describe what a real camera would record |
 | Weight syntax such as `(word:1.3)` | ComfyUI parses it for FLUX.1, but prefer emphasis through placement and detail (see [Weight syntax in ComfyUI](#weight-syntax-in-comfyui)) |
+| Artist names and one-word style labels | Weak in FLUX.1 Dev. Name the medium and describe its visible traits (see [Style](#style)) |
+| A new seed for a new face | A new seed gives nearly the same face. Change the description of the person instead (see [Diversity in faces and people](#diversity-in-faces-and-people)) |
 
-In this project's FLUX workflows, negative prompts are not used and CFG is virtually always `1.0` (see [workflows/readme.md](workflows/readme.md)).
+In this project's FLUX workflows, negative prompts are not used and CFG is virtually always `1.0` (see [workflows/readme.md](workflows/readme.md)). At a CFG of exactly `1.0`, ComfyUI does not evaluate the negative prompt at all (verified in `comfy/samplers.py`), so text in it has no effect.
 
 ## Prompt structure
 
@@ -42,9 +109,15 @@ Put the main subject and action early, then add environment, spatial relationshi
 
 ### Length
 
-Start with one or two sentences and add detail as you review results. Longer prompts help when there are several subjects, a specific layout or text in the image. Add only details that describe something visible, and remove any sentence that does not.
+Basis: community practice.
 
-Strong prompts are specific, not necessarily long. The component list below is not a checklist to fill in every time.
+FLUX.1 Dev does not expand a short prompt. A short prompt returns the model's defaults for everything it does not mention.
+
+- **Default:** one paragraph of three to six sentences (roughly 40 to 120 words) that covers subject, setting, light and framing.
+- **Shorter** (one or two sentences) when you want to see what the model does by itself, or as the first step of an iteration.
+- **Longer** when there are several subjects, a specific layout or text in the image. Stay below roughly 300 words (see [Token limits](#token-limits)).
+
+Add only details that describe something visible, and remove any sentence that does not. Strong prompts are specific, not necessarily long. The component list below is not a checklist to fill in every time.
 
 ## Prompt components
 
@@ -54,7 +127,7 @@ Strong prompts are specific, not necessarily long. The component list below is n
 | Subject | The main focus | `an elderly man with a long white beard`, `a single red rose` |
 | Location | Setting and mood | `inside a dimly lit jazz club`, `in a dense forest after rain` |
 | Style | Visual language | `fashion editorial photography`, `oil painting`, `anime illustration` |
-| Camera | Lens, framing, depth of field | `85mm lens`, `shallow depth of field`, `low-angle shot` |
+| Camera | Framing, viewpoint, depth of field | `head and shoulders fill the frame`, `seen from ground level`, `the background is a soft blur` |
 | Lighting | Contrast, mood, depth | `soft window light`, `golden hour sunlight`, `harsh direct flash` |
 | Colors | Palette | `muted beige and forest green tones`, `monochrome black and white` |
 | Effects | Visual treatment | `film grain`, `soft bloom`, `motion blur` |
@@ -64,7 +137,9 @@ Use one or two strong effects. Too many make the image unfocused.
 
 ### Subject and relationships
 
-Be specific when it matters: `a young woman with curly red hair` renders more consistently than `a woman`. When there are several subjects, describe how they relate in full sentences: who faces whom, who is in focus, who is asleep.
+Basis: FLUX 3 guide for the first paragraph; observed here for the list.
+
+Be specific when it matters: `a young woman with curly red hair` renders more consistently than `a woman`. For people, see also [Diversity in faces and people](#diversity-in-faces-and-people). When there are several subjects, describe how they relate in full sentences: who faces whom, who is in focus, who is asleep.
 
 The points below come from iterating on a single scene (see [Worked example: iterating on a scene](#worked-example-iterating-on-a-scene)). They have not been tested beyond that scene.
 
@@ -75,20 +150,30 @@ The points below come from iterating on a single scene (see [Worked example: ite
 
 ### Style
 
-Name the style concretely and mention it early when it is central to the result. "The grainy texture of mid-20th-century color film" says more than "vintage".
+Basis: community practice.
 
-| Category | Keywords |
-|---|---|
-| Photographic | `shot on Kodak Portra 400`, `35mm film`, `Sony A7IV`, `Hasselblad X2D` |
-| Cinematic | `cinematic`, `anamorphic lens flare`, `teal and orange color grading`, `film noir` |
-| Artistic | `oil painting`, `watercolor`, `pencil sketch`, `impasto texture` |
-| Digital art | `concept art`, `matte painting`, `stylized 3D` |
-| Illustration | `flat design`, `vector illustration`, `comic art`, `graphic novel` |
-| Vintage | `80s vintage photo`, `2000s digicam`, `polaroid`, `sepia tone` |
+Name the medium in the first sentence, then describe what that medium looks like. A style label alone is a weak signal in FLUX.1 Dev, and artist names mostly have no effect.
 
-For photographs, name the camera, lens or film stock instead of writing "professional photo", then describe what that look does to the image: `visible grain`, `a warm color cast`, `slight chromatic aberration at the edges`.
+| Category | Name the medium | Then describe what is visible |
+|---|---|---|
+| Photographic | `35mm film photograph`, `2000s digicam snapshot`, `polaroid` | `visible grain`, `a warm color cast`, `slightly blown highlights`, `hard shadows from an on-camera flash` |
+| Cinematic | `film still`, `film noir` | `wide frame`, `teal shadows and orange skin tones`, `a horizontal lens flare`, `deep black shadows` |
+| Painting | `oil painting`, `watercolor`, `gouache` | `thick visible brushstrokes`, `ridges of paint catching the light`, `pigment bleeding into wet paper`, `white paper showing through` |
+| Drawing | `pencil sketch`, `ink drawing` | `cross-hatched shading`, `loose construction lines`, `an uneven ink line` |
+| Illustration | `flat vector illustration`, `comic art` | `solid color shapes without gradients`, `thick black outlines`, `halftone dots` |
+| Digital art | `concept art`, `matte painting`, `stylized 3D render` | `a painterly background behind a sharper subject`, `smooth simplified shapes`, `soft even light` |
+
+Points to know:
+
+- **FLUX.1 Dev leans toward a photograph or a polished render.** A non-photographic style needs more description than a photograph does. Tie the description to surfaces in the scene: `her coat is painted in broad flat strokes of blue`.
+- **Keep photo terms out of non-photographic prompts.** Lens names, f-numbers, `bokeh` and `film grain` pull the image back toward a photograph.
+- **Film stock and camera names are weak signals.** `Kodak Portra 400` or `Hasselblad` can be added to a photographic prompt, but they do not replace a description of the look.
+- **Be concrete about era and look.** `The grainy texture of mid-20th-century color film` says more than `vintage`.
+- **Some styles are out of reach by prompt alone.** A specific artist's style or a strongly stylized look may need a LoRA.
 
 ### Natural versus built settings
+
+Basis: observed here.
 
 Material and origin words steer a setting toward looking grown or constructed. In the cavern example, `circular`, `symmetrical` and `arched` produced a built hall with smooth walls and a skylight. `Vast natural cavern`, `irregular`, `raw rock`, `craggy`, `hewn into the rock` and `chisel marks` produced a natural cave with carved alcoves.
 
@@ -100,25 +185,30 @@ Material and origin words steer a setting toward looking grown or constructed. I
 
 ### Camera and lens
 
-| Term | Effect |
-|---|---|
-| `f/1.4` to `f/2.8` | Blurry background (shallow depth of field) |
-| `f/8` to `f/16` | Everything sharp (deep depth of field) |
-| `24mm` | Wide angle, shows more of the scene |
-| `35mm` | Natural, documentary-style perspective |
-| `50mm` | Eye-level, neutral perspective |
-| `85mm` | Portrait-ideal, slight background compression |
-| `135mm` and longer | Telephoto, strong background compression |
-| `macro lens` | Extreme close-up detail |
-| `anamorphic lens` | Widescreen cinematic look with oval bokeh |
+Basis: community practice for the table; observed here for the viewpoint note.
 
-Example: `Shot on Hasselblad X2D, 80mm lens, f/2.8, natural lighting`.
+Describe what the picture looks like first. A lens term can be added, but focal lengths and f-numbers alone are weak signals in FLUX.1 Dev.
+
+| Goal | Describe the picture | Optional lens term |
+|---|---|---|
+| Blurred background | `only her face is in focus, the street behind her is a soft blur` | `shallow depth of field`, `f/1.8` |
+| Everything sharp | `sharp from the rocks in the foreground to the distant mountains` | `deep depth of field`, `f/11` |
+| Wide view | `wide shot showing the whole room`, `the figure is small in the frame` | `24mm wide-angle lens` |
+| Natural perspective | `seen from eye level, a few steps away` | `35mm lens`, `50mm lens` |
+| Tight portrait | `head and shoulders fill the frame` | `85mm portrait lens` |
+| Compressed distance | `the distant mountains loom large directly behind the house` | `telephoto lens` |
+| Extreme close-up | `extreme close-up of a bee's eye filling the frame` | `macro lens` |
+| Widescreen cinema look | `wide frame, oval out-of-focus highlights` | `anamorphic lens` |
+
+FLUX.1 Dev blurs backgrounds by default. A sharp background has to be asked for (see [FLUX.1 Dev defaults and how to counter them](#flux1-dev-defaults-and-how-to-counter-them)).
 
 If a result keeps pulling back further than you want, state the subject and its framing first and move environmental details later.
 
 The viewpoint also decides what is visible. In the cavern example, a view from the center of the room hid the alcoves around the edge; `wide shot from a low angle near the entrance, looking across the chamber` showed them.
 
 ### Lighting
+
+Basis: FLUX 3 guide.
 
 Name the source, direction and quality, and say what the light does. `soft window light from the left` describes more than `good lighting`.
 
@@ -137,22 +227,45 @@ Name the source, direction and quality, and say what the light does. `soft windo
 
 ### Composition
 
+Basis: community practice.
+
+Say where things are in the frame. The name of a technique can be added, but the name alone is a weak signal.
+
 | Technique | Example phrase |
 |---|---|
-| Rule of thirds | `composed using rule of thirds` |
-| Leading lines | `diagonal lines leading to the main entrance` |
-| Foreground and background layers | `strong foreground boulder, background mountains` |
-| Low angle | `low angle worm's eye view` |
-| High angle | `bird's eye view, geometric patterns of city blocks` |
-| Dutch angle | `dutch angle, psychological tension` |
-| Symmetry | `perfectly symmetrical composition` |
-| Negative space | `minimalist composition with generous negative space` |
+| Rule of thirds | `the lighthouse stands in the right third of the frame, the horizon in the lower third` |
+| Leading lines | `a wet road runs from the bottom left corner to the house in the distance` |
+| Foreground and background layers | `a large boulder in the foreground, mountains far behind it` |
+| Low angle | `seen from ground level, looking up at the tower` |
+| High angle | `seen from directly above, the city blocks forming a grid` |
+| Dutch angle | `the camera is tilted, so the horizon runs diagonally across the frame` |
+| Symmetry | `the corridor is centered and both walls mirror each other` |
+| Negative space | `a small figure in the lower left corner, the rest of the frame empty sky` |
 
 ### Colors
 
+Basis: community practice.
+
 Lighting already influences color, but explicit palette direction keeps the image coherent: `warm orange and pink sunset colors`, `desaturated pastel palette`, `a futuristic busy city, purple and green color scheme`.
 
-Use exact hex codes only when precise color matters (a brand color, a specific object) and tie each code to one named object: `the logo text "ACME" in color #FF5733`. Hex-code behavior is documented by BFL for its hosted models; check it in your own FLUX.1 Dev workflow before relying on it.
+Name each color in plain words and attach it to its object in the same phrase: `a mustard-yellow raincoat`, `a door painted deep teal`. A color named far from its object can spread to other things in the scene.
+
+Do not use hex codes. They are a feature of BFL's newer hosted models and are not reliable in FLUX.1 Dev. Write `deep orange-red` instead of `#FF5733`.
+
+## FLUX.1 Dev defaults and how to counter them
+
+Basis: community practice.
+
+FLUX.1 Dev fills everything a prompt leaves open with the same few choices. Counter a default only when the image must not have it.
+
+| Default | To counter it |
+|---|---|
+| A blurred background, even in wide scenes | Describe the background in detail and state that it is in focus. Leave out `portrait`, `bokeh` and `cinematic` |
+| Smooth, flawless skin | `visible pores`, `fine lines`, `uneven skin tone`, `a few blemishes`. A lower guidance value also helps |
+| A polished commercial look | Name an ordinary way of taking the picture: `casual phone snapshot`, `direct on-camera flash`, `mixed indoor lighting`, `slightly off-center framing`. Leave out `professional`, `cinematic` and `stunning` |
+| A centered subject, posed and facing the camera | State where the subject is in the frame, where they look and what they are doing at this moment |
+| Young, attractive people with the same face | State age and build, and see [Diversity in faces and people](#diversity-in-faces-and-people) |
+| A photograph or glossy render when the style is weakly stated | Name the medium first and describe its surface (see [Style](#style)) |
 
 ## Weight syntax in ComfyUI
 
@@ -201,7 +314,114 @@ If an unwanted element keeps appearing:
 
 Features you do not mention can be invented. In the cavern example the model added a sky opening in the ceiling; describing the intended feature (`a solid rock ceiling hung with stalactites`) replaced it.
 
+## Diversity in faces and people
+
+FLUX.1 Dev produces far less face variety per seed than SDXL. With one prompt and many seeds, the people look like close relatives: similar bone structure, smooth skin and often a cleft chin (the "FLUX face").
+
+Two properties of the model are the usual explanation:
+
+- **It is guidance-distilled.** The guidance value is an input to the model, not real classifier-free guidance. Distillation narrows the range of outputs toward the most typical result.
+- **The prompt dominates the seed.** The text conditioning decides most of the image, and the seed changes details more than identity.
+
+The practical rule: **in SDXL, variety comes from the seed; in FLUX, variety comes from the prompt.** To get a different person, describe a different person.
+
+Use this section when the goal is exploration: many images to pick from. When the goal is the same character across images, do the opposite and keep the person's description identical in every prompt.
+
+The prompt techniques below are community practice and have not been tested in this project. The `{a|b|c}` syntax was verified in the ComfyUI source, not by testing images.
+
+### Describe a specific person
+
+A generic subject (`a woman`, `a young man`) returns the default face. Each concrete attribute moves the result away from it.
+
+| Lever | Example phrases |
+|---|---|
+| Full name | `Margit Kowalczyk`, `Tevita Fonua` |
+| Exact age | `52-year-old` instead of `middle-aged` |
+| Origin | `Moroccan`, `from northern Finland` |
+| Occupation and life | `ferry mechanic`, `retired schoolteacher`, `night-shift nurse` |
+| Face structure | `broad nose`, `deep-set eyes`, `heavy eyebrows`, `narrow chin`, `round face`, `wide-set eyes` |
+| Skin and age detail | `freckles across the nose`, `crow's feet`, `sun-weathered skin`, `faint acne scars` |
+| Hair | `cropped grey hair`, `thick black braid`, `receding hairline` |
+| Build and expression | `stocky`, `wiry`, `lopsided smile`, `tired eyes` |
+
+Points to know:
+
+- **Use an invented full name.** A first and last name shifts the face, although the model knows nobody by that name. Put it in the subject sentence: `Portrait photograph of Margit Kowalczyk, a 52-year-old ferry mechanic with a broad nose and cropped grey hair`. Do not use the name of a real, known person.
+- **Abstract diversity words do little.** `unique facial features`, `distinctive appearance` and `diverse` describe nothing visible. Name the feature instead.
+- **Beauty words pull toward the default face.** Leave out `beautiful`, `attractive`, `stunning` and `model` unless the request asks for that look.
+- **Start with two or three facial features.** Add more only if the face still looks generic.
+- **Context changes the person too.** An occupation, a place and a moment (`photographed during a field expedition`) give the model more to build a person from. The same context returns the same person, so vary the context along with the face.
+
+### Vary across a set of prompts
+
+When one request produces several prompts, vary the people deliberately:
+
+- Spread age, origin, face shape, build and hair across the set. Changing only the name is not enough.
+- Check the set for your own repeated defaults (the same age range, the same skin detail, the same expression in every prompt).
+- Vary setting, light and framing as well when the request allows it.
+
+### Randomizing inside one prompt
+
+ComfyUI can pick a random option each time a prompt is queued. Write the options as `{a|b|c}`:
+
+```text
+Portrait photograph of {Aiko Tanaka, a Japanese|Leila Benali, a Moroccan|Ingrid Solheim, a Norwegian|Camila Duarte, a Brazilian} {botanist|welder|bus driver|cellist} aged {24|37|51|68}, with a {round|long|square|heart-shaped} face, {deep-set|wide-set|hooded} eyes and a {broad|narrow|aquiline} nose.
+```
+
+| Syntax | Effect |
+|---|---|
+| `{a\|b\|c}` | One option, chosen at random each time the prompt is queued |
+| `{a\|b\|}` | An empty option is allowed: sometimes nothing is inserted |
+| `{a\|{b\|c}}` | Groups can be nested |
+| `\{`, `\}` and `\\|` | Literal `{`, `}` and `\|` |
+| `//` to end of line, `/* ... */` | Removed as a comment |
+
+Points to know:
+
+- **It runs in the ComfyUI browser frontend.** A prompt sent directly to the API is not processed and the braces reach the model as text.
+- **One choice per queued prompt.** A batch size above 1 uses the same text for the whole batch. For different people, queue the prompt many times with batch size 1.
+- **Literal braces are consumed**, as parentheses are (see [Weight syntax in ComfyUI](#weight-syntax-in-comfyui)). Escape them with a backslash.
+- **`//` starts a comment.** Text after `//` on a line is removed, which also cuts a URL written in a prompt.
+- **Options are chosen independently.** Put attributes that belong together in one option, as the name and origin are in the example above.
+- **It applies to the vanilla `CLIPTextEncode` and `CLIPTextEncodeFlux` nodes.** A custom prompt node may behave differently or offer its own wildcard files.
+
+### Levers outside the prompt
+
+These are workflow settings, not prompt wording, and none has been tested in this project. They are listed so the prompt is not expected to do everything.
+
+- **Lower guidance.** Values of 2.0 to 3.0 instead of 3.5 give more natural skin and somewhat more variety (see [Prompt fields and guidance in ComfyUI](#prompt-fields-and-guidance-in-comfyui)).
+- **An SDXL first pass.** Generate a small image in SDXL for its variety, then refine it with FLUX image-to-image at a denoise of roughly 0.5 to 0.7.
+- **Noise on the conditioning, or a stochastic sampler.** Both restore some variety from the seed.
+- **A different model.** De-distilled FLUX.1 Dev variants, Chroma and FLUX.1 Krea Dev are reported to be less locked to one face.
+- **Face LoRAs.** They can help, but many replace one default face with another.
+
+Two things that do not add face variety: a wider shot (it makes the face smaller, so the sameness is harder to see) and Redux (it produces variations of one image).
+
+### Example
+
+**Before**
+
+```text
+Portrait photograph of a beautiful woman in a café, soft window light from the left, 85mm lens at f/2.
+```
+
+**After**
+
+```text
+Portrait photograph of Leila Benali, a 47-year-old Moroccan bookbinder with a long face, heavy eyebrows, an aquiline nose and grey-streaked black hair tied back. She sits at a café table with ink-stained fingers around a glass of tea. Soft window light from the left, 85mm lens at f/2.
+```
+
+What changed:
+
+- `beautiful` was dropped.
+- The person got a name, an exact age, an origin, an occupation and three facial features.
+- One small detail from her life (`ink-stained fingers`) ties the person to the scene.
+
 ## Text in images
+
+Basis: FLUX 3 guide for the method; community practice for the limits.
+
+FLUX.1 Dev renders a few words of large text fairly reliably. Long sentences, small print and several separate text blocks often come out garbled.
 
 For each block of text, state three things:
 
@@ -216,14 +436,24 @@ Tips:
 - Front-load the text description and keep strings short. Long strings are harder to render accurately.
 - Mark line breaks and direction in the description (`arranged in two centered lines`).
 - Proofread every quoted string in the output.
+- A guidance value of 4.0 or higher can help text come out correctly.
 
 ## Common mistakes
 
 - A long keyword pile with no clear subject, scene hierarchy, camera and lighting relationship.
-- Copying parameter syntax from another image platform without checking that your FLUX host supports it.
+- Instructions (`create an image of`, `make sure that`) instead of a description of the image.
+- A very short prompt, with the expectation that the model will fill in a good image. It fills in its defaults (see [FLUX.1 Dev defaults and how to counter them](#flux1-dev-defaults-and-how-to-counter-them)).
 - Quality tags ("masterpiece", "highly detailed", "ultrarealistic") used in place of concrete description.
 - Negative phrasing ("no hat", "not blurry") instead of a positive description.
+- A style label, artist name, camera model or f-number with no description of the look it stands for.
+- Photo terms (`bokeh`, `85mm`, `film grain`) in a prompt for a painting or illustration.
+- Hex color codes, or parameter syntax copied from another image platform.
 - Stacking many effects, or mixing styles that do not belong together.
+- Expecting a new seed to give a new face, or describing a person only as `a woman` or `a man` when variety is wanted (see [Diversity in faces and people](#diversity-in-faces-and-people)).
+- Asking for variety with abstract words (`unique`, `distinctive`, `diverse`) instead of concrete features.
+
+Observed in one scene in this project:
+
 - Listing important elements as short clauses, so they are dropped (see [Subject and relationships](#subject-and-relationships)).
 - Role or abstract words (`guardians`, `peaceful`) in place of a physical description of what the thing is.
 - Words such as `symmetrical`, `circular` or `arched` in a scene meant to look natural (see [Natural versus built settings](#natural-versus-built-settings)).
@@ -242,13 +472,15 @@ Negative: blurry, lowres, extra fingers, text, watermark
 **After (FLUX)**
 
 ```text
-Portrait photograph of a woman with long red hair standing among tall pine trees at sunset. Warm golden hour light falls on her face from the left, and the forest behind her dissolves into soft bokeh. Shot on an 85mm lens at f/1.8, shallow depth of field, sharp skin texture, subtle film grain, warm amber and deep green tones.
+Portrait photograph of a woman with long red hair standing among tall pine trees at sunset. Warm, low sunlight falls on her face from the left and catches loose strands of her hair. Her head and shoulders fill the frame, and the forest behind her is a soft blur of amber light and deep green. Natural skin with visible pores and a few freckles, fine film grain.
 ```
 
 What changed:
 
-- Quality tags and `8k` were dropped; camera and film detail describe the look instead.
-- The weight syntax was removed; the subject is stated first in plain language.
+- Quality tags and `8k` were dropped; skin and film detail describe the look instead.
+- `bokeh` became a description of the framing and of the blurred forest. No lens or f-number is needed.
+- The weight syntax and `beautiful` were removed; the subject is stated first in plain language.
+- The woman stays as generic as in the original. For a less typical face, describe a specific person (see [Diversity in faces and people](#diversity-in-faces-and-people)).
 - The negative terms were dropped. "Blurry" is handled by sharp-subject wording and "extra fingers" has no direct positive equivalent here.
 - Keywords were turned into sentences in the order image type, subject, setting, light, framing.
 
@@ -278,8 +510,17 @@ Result: the alcoves, egg and pedestal appeared. The guardians and crystals did n
 
 ## Further reading
 
-- [ComfyUI source: `comfy/sd1_clip.py`](https://github.com/comfyanonymous/ComfyUI/blob/master/comfy/sd1_clip.py) (weight parsing and encoding)
-- [ComfyUI source: `comfy/text_encoders/flux.py`](https://github.com/comfyanonymous/ComfyUI/blob/master/comfy/text_encoders/flux.py) (FLUX tokenizers)
+Source code:
+
+- [ComfyUI: `comfy/sd1_clip.py`](https://github.com/comfyanonymous/ComfyUI/blob/master/comfy/sd1_clip.py) (weight parsing, encoding, CLIP-L chunks)
+- [ComfyUI: `comfy/text_encoders/flux.py`](https://github.com/comfyanonymous/ComfyUI/blob/master/comfy/text_encoders/flux.py) (FLUX tokenizers, which encoder outputs are used)
+- [ComfyUI: `comfy_extras/nodes_flux.py`](https://github.com/comfyanonymous/ComfyUI/blob/master/comfy_extras/nodes_flux.py) (`CLIPTextEncodeFlux` and `FluxGuidance`)
+- [ComfyUI: `comfy/samplers.py`](https://github.com/comfyanonymous/ComfyUI/blob/master/comfy/samplers.py) (the negative prompt is skipped at CFG 1.0)
+- [ComfyUI frontend: `dynamicPrompts.ts`](https://github.com/Comfy-Org/ComfyUI_frontend/blob/main/src/extensions/core/dynamicPrompts.ts) (the `{a|b|c}` extension; the parser is `processDynamicPrompt` in `formatUtil.ts`)
+- [BFL: `src/flux/util.py`](https://github.com/black-forest-labs/flux/blob/main/src/flux/util.py) (reference text encoder setup and token limits)
+
+Prompting guides (the BFL guides are written for FLUX 3 Image):
+
 - [BFL: FLUX Prompting Guide](https://docs.bfl.ai/guides/prompting_summary)
 - [BFL: Building a Good Prompt](https://docs.bfl.ai/guides/prompting_unified_building)
 - [BFL: Style, Aesthetics & Text](https://docs.bfl.ai/guides/prompting_unified_style)
