@@ -174,6 +174,27 @@ class ImageIndexEntry
     }
 
     /**
+     * Adds the properties the entry does not have yet; a stored value is never overwritten.
+     *
+     * @param array<string,string> $properties
+     * @return bool Whether any property was added.
+     */
+    public function addMissingProperties(array $properties) : bool
+    {
+        $added = false;
+
+        foreach($properties as $name => $value)
+        {
+            if(!array_key_exists($name, $this->properties)) {
+                $this->properties[$name] = $value;
+                $added = true;
+            }
+        }
+
+        return $added;
+    }
+
+    /**
      * Returns a copy that takes all known fields from the source entry
      * and keeps the unknown keys of this entry.
      *

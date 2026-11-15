@@ -16,8 +16,8 @@ use function AppUtils\t;
 
 /**
  * Decides, per image, what the indexer does with it: keeps a modified
- * entry (syncing its location only), skips an unusable sidecar, or
- * builds a fresh entry from the parsed metadata.
+ * entry (syncing its location and adding sidecar properties it lacks),
+ * skips an unusable sidecar, or builds a fresh entry from the parsed metadata.
  *
  * It works on the index and the result collection it is given and does
  * not touch the application, the storage file or the `data/` folder.
@@ -45,10 +45,11 @@ class ImageAnalyzer
         $id = $this->hashImage($imageFile);
         $sidecarPath = $sidecar->getSidecar()->getPath();
 
-        // Do not change any images that have already been indexed and modified.
+        // Do not change the stored values of images that have already been indexed and modified.
         // BUT: Update the image and sidecar file paths in the existing entry, as they
         // may have been moved or renamed. Since the ID is a file hash, we can
-        // safely update the paths without changing the ID.
+        // safely update the paths without changing the ID. Sidecar properties the
+        // entry lacks are added, so a repaired sidecar reaches a modified entry.
 
         $stored = $this->images->get($id);
 
@@ -60,12 +61,16 @@ class ImageAnalyzer
                 self::resolveFolderName($imageFile)
             );
 
+            if($this->addMissingSidecarProperties($stored, $sidecar)) {
+                $updated = true;
+            }
+
             if($updated)
             {
-                Console::line2('UPDATE | Updated file paths in index.');
+                Console::line2('UPDATE | Updated the entry in the index.');
 
                 $this->results->makeNotice(
-                    t('Image [%s] | UPDATE | Updated file paths in index.', $imageFile->getName()),
+                    t('Image [%s] | UPDATE | Updated the entry in the index.', $imageFile->getName()),
                     ImageIndexer::ACTION_UPDATE_PATHS
                 );
             }
@@ -142,6 +147,23 @@ class ImageAnalyzer
             t('Image [%s] | OK | Indexed successfully.', $imageFile->getName()),
             ImageIndexer::ACTION_IMAGE_INDEXED
         );
+    }
+
+    /**
+     * A sidecar that cannot be parsed adds nothing: a modified entry is never skipped because of it.
+     */
+    private function addMissingSidecarProperties(ImageIndexEntry $stored, ResolvedSidecar $sidecar) : bool
+    {
+        try
+        {
+            $metadata = $sidecar->getFormat()->parse($sidecar->getData());
+        }
+        catch (MetadataException)
+        {
+            return false;
+        }
+
+        return $stored->addMissingProperties($metadata->getIndexProperties());
     }
 
     /**
