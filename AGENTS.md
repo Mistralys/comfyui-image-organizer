@@ -22,6 +22,7 @@ The project manifest lives in `docs/agents/project-manifest/`. It is the canonic
 | Changelog | `changelog.md` | Release history |
 | FLUX Prompting Guide | `docs/flux-prompting-guide.md` | Reference for writing prompts for FLUX.1 Dev in local ComfyUI; not part of the manifest and independent of the application code |
 | FLUX Prompt Generation Skill | `.github/skills/flux-prompt-generation/SKILL.md` | Agent skill that converts an image prompt (SDXL-style keywords, negative prompts) into a FLUX-compatible prompt; supplements the FLUX Prompting Guide |
+| Add LoRA Skill | `.github/skills/add-lora/SKILL.md` | Agent skill for importing a Civitai LoRA with the CLI, including category and copy-destination selection, model-variant conflicts, dry runs and verification |
 
 ### Ingestion Path
 
@@ -59,7 +60,16 @@ When a change is made to the codebase, the documents below must be updated in th
 - **Unsure whether something is allowed, or why it is done a certain way?** Check `constraints.md` FIRST.
 - **A manifest section looks deliberately absent or oddly arranged?** Check `curation-log.md` FIRST.
 - **Asked to convert, rewrite, or generate an image prompt for FLUX?** Use the FLUX Prompt Generation Skill, and consult `docs/flux-prompting-guide.md` for detail the skill does not carry.
+- **Asked to add or register a LoRA from Civitai?** Use the Add LoRA Skill to operate `tools/add_lora.php`; do not hand-edit the registry to bypass its checks.
 - **Only then** read source files.
+
+---
+
+## FLUX Prompt Validator
+
+Pass prompt text directly when validating: run `python tools\validate_flux_prompt.py --text "Your prompt"` from the repository root. Do not create a temporary file for this. For an existing UTF-8 file, use `--file <path>`; standard input is also supported. The script uses only the Python standard library.
+
+It reports approximate word, sentence and paragraph counts against the guide's recommendations. For ComfyUI frontend option groups such as `{red|deep blue}`, including nested or empty options, it uses an expansion with the maximum whitespace-separated word count and removes frontend comments. Sentence and paragraph counts describe that one expansion, not necessarily every choice. Escaped braces and pipes are literal; unbalanced braces or an unclosed block comment are errors. Direct API submissions do not expand option syntax, so the estimate does not describe the literal text sent through the API. Sentence counts are heuristic; none of these counts measures encoder tokens or judges prompt content. It exits `0` for a non-empty expansion below 300 words, `1` at 300 words or more (the guide's approximate recommended ceiling), and `2` for input or usage errors. Shorter and longer prompts may be intentional; the 300-word threshold is guidance, not a hard model limit.
 
 ---
 
