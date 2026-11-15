@@ -81,7 +81,8 @@ index.php → OrganizerApp::create()->createUI(...)->display()
          (entries whose image file is gone are set aside as "missing", not displayed)
       → ImageCollection::injectJS()            (loads the JS files, emits AJAX method names + payload keys)
       → filters / folder / card size resolved from request parameters, remembered in the session (via SessionState)
-  → ImageBrowser::_render() → one card per image (the "Upscaling" filter keeps those with an upscaled file)
+  → ImageBrowser::_render() → one card per image, showing indexed CFG and sampler steps below the seed
+       (the "Upscaling" filter keeps those with an upscaled file)
        thumbnail <img> → image.php?imageID=<id>&thumbnail=yes
 ```
 

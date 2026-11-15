@@ -582,6 +582,7 @@ class ImageBrowser extends BaseOrganizerPage
                 Checkpoint: <?php echo $image->getCheckpoint() ?><br>
                 Test: <?php echo $props->getTestName() ?> #<?php echo $props->getTestNumber() ?>-<?php echo $props->getBatchNumber() ?><br>
                 Seed: <?php echo $props->getSeed() ?><br>
+                <?php pt('CFG') ?>: <?php echo $props->getCFG() ?> | <?php pt('Total steps') ?>: <?php echo $props->getSamplerSteps() ?><br>
 
                 <?php if(empty($this->activeFolder) || $this->activeFolder === 'all') { ?>
                     Folder: <span class="folder-name"><?php echo $props->getFolderName() ?></span><br>

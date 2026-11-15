@@ -1,5 +1,7 @@
 ## Unreleased
 
+- Browser: Image cards now show CFG and total steps below the seed.
+
 - LoRAs: Registration now accepts `--id`, `--label` and `--description` for custom entry metadata, with matching dry-run output and agent-skill instructions. Explicit ID conflicts fail without renaming; model-variant merges keep existing entry metadata.
 
 - LoRAs: Added `php tools\add_lora.php` to import Civitai metadata from a URL and filename, with category selection, model-specific variant merging, an ID prompt for same-model conflicts, and a dry-run option.

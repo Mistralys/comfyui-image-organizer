@@ -13,7 +13,7 @@ the images, from the checkpoint to LoRAs that were used, their weights, and more
 
 ## Features
 
-- Browse your generated images as thumbnail cards, with adjustable card sizes and filters for folders, favorites, gallery and website images.
+- Browse your generated images as thumbnail cards showing seed, CFG and total steps, with adjustable card sizes and filters for folders, favorites, gallery and website images.
 - See the settings behind each image on its own details page: checkpoint, sampler, steps, seed, LoRAs with their weights, and more.
 - Flag images as favorites, for the gallery or for the website, and give them labels.
 - Move images to other folders, delete them, or copy them to an output folder, from the browser.
